@@ -1,0 +1,32 @@
+
+[functions.analyze-script]
+enabled = true
+verify_jwt = true
+import_map = "./functions/analyze-script/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/analyze-script/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/analyze-script/*.html" ]
+
+[functions.analyze-market-map]
+enabled = true
+verify_jwt = true
+import_map = "./functions/analyze-market-map/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/analyze-market-map/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/analyze-market-map/*.html" ]
+
+[functions.sync-instagram-metrics]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/sync-instagram-metrics/index.ts"
+
+[functions.connect-instagram]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/connect-instagram/index.ts"

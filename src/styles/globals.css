@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-dark: 210 40% 98%;   /* Very light gray for background */
+    --color-navy: 0 0% 100%;     /* White for cards */
+    --color-border: 214 32% 91%; /* Light gray border */
+    --color-text: 222 47% 11%;   /* Dark text */
+    --color-muted: 215 16% 47%;  /* Muted text */
+    --color-blue: 221 83% 53%;   /* primary blue */
+    --color-green: 160 84% 39%;
+    --color-purple: 258 90% 66%;
+    --color-amber: 38 92% 50%;
+    --color-red: 0 84% 60%;
+  }
+
+  .dark {
+    --color-dark: 222 38% 5%;    /* #080B12 approx */
+    --color-navy: 222 47% 11%;   /* #0E1628 approx */
+    --color-border: 215 32% 17%; /* #1E293B */
+    --color-text: 210 40% 98%;   /* #F8FAFC */
+    --color-muted: 215 20% 65%;  /* #94A3B8 approx */
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: hsl(var(--color-dark));
+    color: hsl(var(--color-text));
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--color-border));
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--color-muted));
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(14, 22, 40, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  
+  .dark .glass {
+    background: rgba(14, 22, 40, 0.7);
+  }
+  
+  :root:not(.dark) .glass {
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  .glass-panel {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  :root:not(.dark) .glass-panel {
+    background-color: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .glow-ambient-blue {
+    background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.15), transparent 40%);
+  }
+}
