@@ -19,8 +19,6 @@ import { CampaignsPage } from '@/features/campaigns/pages/campaigns-page'
 import { ApprovalsPage } from '@/features/approvals/pages/approvals-page'
 import { PublicApprovalPage } from '@/features/approvals/pages/public-approval-page'
 import { ReportsPage } from '@/features/reports/pages/reports-page'
-import { InstagramCallbackPage } from '@/features/integrations/pages/instagram-callback-page'
-import { PlaceholderPage } from './placeholder-page'
 
 export const router = createBrowserRouter([
   {
@@ -57,7 +55,6 @@ export const router = createBrowserRouter([
           { path: '/approvals', element: <ApprovalsPage /> },
           { path: '/reports', element: <ReportsPage /> },
           { path: '/settings', element: <SettingsPage /> },
-          { path: '/integrations/instagram/callback', element: <InstagramCallbackPage /> },
         ],
       },
     ],

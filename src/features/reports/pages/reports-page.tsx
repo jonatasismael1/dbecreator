@@ -8,21 +8,20 @@ import { PageHeader } from '@/components/shared/page-header'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
-import { InstagramSyncModal } from '../components/instagram-sync-modal'
 import { MetricModal } from '../components/metric-modal'
+import { useInstagramInsights } from '../hooks/use-instagram-insights'
 import { useReports } from '../hooks/use-reports'
-import { useSyncInstagram, type InstagramMedia } from '../hooks/use-sync-instagram'
-import type { PerformanceMetric } from '../types/report.types'
+import type { InstagramInsightsResponse } from '@/features/integrations/types/integration.types'
+import type { CreateMetricDTO, PerformanceMetric } from '../types/report.types'
 
 export function ReportsPage() {
   const { workspaceId } = useWorkspaceContext()
   const { metrics, isLoading, refetch, createMetric, updateMetric, deleteMetric } = useReports()
-  const syncInstagram = useSyncInstagram(workspaceId)
+  const instagramInsights = useInstagramInsights(workspaceId)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingMetric, setEditingMetric] = useState<PerformanceMetric | null>(null)
-  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
-  const [mediaList, setMediaList] = useState<InstagramMedia[]>([])
+  const [latestInsights, setLatestInsights] = useState<InstagramInsightsResponse | null>(null)
 
   const handleOpenModal = (metric?: PerformanceMetric) => {
     setEditingMetric(metric || null)
@@ -34,7 +33,7 @@ export function ReportsPage() {
     setIsModalOpen(false)
   }
 
-  const handleSaveMetric = async (data: any) => {
+  const handleSaveMetric = async (data: CreateMetricDTO) => {
     if (editingMetric) {
       await updateMetric.mutateAsync({ id: editingMetric.id, dto: data })
     } else {
@@ -51,12 +50,11 @@ export function ReportsPage() {
 
   const handleOpenSync = async () => {
     try {
-      const media = await syncInstagram.mutateAsync()
-      setMediaList(media)
-      setIsSyncModalOpen(true)
+      const insights = await instagramInsights.mutateAsync()
+      setLatestInsights(insights)
       await refetch()
-    } catch (err: any) {
-      alert(err.message || 'Erro ao sincronizar com o Instagram. Verifique a conexao em Configuracoes.')
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Erro ao buscar insights do Instagram. Verifique a conexao em Configuracoes.')
     }
   }
 
@@ -74,9 +72,9 @@ export function ReportsPage() {
     <div className="h-full">
       <PageHeader title="Relatorios de Performance" description="Acompanhe dados reais dos conteudos publicados.">
         <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-3">
-          <Button variant="secondary" onClick={handleOpenSync} loading={syncInstagram.isPending} className="w-full sm:w-auto">
+          <Button variant="secondary" onClick={handleOpenSync} loading={instagramInsights.isPending} className="w-full sm:w-auto">
             <Instagram className="h-4 w-4" />
-            Sincronizar
+            Atualizar insights
           </Button>
           <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto">
             <Plus className="h-4 w-4" />
@@ -84,6 +82,31 @@ export function ReportsPage() {
           </Button>
         </div>
       </PageHeader>
+
+      {latestInsights && (
+        <Card className="mb-6 border-dbe-border bg-dbe-navy/50 p-4">
+          <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="font-medium text-dbe-text">Insights reais do Instagram</h3>
+              <p className="text-xs text-dbe-muted">
+                @{latestInsights.account.username || latestInsights.integration.account_name || 'instagram'} sincronizado em{' '}
+                {format(new Date(latestInsights.synced_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <SummaryCard icon={<Eye className="h-4 w-4" />} label="Alcance" value={latestInsights.metrics.reach} />
+            <SummaryCard icon={<Instagram className="h-4 w-4 text-pink-400" />} label="Visitas" value={latestInsights.metrics.profile_views} />
+            <SummaryCard icon={<Share2 className="h-4 w-4 text-green-400" />} label="Cliques site" value={latestInsights.metrics.website_clicks} />
+            <SummaryCard icon={<Heart className="h-4 w-4 text-red-400" />} label="Seguidores" value={latestInsights.metrics.follower_count} />
+          </div>
+          {Object.keys(latestInsights.metric_errors).length > 0 && (
+            <p className="mt-3 text-xs text-amber-300">
+              Algumas metricas podem depender de permissao aprovada na Meta ou disponibilidade da Graph API.
+            </p>
+          )}
+        </Card>
+      )}
 
       {isLoading ? (
         <div className="flex min-h-80 items-center justify-center">
@@ -94,8 +117,8 @@ export function ReportsPage() {
           <EmptyState
             icon={BarChart3}
             title="Nenhum dado registrado"
-            description="Sincronize seu Instagram ou registre metricas manualmente para acompanhar seu crescimento."
-            action={{ label: 'Sincronizar Instagram', onClick: handleOpenSync }}
+            description="Atualize os insights do Instagram ou registre metricas manualmente para acompanhar seu crescimento."
+            action={{ label: 'Atualizar Instagram', onClick: handleOpenSync }}
           />
         </div>
       ) : (
@@ -171,22 +194,15 @@ export function ReportsPage() {
         metric={editingMetric}
         isLoading={createMetric.isPending || updateMetric.isPending}
       />
-
-      <InstagramSyncModal
-        isOpen={isSyncModalOpen}
-        onClose={() => setIsSyncModalOpen(false)}
-        workspaceId={workspaceId!}
-        mediaList={mediaList}
-      />
     </div>
   )
 }
 
-function SummaryCard({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
+function SummaryCard({ icon, label, value }: { icon: ReactNode; label: string; value: number | null }) {
   return (
     <Card className="border-dbe-border bg-dbe-navy/50 p-4">
       <div className="mb-2 flex items-center gap-2 text-dbe-muted">{icon} {label}</div>
-      <div className="text-2xl font-bold text-dbe-text">{value.toLocaleString()}</div>
+      <div className="text-2xl font-bold text-dbe-text">{typeof value === 'number' ? value.toLocaleString() : '-'}</div>
     </Card>
   )
 }

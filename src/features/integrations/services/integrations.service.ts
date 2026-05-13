@@ -1,8 +1,14 @@
 import { supabase } from '@/lib/supabase/client'
-import type { WorkspaceIntegration, CreateIntegrationDTO, UpdateIntegrationDTO, Platform } from '../types/integration.types'
+import type {
+  WorkspaceIntegration,
+  CreateIntegrationDTO,
+  Platform,
+  InstagramAccountsResponse,
+  InstagramInsightsResponse,
+} from '../types/integration.types'
 
 const TABLE = 'workspace_integrations'
-const PUBLIC_COLUMNS = 'id,workspace_id,platform,account_id,account_name,status,metadata,created_at,updated_at'
+const PUBLIC_COLUMNS = 'id,workspace_id,platform,account_id,account_name,status,metadata,facebook_page_id,facebook_page_name,instagram_business_account_id,token_expires_at,permissions,created_at,updated_at'
 
 export const integrationsService = {
   async getByWorkspace(workspaceId: string): Promise<WorkspaceIntegration[]> {
@@ -29,16 +35,6 @@ export const integrationsService = {
   },
 
   async upsert(dto: CreateIntegrationDTO): Promise<WorkspaceIntegration> {
-    if (dto.platform === 'instagram' && dto.access_token) {
-      const { data, error } = await supabase.functions.invoke('connect-instagram', {
-        body: { workspace_id: dto.workspace_id, access_token: dto.access_token },
-      })
-
-      if (error) throw error
-      if (data?.error) throw new Error(data.error)
-      return data.integration
-    }
-
     const { data, error } = await supabase
       .from(TABLE)
       .upsert(dto, { onConflict: 'workspace_id,platform' })
@@ -49,52 +45,44 @@ export const integrationsService = {
     return data
   },
 
-  getInstagramOAuthUrl(workspaceId: string): string {
-    const appId = import.meta.env.VITE_META_APP_ID
-    if (!appId) throw new Error('VITE_META_APP_ID nao configurado.')
+  async startInstagramOAuth(workspaceId: string): Promise<void> {
+    const data = await apiRequest<{ auth_url: string }>(`/api/meta/login?${new URLSearchParams({
+      workspace_id: workspaceId,
+      format: 'json',
+    })}`)
 
-    const redirectUri = `${window.location.origin}/integrations/instagram/callback`
-    const state = crypto.randomUUID()
-    sessionStorage.setItem('instagram_oauth_state', state)
-    sessionStorage.setItem('instagram_oauth_workspace_id', workspaceId)
-    sessionStorage.setItem('instagram_oauth_redirect_uri', redirectUri)
-
-    const params = new URLSearchParams({
-      client_id: appId,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      state,
-      scope: [
-        'pages_show_list',
-        'pages_read_engagement',
-        'instagram_basic',
-        'instagram_manage_insights',
-        'business_management',
-      ].join(','),
-    })
-
-    return `https://www.facebook.com/dialog/oauth?${params.toString()}`
+    window.location.href = data.auth_url
   },
 
-  async completeInstagramOAuth(params: {
-    workspaceId: string
-    code: string
-    redirectUri: string
-  }): Promise<WorkspaceIntegration> {
-    const { data, error } = await supabase.functions.invoke('connect-instagram', {
-      body: {
-        workspace_id: params.workspaceId,
-        code: params.code,
-        redirect_uri: params.redirectUri,
-      },
+  async getInstagramAccounts(workspaceId: string): Promise<InstagramAccountsResponse> {
+    return apiRequest(`/api/meta/instagram-accounts?${new URLSearchParams({ workspace_id: workspaceId })}`)
+  },
+
+  async selectInstagramAccount(workspaceId: string, pendingAccountId: string): Promise<WorkspaceIntegration> {
+    const data = await apiRequest<{ integration: WorkspaceIntegration }>('/api/meta/instagram-accounts', {
+      method: 'POST',
+      body: JSON.stringify({
+        workspace_id: workspaceId,
+        pending_account_id: pendingAccountId,
+      }),
     })
 
-    if (error) throw error
-    if (data?.error) throw new Error(data.error)
     return data.integration
   },
 
+  async getInstagramInsights(workspaceId: string): Promise<InstagramInsightsResponse> {
+    return apiRequest(`/api/meta/instagram-insights?${new URLSearchParams({ workspace_id: workspaceId })}`)
+  },
+
   async disconnect(workspaceId: string, platform: Platform): Promise<void> {
+    if (platform === 'instagram') {
+      await apiRequest('/api/meta/disconnect', {
+        method: 'POST',
+        body: JSON.stringify({ workspace_id: workspaceId }),
+      })
+      return
+    }
+
     const { error } = await supabase
       .from(TABLE)
       .delete()
@@ -103,4 +91,27 @@ export const integrationsService = {
 
     if (error) throw error
   }
+}
+
+async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const { data: sessionData } = await supabase.auth.getSession()
+  const token = sessionData.session?.access_token
+  if (!token) throw new Error('Sessao expirada. Entre novamente para conectar o Instagram.')
+
+  const response = await fetch(path, {
+    ...init,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      ...init.headers,
+    },
+  })
+
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || 'Erro na integracao Meta.')
+  }
+
+  return data as T
 }
