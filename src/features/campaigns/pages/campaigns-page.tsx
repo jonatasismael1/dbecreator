@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useCampaigns } from '../hooks/use-campaigns'
 import { CampaignCard } from '../components/campaign-card'
 import { CampaignModal } from '../components/campaign-modal'
-import type { Campaign } from '../types/campaign.types'
+import type { Campaign, CreateCampaignDTO } from '../types/campaign.types'
 
 export function CampaignsPage() {
   const { campaigns, isLoading, createCampaign, updateCampaign, deleteCampaign } = useCampaigns()
@@ -23,7 +23,7 @@ export function CampaignsPage() {
     setIsModalOpen(false)
   }
 
-  const handleSaveCampaign = async (data: any) => {
+  const handleSaveCampaign = async (data: CreateCampaignDTO) => {
     if (editingCampaign) {
       await updateCampaign.mutateAsync({ id: editingCampaign.id, dto: data })
     } else {

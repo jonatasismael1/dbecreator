@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { useWorkspace } from '@/features/workspaces/hooks/use-workspace'
 import { PageHeader } from '@/components/shared/page-header'
@@ -8,12 +8,17 @@ import { User, Building, Link as LinkIcon, Camera, KeyRound } from 'lucide-react
 import { supabase } from '@/lib/supabase/client'
 import { IntegrationsTab } from '../components/integrations-tab'
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Erro inesperado'
+}
+
 export function SettingsPage() {
   const { user } = useAuth()
   const { data: workspace, isLoading: wsLoading } = useWorkspace()
   const [activeTab, setActiveTab] = useState<'profile' | 'workspace' | 'integrations'>('profile')
   const [isSaving, setIsSaving] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
+  const [workspaceNameDraft, setWorkspaceNameDraft] = useState('')
 
   // Profile Form State
   const [fullName, setFullName] = useState(user?.user_metadata?.full_name || '')
@@ -24,14 +29,7 @@ export function SettingsPage() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
-  // Workspace Form State
-  const [wsName, setWsName] = useState(workspace?.name || '')
-
-  useEffect(() => {
-    if (workspace) {
-      setWsName(workspace.name)
-    }
-  }, [workspace])
+  const wsName = workspaceNameDraft || workspace?.name || ''
   
   // Note: To be fully functional this requires updating the user metadata in Supabase
   // and the workspace table. Since Supabase auth allows updating user metadata easily:
@@ -45,9 +43,9 @@ export function SettingsPage() {
       })
       if (error) throw error
       setSuccessMsg('Perfil atualizado com sucesso!')
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      alert(err.message || 'Erro ao atualizar perfil')
+      alert(err instanceof Error ? err.message : 'Erro ao atualizar perfil')
     } finally {
       setIsSaving(false)
       setTimeout(() => setSuccessMsg(''), 3000)
@@ -72,8 +70,8 @@ export function SettingsPage() {
       await supabase.auth.updateUser({ data: { avatar_url: data.publicUrl } })
       setSuccessMsg('Foto de perfil atualizada com sucesso!')
       setTimeout(() => setSuccessMsg(''), 3000)
-    } catch (err: any) {
-      alert('Erro ao fazer upload da imagem: ' + err.message)
+    } catch (err: unknown) {
+      alert('Erro ao fazer upload da imagem: ' + getErrorMessage(err))
     } finally {
       setUploading(false)
     }
@@ -97,8 +95,8 @@ export function SettingsPage() {
       setSuccessMsg('Senha alterada com sucesso!')
       setNewPassword('')
       setConfirmPassword('')
-    } catch (err: any) {
-      alert('Erro ao alterar senha: ' + err.message)
+    } catch (err: unknown) {
+      alert('Erro ao alterar senha: ' + getErrorMessage(err))
     } finally {
       setIsSaving(false)
       setTimeout(() => setSuccessMsg(''), 3000)
@@ -117,10 +115,11 @@ export function SettingsPage() {
         .eq('id', workspace.id)
       
       if (error) throw error
+      setWorkspaceNameDraft('')
       setSuccessMsg('Workspace atualizado com sucesso! (Recarregue para ver)')
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      alert(err.message || 'Erro ao atualizar workspace')
+      alert(err instanceof Error ? err.message : 'Erro ao atualizar workspace')
     } finally {
       setIsSaving(false)
       setTimeout(() => setSuccessMsg(''), 3000)
@@ -335,7 +334,7 @@ export function SettingsPage() {
                     <input
                       type="text"
                       value={wsName}
-                      onChange={(e) => setWsName(e.target.value)}
+                      onChange={(e) => setWorkspaceNameDraft(e.target.value)}
                       className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-4 py-2 text-dbe-text focus:outline-none focus:border-dbe-blue transition-colors"
                     />
                   </div>

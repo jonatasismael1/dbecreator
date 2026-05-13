@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useMaterials } from '../hooks/use-materials'
 import { MaterialCard } from '../components/material-card'
 import { MaterialModal } from '../components/material-modal'
-import type { Material, MaterialType } from '../types/material.types'
+import type { CreateMaterialDTO, Material, MaterialType } from '../types/material.types'
 
 export function MaterialsPage() {
   const { materials, isLoading, createMaterial, updateMaterial, deleteMaterial } = useMaterials()
@@ -25,7 +25,7 @@ export function MaterialsPage() {
     setIsModalOpen(false)
   }
 
-  const handleSaveMaterial = async (data: any) => {
+  const handleSaveMaterial = async (data: CreateMaterialDTO) => {
     if (editingMaterial) {
       await updateMaterial.mutateAsync({ id: editingMaterial.id, dto: data })
     } else {

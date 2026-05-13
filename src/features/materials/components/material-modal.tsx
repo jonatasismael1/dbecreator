@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { X, Plus, Trash2 } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Material, CreateMaterialDTO, MaterialType } from '../types/material.types'
 
@@ -39,7 +39,6 @@ export function MaterialModal({ isOpen, onClose, onSave, material, isLoading }: 
     handleSubmit,
     control,
     reset,
-    watch,
     setValue,
     formState: { errors },
   } = useForm<MaterialFormData>({
@@ -75,6 +74,8 @@ export function MaterialModal({ isOpen, onClose, onSave, material, isLoading }: 
     }
   }, [isOpen, material, reset])
 
+  const tags = useWatch({ control, name: 'tags' }) ?? []
+
   if (!isOpen) return null
 
   const onSubmit = (data: MaterialFormData) => {
@@ -84,8 +85,6 @@ export function MaterialModal({ isOpen, onClose, onSave, material, isLoading }: 
       content: data.content || null,
     })
   }
-
-  const tags = watch('tags')
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {

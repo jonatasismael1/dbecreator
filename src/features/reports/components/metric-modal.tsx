@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { useScripts } from '@/features/scripts/hooks/use-scripts'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
 import type { PerformanceMetric, CreateMetricDTO, Platform } from '../types/report.types'
+import type { Script } from '@/features/scripts/types/script.types'
 
 const metricSchema = z.object({
   script_id: z.string().min(1, 'Selecione um roteiro'),
@@ -132,7 +133,7 @@ export function MetricModal({ isOpen, onClose, onSave, metric, isLoading }: Metr
                   className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-4 py-2 text-dbe-text focus:outline-none focus:border-dbe-blue transition-colors appearance-none"
                 >
                   <option value="" disabled>Selecione o roteiro publicado...</option>
-                  {scripts.map((s: any) => (
+                  {(scripts as Script[]).map((s) => (
                     <option key={s.id} value={s.id}>{s.title}</option>
                   ))}
                 </select>

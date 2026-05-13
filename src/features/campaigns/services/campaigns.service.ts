@@ -3,6 +3,14 @@ import type { Campaign, CreateCampaignDTO, UpdateCampaignDTO } from '../types/ca
 
 const TABLE = 'campaigns'
 
+interface CampaignScriptRow {
+  script: Campaign['scripts'] extends Array<infer T> ? T : never
+}
+
+type CampaignRow = Omit<Campaign, 'scripts'> & {
+  scripts?: CampaignScriptRow[]
+}
+
 export const campaignsService = {
   async getByWorkspace(workspaceId: string): Promise<Campaign[]> {
     const { data, error } = await supabase
@@ -19,9 +27,9 @@ export const campaignsService = {
     if (error) throw error
 
     // Transform nested scripts
-    return data?.map(campaign => ({
+    return (data as CampaignRow[] | null)?.map(campaign => ({
       ...campaign,
-      scripts: campaign.scripts?.map((cs: any) => cs.script) || []
+      scripts: campaign.scripts?.map((campaignScript) => campaignScript.script) || []
     })) || []
   },
 

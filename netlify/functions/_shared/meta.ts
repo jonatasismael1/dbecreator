@@ -43,6 +43,8 @@ export function getMetaOAuthUrl(state: string): string {
     client_id: getEnv('META_APP_ID'),
     redirect_uri: getEnv('META_REDIRECT_URI'),
     response_type: 'code',
+    auth_type: 'rerequest',
+    return_scopes: 'true',
     state,
     scope: META_SCOPES.join(','),
   })
@@ -94,7 +96,17 @@ export async function getConnectableInstagramAccounts(
 
   const pages = accounts.data ?? []
   if (pages.length === 0) {
-    throw new ApiError(409, 'no_facebook_pages', 'Nenhuma Pagina do Facebook foi encontrada para este usuario.')
+    const permissions = await getGrantedPermissions(userAccessToken).catch(() => [])
+    console.warn('[meta] Nenhuma Pagina retornada em /me/accounts', {
+      meta_user_id: metaUserId,
+      granted_permissions: permissions,
+    })
+    throw new ApiError(
+      409,
+      'no_facebook_pages',
+      'Nenhuma Pagina do Facebook foi encontrada. Entre com o Facebook que administra a Pagina conectada ao Instagram e selecione essa Pagina nas permissoes da Meta.',
+      { granted_permissions: permissions },
+    )
   }
 
   const results = await Promise.all(
@@ -134,6 +146,17 @@ export async function getConnectableInstagramAccounts(
   }
 
   return connectable
+}
+
+async function getGrantedPermissions(userAccessToken: string): Promise<string[]> {
+  const permissions = await graphGet<{ data?: Array<{ permission: string; status: string }> }>(
+    'me/permissions',
+    userAccessToken,
+  )
+
+  return (permissions.data ?? [])
+    .filter((permission) => permission.status === 'granted')
+    .map((permission) => permission.permission)
 }
 
 export async function getInstagramInsights(igAccountId: string, pageAccessToken: string) {

@@ -1,4 +1,5 @@
 import { Link2, File, Music, Video, Image as ImageIcon, FileText, Trash2, Edit } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { Material, MaterialType } from '../types/material.types'
@@ -9,7 +10,7 @@ interface MaterialCardProps {
   onDelete: (id: string) => void
 }
 
-const TYPE_CONFIG: Record<MaterialType, { icon: any; color: string; label: string }> = {
+const TYPE_CONFIG: Record<MaterialType, { icon: LucideIcon; color: string; label: string }> = {
   link: { icon: Link2, color: 'text-blue-500 bg-blue-500/10', label: 'Link' },
   file: { icon: File, color: 'text-green-500 bg-green-500/10', label: 'Arquivo' },
   audio: { icon: Music, color: 'text-purple-500 bg-purple-500/10', label: 'Áudio' },

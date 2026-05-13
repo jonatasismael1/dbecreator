@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link2, Trash2, CheckCircle2, XCircle, Clock } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Button } from '@/components/ui/button'
@@ -9,10 +10,11 @@ import { useApprovals } from '../hooks/use-approvals'
 import { useScripts } from '@/features/scripts/hooks/use-scripts'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
 import type { ApprovalStatus } from '../types/approval.types'
+import type { Script } from '@/features/scripts/types/script.types'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-const STATUS_CONFIG: Record<ApprovalStatus, { label: string; color: string; icon: any }> = {
+const STATUS_CONFIG: Record<ApprovalStatus, { label: string; color: string; icon: LucideIcon }> = {
   pending: { label: 'Pendente', color: 'bg-amber-500/10 text-amber-500 border-amber-500/20', icon: Clock },
   approved: { label: 'Aprovado', color: 'bg-green-500/10 text-green-500 border-green-500/20', icon: CheckCircle2 },
   requested_changes: { label: 'Alterações', color: 'bg-red-500/10 text-red-500 border-red-500/20', icon: XCircle },
@@ -142,7 +144,7 @@ export function ApprovalsPage() {
                     className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-4 py-2 text-dbe-text focus:outline-none focus:border-dbe-blue transition-colors appearance-none"
                   >
                     <option value="" disabled>Selecione um roteiro...</option>
-                    {scripts.filter((s: any) => s.status === 'ready' || s.status === 'draft').map((script: any) => (
+                    {(scripts as Script[]).filter((script) => script.status === 'ready' || script.status === 'draft').map((script) => (
                       <option key={script.id} value={script.id}>{script.title}</option>
                     ))}
                   </select>
