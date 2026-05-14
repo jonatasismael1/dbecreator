@@ -69,6 +69,7 @@ export interface InstagramMedia {
     media_views: number | null
     media_viewers: number | null
     reach: number | null
+    impressions: number | null
     likes: number | null
     comments: number | null
     saved: number | null
@@ -77,6 +78,7 @@ export interface InstagramMedia {
     profile_activity: number | null
     profile_visits: number | null
     total_interactions: number | null
+    website_clicks: number | null
   }
   insight_errors: Record<string, string>
 }
@@ -192,8 +194,11 @@ export async function getInstagramInsights(igAccountId: string, instagramAccessT
     media_views: null as number | null,
     media_viewers: null as number | null,
     reach: null as number | null,
+    impressions: null as number | null,
     follower_count: null as number | null,
     profile_views: null as number | null,
+    website_clicks: null as number | null,
+    total_interactions: null as number | null,
   }
   const metricErrors: Record<string, string> = {}
   const audience = await getAudienceInsights(igAccountId, instagramAccessToken, metricErrors)
@@ -205,8 +210,11 @@ export async function getInstagramInsights(igAccountId: string, instagramAccessT
       { key: 'media_views', aliases: ['media_views', 'views'] },
       { key: 'media_viewers', aliases: ['media_viewers'] },
       { key: 'reach', aliases: ['reach'] },
+      { key: 'impressions', aliases: ['impressions'] },
       { key: 'follower_count', aliases: ['follower_count'] },
       { key: 'profile_views', aliases: ['profile_views'] },
+      { key: 'website_clicks', aliases: ['website_clicks'] },
+      { key: 'total_interactions', aliases: ['total_interactions'] },
     ],
     metrics,
     metricErrors,
@@ -450,6 +458,7 @@ async function getRecentInstagramMedia(igAccountId: string, instagramAccessToken
       media_views: null as number | null,
       media_viewers: null as number | null,
       reach: null as number | null,
+      impressions: null as number | null,
       likes: typeof item.like_count === 'number' ? item.like_count : null,
       comments: typeof item.comments_count === 'number' ? item.comments_count : null,
       saved: null as number | null,
@@ -458,6 +467,7 @@ async function getRecentInstagramMedia(igAccountId: string, instagramAccessToken
       profile_activity: null as number | null,
       profile_visits: null as number | null,
       total_interactions: null as number | null,
+      website_clicks: null as number | null,
     }
     const insightErrors: Record<string, string> = {}
 
@@ -468,6 +478,7 @@ async function getRecentInstagramMedia(igAccountId: string, instagramAccessToken
         { key: 'media_views', aliases: ['media_views', 'views', 'plays'] },
         { key: 'media_viewers', aliases: ['media_viewers'] },
         { key: 'reach', aliases: ['reach'] },
+        { key: 'impressions', aliases: ['impressions'] },
         { key: 'likes', aliases: ['likes'] },
         { key: 'comments', aliases: ['comments'] },
         { key: 'saved', aliases: ['saved', 'saves'] },
@@ -475,7 +486,8 @@ async function getRecentInstagramMedia(igAccountId: string, instagramAccessToken
         { key: 'follows', aliases: ['follows'] },
         { key: 'profile_activity', aliases: ['profile_activity'] },
         { key: 'profile_visits', aliases: ['profile_visits'] },
-        { key: 'total_interactions', aliases: ['total_interactions'] },
+        { key: 'website_clicks', aliases: ['website_clicks'] },
+        { key: 'total_interactions', aliases: ['total_interactions', 'engagement'] },
       ],
       insights,
       insightErrors,

@@ -17,6 +17,7 @@ const STATUS_CONFIG: Record<CampaignStatus, { label: string; color: string }> = 
   active: { label: 'Ativa', color: 'bg-green-500/10 text-green-500 border-green-500/20' },
   paused: { label: 'Pausada', color: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
   completed: { label: 'Concluída', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+  in_approval: { label: 'Em Aprovação', color: 'bg-blue-500/10 text-dbe-blue border-dbe-blue/20' },
 }
 
 export function CampaignCard({ campaign, onOpen, onEdit, onDelete }: CampaignCardProps) {

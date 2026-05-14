@@ -33,6 +33,9 @@ interface ScriptCardProps {
   onArchive?: (script: Script) => void
   onRestore?: (script: Script) => void
   onDragStart?: (script: Script) => void
+  selectable?: boolean
+  selected?: boolean
+  onToggleSelect?: (id: string, selected: boolean) => void
 }
 
 export function ScriptCard({
@@ -45,6 +48,9 @@ export function ScriptCard({
   onArchive,
   onRestore,
   onDragStart,
+  selectable,
+  selected,
+  onToggleSelect,
 }: ScriptCardProps) {
   const pillar = script.content_pillars
   const cfg = statusConfig[script.status]
@@ -66,10 +72,20 @@ export function ScriptCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
     >
-      <Card onClick={() => onView?.(script)} className={cn('group p-3 sm:p-4', onView && 'cursor-pointer')}>
+      <Card onClick={() => onView?.(script)} className={cn('group p-3 sm:p-4', onView && 'cursor-pointer', selected && 'ring-2 ring-dbe-blue')}>
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-dbe-text">{script.title}</h3>
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            {selectable && (
+              <input
+                type="checkbox"
+                className="mt-1 shrink-0 rounded border-dbe-border bg-black/20 text-dbe-blue outline-none"
+                checked={selected}
+                onChange={(e) => onToggleSelect?.(script.id, e.target.checked)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+            <div className="min-w-0">
+              <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-dbe-text">{script.title}</h3>
             {pillar && (
               <div className="mt-2 flex items-center gap-1.5 text-xs text-dbe-muted">
                 <Target className="h-3.5 w-3.5" style={{ color: pillar.color }} />

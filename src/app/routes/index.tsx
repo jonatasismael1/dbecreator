@@ -19,6 +19,7 @@ import { SettingsPage } from '@/features/settings/pages/settings-page'
 import { CampaignsPage } from '@/features/campaigns/pages/campaigns-page'
 import { ApprovalsPage } from '@/features/approvals/pages/approvals-page'
 import { PublicApprovalPage } from '@/features/approvals/pages/public-approval-page'
+import { PublicBatchApprovalPage } from '@/features/approvals/pages/public-batch-approval-page'
 import { ReportsPage } from '@/features/reports/pages/reports-page'
 
 export const router = createBrowserRouter([
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
   { path: '/confirmacao-email', element: <EmailConfirmationPage /> },
   { path: '/approval/:token', element: <PublicApprovalPage /> },
   { path: '/aprovacao/:token', element: <PublicApprovalPage /> },
+  { path: '/aprovacao/lote/:token', element: <PublicBatchApprovalPage /> },
   {
     element: <ProtectedRoute />,
     children: [

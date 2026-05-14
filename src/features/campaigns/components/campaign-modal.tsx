@@ -9,7 +9,7 @@ import type { Campaign, CreateCampaignDTO, CampaignStatus } from '../types/campa
 const campaignSchema = z.object({
   title: z.string().min(3, 'O título deve ter pelo menos 3 caracteres'),
   description: z.string().nullable(),
-  status: z.enum(['planning', 'active', 'completed', 'paused']),
+  status: z.enum(['planning', 'active', 'completed', 'paused', 'in_approval']),
   start_date: z.string().nullable(),
   end_date: z.string().nullable(),
   goal: z.string().nullable(),
@@ -35,6 +35,7 @@ const STATUS_OPTIONS: { value: CampaignStatus; label: string }[] = [
   { value: 'active', label: 'Ativa' },
   { value: 'paused', label: 'Pausada' },
   { value: 'completed', label: 'Concluída' },
+  { value: 'in_approval', label: 'Em Aprovação' },
 ]
 
 export function CampaignModal({ isOpen, onClose, onSave, campaign, isLoading }: CampaignModalProps) {

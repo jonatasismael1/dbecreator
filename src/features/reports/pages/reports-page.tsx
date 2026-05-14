@@ -117,11 +117,13 @@ export function ReportsPage() {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <SummaryCard icon={<Eye className="h-4 w-4" />} label="Views" value={latestInsights.metrics.media_views} />
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+            <SummaryCard icon={<Eye className="h-4 w-4" />} label="Impressões" value={latestInsights.metrics.impressions} />
+            <SummaryCard icon={<Eye className="h-4 w-4 text-purple-300" />} label="Views" value={latestInsights.metrics.media_views} />
             <SummaryCard icon={<Users className="h-4 w-4 text-blue-300" />} label="Alcance" value={latestInsights.metrics.media_viewers ?? latestInsights.metrics.reach ?? null} />
             <SummaryCard icon={<UserRound className="h-4 w-4 text-green-300" />} label="Seguidores" value={latestInsights.metrics.follower_count ?? latestInsights.account.followers_count ?? null} />
             <SummaryCard icon={<Instagram className="h-4 w-4 text-pink-400" />} label="Visitas" value={latestInsights.metrics.profile_views} />
+            <SummaryCard icon={<Plus className="h-4 w-4 text-blue-400" />} label="Cliques Site" value={latestInsights.metrics.website_clicks} />
           </div>
           {Object.keys(latestInsights.metric_errors).length > 0 && (
             <p className="mt-3 text-xs text-amber-300">
@@ -356,6 +358,7 @@ function InsightDetailContent({ insights, post, onClose }: { insights: Instagram
       <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="grid gap-3 md:grid-cols-2">
           <DetailGroup title="Performance" icon={<BarChart3 className="h-4 w-4 text-dbe-blue" />}>
+            <DetailMetric label="Impressões" value={post.insights.impressions} />
             <DetailMetric label="Views" value={post.insights.media_views ?? insights.metrics.media_views} />
             <DetailMetric label="Alcance" value={post.insights.media_viewers ?? post.insights.reach ?? insights.metrics.media_viewers ?? insights.metrics.reach ?? null} />
             <DetailMetric label="Interações" value={post.insights.total_interactions ?? null} />

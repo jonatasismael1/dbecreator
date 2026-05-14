@@ -62,12 +62,17 @@ export function DashboardPage() {
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Ideias" value={ideas.length} icon={Lightbulb} accent="amber" />
         <StatCard title="Roteiros" value={scripts.length} icon={FileText} accent="blue" />
-        <StatCard title="Em aprovação" value={scripts.filter((script) => script.status === 'in_approval').length} icon={CalendarDays} accent="green" />
+        <StatCard 
+          title="Campanhas" 
+          value={campaigns.length} 
+          icon={Zap} 
+          accent="purple" 
+        />
         <StatCard
-          title="Aprovados"
-          value={scripts.filter((script) => script.status === 'approved').length}
-          icon={TrendingUp}
-          accent="purple"
+          title="Em Aprovação"
+          value={campaigns.filter(c => c.status === 'in_approval' || scripts.some(s => s.campaign_id === c.id && s.status === 'in_approval')).length}
+          icon={CalendarDays}
+          accent="green"
         />
       </div>
 

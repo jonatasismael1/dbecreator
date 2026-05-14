@@ -12,6 +12,7 @@ import { useCreateScript } from '@/features/scripts/hooks/use-scripts'
 import { useCampaigns } from '../hooks/use-campaigns'
 import { CampaignCard } from '../components/campaign-card'
 import { CampaignModal } from '../components/campaign-modal'
+import { useBatchApprovals } from '@/features/approvals/hooks/use-batch-approvals'
 import type { Campaign, CreateCampaignDTO } from '../types/campaign.types'
 import type { CreateScriptDTO } from '@/features/scripts/types/script.types'
 
@@ -142,6 +143,16 @@ function CampaignDetails({
   onCreateScript: () => void
 }) {
   const scripts = campaign.scripts ?? []
+  const { createBatch } = useBatchApprovals()
+  const [approvalLink, setApprovalLink] = useState<string | null>(null)
+
+  const handleSendToApproval = async () => {
+    if (scripts.length === 0) return
+    const scriptIds = scripts.map((s) => s.id)
+    const batch = await createBatch.mutateAsync({ campaignId: campaign.id, scriptIds })
+    const link = `${window.location.origin}/aprovacao/lote/${batch.token}`
+    setApprovalLink(link)
+  }
 
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
@@ -162,11 +173,28 @@ function CampaignDetails({
             <p className="text-xs uppercase text-dbe-muted">Objetivo</p>
             <p className="text-sm text-dbe-text">{campaign.goal || 'Sem objetivo definido'}</p>
           </div>
-          <Button size="sm" onClick={onCreateScript}>
-            <Plus className="h-4 w-4" />
-            Criar roteiro nesta campanha
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" size="sm" onClick={handleSendToApproval} loading={createBatch.isPending} disabled={scripts.length === 0}>
+              Enviar campanha para aprovação
+            </Button>
+            <Button size="sm" onClick={onCreateScript}>
+              <Plus className="h-4 w-4" />
+              Criar roteiro nesta campanha
+            </Button>
+          </div>
         </div>
+
+        {approvalLink && (
+          <div className="mb-5 rounded-lg border border-dbe-green/30 bg-dbe-green/10 p-4">
+            <h4 className="mb-2 text-sm font-semibold text-dbe-green">Link de aprovação gerado!</h4>
+            <div className="flex gap-2">
+              <input type="text" readOnly value={approvalLink} className="flex-1 rounded border border-dbe-green/20 bg-black/20 px-3 py-1.5 text-xs text-dbe-green outline-none" />
+              <Button size="sm" variant="secondary" onClick={() => { navigator.clipboard.writeText(approvalLink); alert('Copiado!') }}>
+                Copiar
+              </Button>
+            </div>
+          </div>
+        )}
 
         {scripts.length === 0 ? (
           <EmptyState

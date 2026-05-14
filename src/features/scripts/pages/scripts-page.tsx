@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { usePillars } from '@/features/pillars/hooks/use-pillars'
 import { useCampaigns } from '@/features/campaigns/hooks/use-campaigns'
+import { useBatchApprovals } from '@/features/approvals/hooks/use-batch-approvals'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
 import { ScriptCard } from '../components/script-card'
 import { ScriptModal } from '../components/script-modal'
@@ -44,12 +45,16 @@ export function ScriptsPage() {
   const deleteScript = useDeleteScript(workspaceId)
   const archiveScript = useArchiveScript(workspaceId)
   const restoreScript = useRestoreScript(workspaceId)
+  const { createBatch } = useBatchApprovals()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingScript, setEditingScript] = useState<Script | null>(null)
   const [draggingScript, setDraggingScript] = useState<Script | null>(null)
   const [dragOverStatus, setDragOverStatus] = useState<ScriptStatus | null>(null)
   const [tab, setTab] = useState<'active' | 'archived'>('active')
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedScriptIds, setSelectedScriptIds] = useState<Set<string>>(new Set())
+  const [approvalLink, setApprovalLink] = useState<string | null>(null)
   const { data: versions = [], isLoading: versionsLoading } = useScriptVersions(workspaceId, editingScript?.id)
 
   const activeScripts = useMemo(() => scripts.filter((script) => !script.archived_at), [scripts])
@@ -120,6 +125,22 @@ export function ScriptsPage() {
     setDraggingScript(null)
   }
 
+  const toggleSelect = (id: string, selected: boolean) => {
+    const next = new Set(selectedScriptIds)
+    if (selected) next.add(id)
+    else next.delete(id)
+    setSelectedScriptIds(next)
+  }
+
+  const handleSendBatch = async () => {
+    if (selectedScriptIds.size === 0) return
+    const batch = await createBatch.mutateAsync({ scriptIds: Array.from(selectedScriptIds) })
+    const link = `${window.location.origin}/aprovacao/lote/${batch.token}`
+    setApprovalLink(link)
+    setSelectionMode(false)
+    setSelectedScriptIds(new Set())
+  }
+
   if (scriptsLoading || pillarsLoading || campaignsLoading) return <LoadingState />
 
   if (isError) {
@@ -145,16 +166,49 @@ export function ScriptsPage() {
         <MetricCard label="Em aprovação" value={grouped.in_approval.length} />
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-        <Button variant={tab === 'active' ? 'primary' : 'secondary'} size="sm" onClick={() => setTab('active')} className="w-full sm:w-auto">
-          <FileText className="h-4 w-4" />
-          Ativos ({activeScripts.length})
-        </Button>
-        <Button variant={tab === 'archived' ? 'primary' : 'secondary'} size="sm" onClick={() => setTab('archived')} className="w-full sm:w-auto">
-          <Archive className="h-4 w-4" />
-          Arquivados ({archivedScripts.length})
-        </Button>
+      <div className="mb-6 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex gap-2">
+          <Button variant={tab === 'active' ? 'primary' : 'secondary'} size="sm" onClick={() => setTab('active')} className="w-full sm:w-auto">
+            <FileText className="h-4 w-4" />
+            Ativos ({activeScripts.length})
+          </Button>
+          <Button variant={tab === 'archived' ? 'primary' : 'secondary'} size="sm" onClick={() => setTab('archived')} className="w-full sm:w-auto">
+            <Archive className="h-4 w-4" />
+            Arquivados ({archivedScripts.length})
+          </Button>
+        </div>
+        {tab === 'active' && activeScripts.length > 0 && (
+          <div className="col-span-2 flex items-center justify-end gap-2 sm:col-span-1">
+            {selectionMode ? (
+              <>
+                <span className="text-xs text-dbe-muted">{selectedScriptIds.size} selecionados</span>
+                <Button size="sm" variant="secondary" onClick={() => { setSelectionMode(false); setSelectedScriptIds(new Set()) }}>
+                  Cancelar
+                </Button>
+                <Button size="sm" onClick={handleSendBatch} loading={createBatch.isPending} disabled={selectedScriptIds.size === 0}>
+                  Enviar aprovação
+                </Button>
+              </>
+            ) : (
+              <Button size="sm" variant="secondary" onClick={() => setSelectionMode(true)}>
+                Selecionar para aprovação
+              </Button>
+            )}
+          </div>
+        )}
       </div>
+
+      {approvalLink && (
+        <div className="mb-6 rounded-lg border border-dbe-green/30 bg-dbe-green/10 p-4">
+          <h4 className="mb-2 text-sm font-semibold text-dbe-green">Link de aprovação gerado!</h4>
+          <div className="flex gap-2">
+            <input type="text" readOnly value={approvalLink} className="flex-1 rounded border border-dbe-green/20 bg-black/20 px-3 py-1.5 text-xs text-dbe-green outline-none" />
+            <Button size="sm" variant="secondary" onClick={() => { navigator.clipboard.writeText(approvalLink); alert('Copiado!') }}>
+              Copiar
+            </Button>
+          </div>
+        </div>
+      )}
 
       {visibleScripts.length === 0 ? (
         <EmptyState
@@ -203,6 +257,9 @@ export function ScriptsPage() {
                       onArchive={handleArchive}
                       onRestore={handleRestore}
                       onDragStart={setDraggingScript}
+                      selectable={selectionMode && tab === 'active'}
+                      selected={selectedScriptIds.has(script.id)}
+                      onToggleSelect={toggleSelect}
                     />
                   ))}
                 </AnimatePresence>

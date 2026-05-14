@@ -1,6 +1,6 @@
 import type { Script } from '@/features/scripts/types/script.types'
 
-export type CampaignStatus = 'planning' | 'active' | 'completed' | 'paused'
+export type CampaignStatus = 'planning' | 'active' | 'completed' | 'paused' | 'in_approval'
 
 export interface ChecklistItem {
   id: string
