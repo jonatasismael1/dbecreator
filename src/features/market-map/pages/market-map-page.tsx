@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card'
 import { LoadingState } from '@/components/shared/loading-state'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
 import { MarketInsightsCard } from '../components/market-insights-card'
-import { useAnalyzeMarketMap, useMarketMap, useUpsertMarketMap } from '../hooks/use-market-map'
+import { useAnalyzeMarketMap, useMarketMap, useMarketMapWizard, useUpsertMarketMap } from '../hooks/use-market-map'
 import type { Competitor, MarketMapInsights } from '../types/market-map.types'
 import { cn } from '@/lib/utils/cn'
 
@@ -45,12 +45,14 @@ export function MarketMapPage() {
   const { data: existing, isLoading } = useMarketMap(workspaceId)
   const upsert = useUpsertMarketMap(workspaceId)
   const analyzeMarketMap = useAnalyzeMarketMap(workspaceId)
+  const wizard = useMarketMapWizard(workspaceId)
 
   const [step, setStep] = useState(0)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [generatedInsights, setGeneratedInsights] = useState<MarketMapInsights | null>(null)
   const [generatedInsightsAt, setGeneratedInsightsAt] = useState<string | null>(null)
+  const [wizardError, setWizardError] = useState('')
 
   // Accumulated form state
   const [formData, setFormData] = useState({
@@ -144,6 +146,32 @@ export function MarketMapPage() {
   }
 
   const handleBack = () => setStep(s => Math.max(s - 1, 0))
+
+  const handleFillWithDeby = async () => {
+    if (!(await form1.trigger())) return
+    setWizardError('')
+    try {
+      const nicheValue = form1.getValues().niche
+      const suggestions = await wizard.mutateAsync(nicheValue)
+      const nextData = {
+        ...formData,
+        niche: nicheValue,
+        target_audience: suggestions.target_audience ?? '',
+        main_pain: suggestions.main_pain ?? '',
+        competitors: suggestions.competitors ?? [],
+        differentiators: suggestions.differentiators ?? '',
+        tone_of_voice: suggestions.tone_of_voice ?? '',
+      }
+      setFormData(nextData)
+      form2.reset({ target_audience: nextData.target_audience ?? '' })
+      form3.reset({ main_pain: nextData.main_pain ?? '' })
+      form4.reset({ differentiators: nextData.differentiators ?? '' })
+      form5.reset({ tone_of_voice: nextData.tone_of_voice ?? '' })
+      setStep(1)
+    } catch (error) {
+      setWizardError(error instanceof Error ? error.message : 'Nao foi possivel preencher com a Deby.')
+    }
+  }
 
   const handleSave = async (complete = false) => {
     const latestData = await collectStepData()
@@ -255,6 +283,10 @@ export function MarketMapPage() {
                   <p className="text-xs text-dbe-red">{form1.formState.errors.niche.message}</p>
                 )}
                 <p className="text-xs text-dbe-muted">Seja específico. Nichos bem definidos convertem mais.</p>
+                <Button type="button" variant="deby" onClick={handleFillWithDeby} loading={wizard.isPending}>
+                  Preencher com Deby
+                </Button>
+                {wizardError && <p className="text-xs text-dbe-red">{wizardError}</p>}
               </div>
             )}
 

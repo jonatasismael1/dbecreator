@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { usePublicApproval } from '../hooks/use-approvals'
 import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ScriptContentBlock } from '@/features/scripts/components/script-content-block'
 
 export function PublicApprovalPage() {
   const { token } = useParams<{ token: string }>()
@@ -59,6 +60,14 @@ export function PublicApprovalPage() {
         
         {/* Left Column: Script Viewer */}
         <div className="flex-1 space-y-6">
+          <div className="flex items-center gap-3">
+            {approval.workspace?.logo_url ? (
+              <img src={approval.workspace.logo_url} alt={approval.workspace.name} className="h-10 max-w-40 object-contain" />
+            ) : (
+              <p className="text-sm font-semibold text-dbe-muted">{approval.workspace?.name || 'DBE Creator'}</p>
+            )}
+          </div>
+
           <div className="flex items-center justify-between border-b border-dbe-border pb-4">
             <div>
               <h1 className="text-2xl font-bold mb-1">{approval.script?.title || 'Sem título'}</h1>
@@ -89,21 +98,21 @@ export function PublicApprovalPage() {
           <div className="space-y-6 bg-dbe-navy p-6 rounded-xl border border-dbe-border">
             <div>
               <h3 className="text-xs uppercase tracking-wider text-amber-500 font-bold mb-2">Gancho (3s)</h3>
-              <p className="whitespace-pre-wrap">{approval.script?.hook}</p>
+              <ScriptContentBlock value={approval.script?.hook} />
             </div>
             
             <div className="h-px bg-dbe-border/50" />
             
             <div>
               <h3 className="text-xs uppercase tracking-wider text-dbe-blue font-bold mb-2">Desenvolvimento</h3>
-              <p className="whitespace-pre-wrap">{approval.script?.body}</p>
+              <ScriptContentBlock value={approval.script?.body} />
             </div>
             
             <div className="h-px bg-dbe-border/50" />
             
             <div>
               <h3 className="text-xs uppercase tracking-wider text-green-500 font-bold mb-2">CTA</h3>
-              <p className="whitespace-pre-wrap">{approval.script?.cta}</p>
+              <ScriptContentBlock value={approval.script?.cta} />
             </div>
           </div>
           

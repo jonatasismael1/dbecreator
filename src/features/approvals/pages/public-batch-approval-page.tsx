@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, XCircle, AlertTriangle, ListChecks } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ScriptContentBlock } from '@/features/scripts/components/script-content-block'
 
 interface PublicBatchScript {
   id: string
@@ -22,6 +23,10 @@ interface PublicBatchItem {
 
 interface PublicBatch {
   client_name: string | null
+  workspace?: {
+    name: string
+    logo_url: string | null
+  } | null
   campaign?: {
     title?: string | null
   } | null
@@ -122,6 +127,11 @@ export function PublicBatchApprovalPage() {
       <div className="mx-auto max-w-4xl space-y-6">
         <div className="flex flex-col items-start justify-between gap-4 border-b border-dbe-border pb-4 md:flex-row md:items-center">
           <div>
+            {batch.workspace?.logo_url ? (
+              <img src={batch.workspace.logo_url} alt={batch.workspace.name} className="mb-4 h-10 max-w-40 object-contain" />
+            ) : (
+              <p className="mb-2 text-sm font-semibold text-dbe-muted">{batch.workspace?.name || 'DBE Creator'}</p>
+            )}
             <h1 className="mb-1 text-2xl font-bold">
               {batch.campaign?.title ? `Campanha: ${batch.campaign.title}` : 'Lote de Roteiros'}
             </h1>
@@ -176,15 +186,15 @@ export function PublicBatchApprovalPage() {
               <div className="space-y-4">
                 <div>
                   <h3 className="mb-1 text-xs font-bold uppercase tracking-wider text-amber-500">Gancho</h3>
-                  <p className="whitespace-pre-wrap text-sm text-dbe-muted">{item.script.hook}</p>
+                  <ScriptContentBlock value={item.script.hook} className="text-sm text-dbe-muted" />
                 </div>
                 <div>
                   <h3 className="mb-1 text-xs font-bold uppercase tracking-wider text-dbe-blue">Desenvolvimento</h3>
-                  <p className="whitespace-pre-wrap text-sm text-dbe-muted">{item.script.body}</p>
+                  <ScriptContentBlock value={item.script.body} className="text-sm text-dbe-muted" />
                 </div>
                 <div>
                   <h3 className="mb-1 text-xs font-bold uppercase tracking-wider text-green-500">CTA</h3>
-                  <p className="whitespace-pre-wrap text-sm text-dbe-muted">{item.script.cta}</p>
+                  <ScriptContentBlock value={item.script.cta} className="text-sm text-dbe-muted" />
                 </div>
               </div>
 

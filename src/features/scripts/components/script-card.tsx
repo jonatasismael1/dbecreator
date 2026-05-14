@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils/cn'
 import type { Script, ScriptStatus } from '../types/script.types'
+import { stripHtml } from '../utils/script-content'
 
 const statusConfig: Record<ScriptStatus, { label: string; variant: 'default' | 'blue' | 'success' }> = {
   draft: { label: 'Rascunho', variant: 'default' },
@@ -127,7 +128,7 @@ export function ScriptCard({
 
         <div className="mt-3 sm:mt-4">
           <div className="sm:hidden">
-            <p className="line-clamp-2 text-xs leading-relaxed text-dbe-muted">{script.hook}</p>
+            <p className="line-clamp-2 text-xs leading-relaxed text-dbe-muted">{stripHtml(script.hook)}</p>
           </div>
           <div className="hidden space-y-3 sm:block">
             <ScriptExcerpt label="Gancho" value={script.hook} />
@@ -163,7 +164,7 @@ function ScriptExcerpt({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-[10px] font-semibold uppercase tracking-wide text-dbe-muted/70">{label}</p>
-      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-dbe-muted">{value}</p>
+      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-dbe-muted">{stripHtml(value)}</p>
     </div>
   )
 }

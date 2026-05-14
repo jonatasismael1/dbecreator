@@ -28,6 +28,10 @@ export interface Approval {
       title: string
     } | null
   }) | null
+  workspace?: {
+    name: string
+    logo_url: string | null
+  } | null
   comments?: ApprovalComment[]
 }
 

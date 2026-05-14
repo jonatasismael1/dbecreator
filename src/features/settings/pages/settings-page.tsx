@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { useWorkspace } from '@/features/workspaces/hooks/use-workspace'
 import { PageHeader } from '@/components/shared/page-header'
@@ -14,11 +15,13 @@ function getErrorMessage(error: unknown): string {
 
 export function SettingsPage() {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const { data: workspace, isLoading: wsLoading } = useWorkspace()
   const [activeTab, setActiveTab] = useState<'profile' | 'workspace' | 'integrations'>('profile')
   const [isSaving, setIsSaving] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [workspaceNameDraft, setWorkspaceNameDraft] = useState('')
+  const [workspaceLogoDraft, setWorkspaceLogoDraft] = useState('')
 
   // Profile Form State
   const [fullName, setFullName] = useState(user?.user_metadata?.full_name || '')
@@ -30,6 +33,7 @@ export function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const wsName = workspaceNameDraft || workspace?.name || ''
+  const workspaceLogoUrl = workspaceLogoDraft || workspace?.logo_url || ''
   
   // Note: To be fully functional this requires updating the user metadata in Supabase
   // and the workspace table. Since Supabase auth allows updating user metadata easily:
@@ -122,6 +126,47 @@ export function SettingsPage() {
       alert(err instanceof Error ? err.message : 'Erro ao atualizar workspace')
     } finally {
       setIsSaving(false)
+      setTimeout(() => setSuccessMsg(''), 3000)
+    }
+  }
+
+  const handleUploadWorkspaceLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!workspace || !e.target.files?.[0]) return
+
+    const file = e.target.files[0]
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      alert('Use uma imagem PNG, JPG ou WebP.')
+      return
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert('A logo deve ter no maximo 2 MB.')
+      return
+    }
+
+    setUploading(true)
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+      const filePath = `${workspace.id}/logo-${Date.now()}.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('workspace-logos')
+        .upload(filePath, file, { contentType: file.type })
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('workspace-logos').getPublicUrl(filePath)
+      const { error: updateError } = await supabase
+        .from('workspaces')
+        .update({ logo_url: data.publicUrl })
+        .eq('id', workspace.id)
+      if (updateError) throw updateError
+
+      setWorkspaceLogoDraft(data.publicUrl)
+      queryClient.invalidateQueries({ queryKey: ['workspace', user?.id] })
+      setSuccessMsg('Logo do workspace atualizada com sucesso.')
+    } catch (err: unknown) {
+      alert('Erro ao enviar logo: ' + getErrorMessage(err))
+    } finally {
+      setUploading(false)
       setTimeout(() => setSuccessMsg(''), 3000)
     }
   }
@@ -315,6 +360,35 @@ export function SettingsPage() {
                 <div className="text-sm text-dbe-muted">Nenhum workspace encontrado.</div>
               ) : (
                 <form onSubmit={handleSaveWorkspace} className="space-y-4 max-w-md">
+                  <div>
+                    <label className="block text-sm font-medium text-dbe-text mb-2">
+                      Logo do workspace
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border border-dbe-border bg-dbe-dark">
+                        {workspaceLogoUrl ? (
+                          <img src={workspaceLogoUrl} alt="Logo do workspace" className="h-full w-full object-contain" />
+                        ) : (
+                          <Building className="h-7 w-7 text-dbe-muted" />
+                        )}
+                      </div>
+                      <div>
+                        <label className="inline-flex cursor-pointer items-center rounded-lg border border-dbe-border px-3 py-2 text-sm text-dbe-text transition-colors hover:bg-white/5">
+                          Alterar logo
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            className="hidden"
+                            onChange={handleUploadWorkspaceLogo}
+                            disabled={uploading}
+                          />
+                        </label>
+                        <p className="mt-1 text-xs text-dbe-muted">PNG, JPG ou WebP ate 2 MB.</p>
+                        {uploading && <p className="mt-1 text-xs text-dbe-blue">Enviando...</p>}
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-dbe-text mb-1">
                       ID do workspace

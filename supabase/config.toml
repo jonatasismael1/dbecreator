@@ -21,6 +21,12 @@ entrypoint = "./functions/analyze-market-map/index.ts"
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/analyze-market-map/*.html" ]
 
+[functions.market-map-wizard]
+enabled = true
+verify_jwt = true
+import_map = "./functions/market-map-wizard/deno.json"
+entrypoint = "./functions/market-map-wizard/index.ts"
+
 [functions.sync-instagram-metrics]
 enabled = true
 verify_jwt = true

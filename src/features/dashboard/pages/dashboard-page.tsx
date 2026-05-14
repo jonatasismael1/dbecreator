@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowRight,
   CalendarDays,
@@ -15,6 +17,8 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { LoadingState } from '@/components/shared/loading-state'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { supabase } from '@/lib/supabase/client'
+import { useAuth } from '@/features/auth/context/auth-context'
 import { useDebyHistory } from '@/features/deby/hooks/use-deby'
 import { useIdeas } from '@/features/ideas/hooks/use-ideas'
 import { useMarketMap } from '@/features/market-map/hooks/use-market-map'
@@ -23,20 +27,44 @@ import { useScripts } from '@/features/scripts/hooks/use-scripts'
 import { useCampaigns } from '@/features/campaigns/hooks/use-campaigns'
 import { useApprovals } from '@/features/approvals/hooks/use-approvals'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
+import { OnboardingWizard } from '@/features/onboarding/components/onboarding-wizard'
 import type { ScriptStatus } from '@/features/scripts/types/script.types'
 
 export function DashboardPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const [mountedAt] = useState(() => Date.now())
+  const { user } = useAuth()
   const { workspaceId } = useWorkspaceContext()
   const { data: ideas = [], isLoading: ideasLoading } = useIdeas(workspaceId)
   const { data: scripts = [], isLoading: scriptsLoading } = useScripts(workspaceId)
   const { campaigns, isLoading: campaignsLoading } = useCampaigns()
   const { approvals, isLoading: approvalsLoading } = useApprovals()
+  const profileQuery = useQuery({
+    queryKey: ['profile-onboarding', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', user!.id)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+    enabled: !!user?.id,
+  })
   const { data: analyses = [], isLoading: analysesLoading } = useDebyHistory(workspaceId)
   const { data: marketMap, isLoading: marketMapLoading } = useMarketMap(workspaceId)
   const { data: pillars = [], isLoading: pillarsLoading } = usePillars(workspaceId)
 
   const isLoading = ideasLoading || scriptsLoading || campaignsLoading || approvalsLoading || analysesLoading || marketMapLoading || pillarsLoading
+  const dismissedUntil = Number(localStorage.getItem('dbe_onboarding_dismissed_until') || 0)
+  const showOnboarding = Boolean(
+    user?.id &&
+    profileQuery.data &&
+    profileQuery.data.onboarding_completed === false &&
+    mountedAt > dismissedUntil,
+  )
   const recentScripts = scripts.slice(0, 4)
   const setupSteps = [
     { label: 'Mapa de Mercado', done: !!marketMap?.is_complete },
@@ -51,6 +79,18 @@ export function DashboardPage() {
 
   return (
     <div>
+      {showOnboarding && (
+        <OnboardingWizard
+          workspaceId={workspaceId}
+          userId={user!.id}
+          onClose={() => queryClient.invalidateQueries({ queryKey: ['profile-onboarding', user!.id] })}
+          onComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ['profile-onboarding', user!.id] })
+            queryClient.invalidateQueries({ queryKey: ['market-map', workspaceId] })
+          }}
+        />
+      )}
+
       <PageHeader title="Dashboard" description="Visão geral do seu workspace de conteúdo.">
         <Button variant="deby" size="sm" onClick={() => navigate('/deby')}>
           <Sparkles className="h-4 w-4" />

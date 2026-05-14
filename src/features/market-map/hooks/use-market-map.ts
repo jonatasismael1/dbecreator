@@ -27,3 +27,9 @@ export function useAnalyzeMarketMap(workspaceId: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY(workspaceId) }),
   })
 }
+
+export function useMarketMapWizard(workspaceId: string) {
+  return useMutation({
+    mutationFn: (niche: string) => marketMapService.generateWizardSuggestions(workspaceId, niche),
+  })
+}

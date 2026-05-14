@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
-import type { MarketMap, MarketMapInsights, UpsertMarketMapDTO } from '../types/market-map.types'
+import type { MarketMap, MarketMapInsights, MarketMapWizardSuggestion, UpsertMarketMapDTO } from '../types/market-map.types'
 
 const TABLE = 'market_maps'
 
@@ -37,5 +37,15 @@ export const marketMapService = {
     if (error) throw error
     if (!data?.insights) throw new Error('Resposta da Deby sem insights.')
     return data.insights as MarketMapInsights
+  },
+
+  async generateWizardSuggestions(workspaceId: string, niche: string): Promise<MarketMapWizardSuggestion> {
+    const { data, error } = await supabase.functions.invoke('market-map-wizard', {
+      body: { workspace_id: workspaceId, niche },
+    })
+
+    if (error) throw error
+    if (!data?.suggestions) throw new Error('Resposta da Deby sem sugestoes.')
+    return data.suggestions as MarketMapWizardSuggestion
   },
 }

@@ -90,6 +90,7 @@ async function getPublicApproval(admin: ReturnType<typeof getAdminClient>, token
       client_name,
       expires_at,
       created_at,
+      workspace:workspaces(name,logo_url),
       script:scripts(
         id,
         title,

@@ -143,6 +143,7 @@ async function getPublicBatchApproval(admin: ReturnType<typeof getAdminClient>, 
       client_name,
       expires_at,
       created_at,
+      workspace:workspaces(name,logo_url),
       campaign:campaigns(id,title,description,goal),
       items:approval_batch_items(
         id,

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { FileText, Plus, Target, X } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header'
 import { EmptyState } from '@/components/shared/empty-state'
@@ -8,24 +9,29 @@ import { Card } from '@/components/ui/card'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
 import { usePillars } from '@/features/pillars/hooks/use-pillars'
 import { ScriptModal } from '@/features/scripts/components/script-modal'
-import { useCreateScript } from '@/features/scripts/hooks/use-scripts'
+import { useCreateScript, useScriptVersions, useUpdateScript } from '@/features/scripts/hooks/use-scripts'
+import { stripHtml } from '@/features/scripts/utils/script-content'
 import { useCampaigns } from '../hooks/use-campaigns'
 import { CampaignCard } from '../components/campaign-card'
 import { CampaignModal } from '../components/campaign-modal'
 import { useBatchApprovals } from '@/features/approvals/hooks/use-batch-approvals'
 import type { Campaign, CreateCampaignDTO } from '../types/campaign.types'
-import type { CreateScriptDTO } from '@/features/scripts/types/script.types'
+import type { CreateScriptDTO, Script } from '@/features/scripts/types/script.types'
 
 export function CampaignsPage() {
+  const navigate = useNavigate()
   const { workspaceId } = useWorkspaceContext()
   const { campaigns, isLoading, createCampaign, updateCampaign, deleteCampaign } = useCampaigns()
   const { data: pillars = [] } = usePillars(workspaceId)
   const createScript = useCreateScript(workspaceId)
+  const updateScript = useUpdateScript(workspaceId)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [scriptModalOpen, setScriptModalOpen] = useState(false)
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null)
+  const [editingScript, setEditingScript] = useState<Script | null>(null)
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null)
   const selectedCampaign = campaigns.find((campaign) => campaign.id === selectedCampaignId) ?? null
+  const { data: versions = [], isLoading: versionsLoading } = useScriptVersions(workspaceId, editingScript?.id)
 
   const handleOpenModal = (campaign?: Campaign) => {
     setEditingCampaign(campaign || null)
@@ -54,10 +60,15 @@ export function CampaignsPage() {
   }
 
   const handleCreateScript = async (data: CreateScriptDTO) => {
-    await createScript.mutateAsync({
-      ...data,
-      campaign_id: selectedCampaignId,
-    })
+    if (editingScript) {
+      await updateScript.mutateAsync({ id: editingScript.id, dto: data })
+      setEditingScript(null)
+    } else {
+      await createScript.mutateAsync({
+        ...data,
+        campaign_id: selectedCampaignId,
+      })
+    }
     setScriptModalOpen(false)
   }
 
@@ -117,16 +128,27 @@ export function CampaignsPage() {
           campaign={selectedCampaign}
           onClose={() => setSelectedCampaignId(null)}
           onCreateScript={() => setScriptModalOpen(true)}
+          onViewScript={(script) => navigate(`/scripts/${script.id}`)}
+          onEditScript={(script) => {
+            setEditingScript(script)
+            setScriptModalOpen(true)
+          }}
         />
       )}
 
       <ScriptModal
+        key={editingScript?.id ?? selectedCampaignId ?? 'campaign-script'}
         open={scriptModalOpen}
-        script={null}
+        script={editingScript}
         pillars={pillars.filter((pillar) => pillar.is_active)}
         campaigns={campaigns}
         initialCampaignId={selectedCampaignId}
-        onClose={() => setScriptModalOpen(false)}
+        versions={versions}
+        versionsLoading={versionsLoading}
+        onClose={() => {
+          setScriptModalOpen(false)
+          setEditingScript(null)
+        }}
         onSave={handleCreateScript}
       />
     </div>
@@ -137,14 +159,28 @@ function CampaignDetails({
   campaign,
   onClose,
   onCreateScript,
+  onViewScript,
+  onEditScript,
 }: {
   campaign: Campaign
   onClose: () => void
   onCreateScript: () => void
+  onViewScript: (script: Script) => void
+  onEditScript: (script: Script) => void
 }) {
   const scripts = campaign.scripts ?? []
   const { createBatch } = useBatchApprovals()
   const [approvalLink, setApprovalLink] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [pillarFilter, setPillarFilter] = useState('all')
+  const [sortBy, setSortBy] = useState<'created_at' | 'title'>('created_at')
+  const visibleScripts = scripts
+    .filter((script) => statusFilter === 'all' || script.status === statusFilter)
+    .filter((script) => pillarFilter === 'all' || script.content_pillar_id === pillarFilter)
+    .sort((a, b) => sortBy === 'title' ? a.title.localeCompare(b.title) : new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  const pillars = Array.from(
+    new Map(scripts.map((script) => script.content_pillars).filter(Boolean).map((pillar) => [pillar!.id, pillar!])).values(),
+  )
 
   const handleSendToApproval = async () => {
     if (scripts.length === 0) return
@@ -205,7 +241,29 @@ function CampaignDetails({
           />
         ) : (
           <div className="space-y-3">
-            {scripts.map((script) => (
+            <div className="grid gap-2 rounded-lg border border-dbe-border bg-dbe-dark/40 p-3 sm:grid-cols-3">
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="rounded-lg border border-dbe-border bg-dbe-dark px-3 py-2 text-sm text-dbe-text outline-none">
+                <option value="all">Todos os status</option>
+                <option value="draft">Rascunho</option>
+                <option value="ready">Pronto</option>
+                <option value="in_approval">Em aprovacao</option>
+                <option value="approved">Aprovado</option>
+                <option value="changes_requested">Ajuste solicitado</option>
+                <option value="recorded">Gravado</option>
+              </select>
+              <select value={pillarFilter} onChange={(event) => setPillarFilter(event.target.value)} className="rounded-lg border border-dbe-border bg-dbe-dark px-3 py-2 text-sm text-dbe-text outline-none">
+                <option value="all">Todos os pilares</option>
+                {pillars.map((pillar) => (
+                  <option key={pillar.id} value={pillar.id}>{pillar.title}</option>
+                ))}
+              </select>
+              <select value={sortBy} onChange={(event) => setSortBy(event.target.value as 'created_at' | 'title')} className="rounded-lg border border-dbe-border bg-dbe-dark px-3 py-2 text-sm text-dbe-text outline-none">
+                <option value="created_at">Mais recentes</option>
+                <option value="title">Titulo</option>
+              </select>
+            </div>
+
+            {visibleScripts.map((script) => (
               <div key={script.id} className="rounded-lg border border-dbe-border bg-dbe-dark/50 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="font-semibold text-dbe-text">{script.title}</h3>
@@ -213,7 +271,14 @@ function CampaignDetails({
                     {getScriptStatusLabel(script.status)}
                   </Badge>
                 </div>
-                <p className="mt-2 line-clamp-2 text-sm text-dbe-muted">{script.hook}</p>
+                {script.content_pillars && (
+                  <p className="mt-1 text-xs text-dbe-muted">Pilar: {script.content_pillars.title}</p>
+                )}
+                <p className="mt-2 line-clamp-2 text-sm text-dbe-muted">{stripHtml(script.hook)}</p>
+                <div className="mt-3 flex gap-2">
+                  <Button size="sm" variant="secondary" onClick={() => onViewScript(script)}>Visualizar</Button>
+                  <Button size="sm" onClick={() => onEditScript(script)}>Editar</Button>
+                </div>
               </div>
             ))}
           </div>

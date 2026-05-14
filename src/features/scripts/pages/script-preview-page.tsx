@@ -22,6 +22,7 @@ import {
   getScriptPlainText,
   printScriptAsPdf,
 } from '../services/script-export.service'
+import { ScriptContentBlock } from '../components/script-content-block'
 import type { ScriptStatus } from '../types/script.types'
 
 const statusConfig: Record<ScriptStatus, { label: string; variant: 'default' | 'blue' | 'success' }> = {
@@ -155,7 +156,7 @@ function ScriptSection({ title, value, accent }: { title: string; value: string;
   return (
     <Card className="p-4 sm:p-6">
       <h2 className={`text-xs font-bold uppercase tracking-wider ${accentClass}`}>{title}</h2>
-      <p className="mt-4 whitespace-pre-wrap text-base leading-relaxed text-dbe-text">{value || '-'}</p>
+      <ScriptContentBlock value={value || '-'} className="mt-4 text-base leading-relaxed text-dbe-text" />
     </Card>
   )
 }

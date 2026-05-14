@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useScripts } from '@/features/scripts/hooks/use-scripts'
 import type { Script } from '@/features/scripts/types/script.types'
+import { stripHtml } from '@/features/scripts/utils/script-content'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
 import { TeleprompterReader } from '../components/teleprompter-reader'
 import type { TeleprompterSettings, TeleprompterTextAlign } from '../types/teleprompter.types'
@@ -82,7 +83,7 @@ function readCustomPresets(): CustomPreset[] {
 }
 
 function getScriptText(script: Script) {
-  return [script.title, script.hook, script.body, script.cta].filter(Boolean).join('\n\n')
+  return [script.title, stripHtml(script.hook), stripHtml(script.body), stripHtml(script.cta)].filter(Boolean).join('\n\n')
 }
 
 export function TeleprompterPage() {

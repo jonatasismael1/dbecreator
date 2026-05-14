@@ -7,6 +7,7 @@ import {
   TextRun,
 } from 'docx'
 import type { Script } from '../types/script.types'
+import { sanitizeScriptHtml, stripHtml } from '../utils/script-content'
 
 export interface ScriptExportOptions {
   includeCover: boolean
@@ -27,8 +28,6 @@ const escapeHtml = (value: string) =>
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;')
-
-const withLineBreaks = (value: string) => escapeHtml(value).replace(/\n/g, '<br>')
 
 function getFilename(script: Script, extension: string) {
   const slug = script.title
@@ -59,11 +58,11 @@ export function getScriptPlainText(script: Script) {
     script.content_pillars ? `Pilar: ${script.content_pillars.title}` : '',
     script.last_analysis_score !== null ? `Score Deby: ${script.last_analysis_score}/10` : '',
     '',
-    `Gancho:\n${script.hook || '-'}`,
+    `Gancho:\n${stripHtml(script.hook) || '-'}`,
     '',
-    `Desenvolvimento:\n${script.body || '-'}`,
+    `Desenvolvimento:\n${stripHtml(script.body) || '-'}`,
     '',
-    `CTA:\n${script.cta || '-'}`,
+    `CTA:\n${stripHtml(script.cta) || '-'}`,
   ].filter(Boolean).join('\n')
 }
 
@@ -141,9 +140,9 @@ export function generateScriptHTML(script: Script, options: Partial<ScriptExport
         ${resolved.includeScore && script.last_analysis_score !== null ? `<span class="pill">Score Deby: ${script.last_analysis_score}/10</span>` : ''}
       </div>
     </header>` : ''}
-    <article class="card"><div class="label">Gancho</div><p>${withLineBreaks(script.hook || '-')}</p></article>
-    <article class="card"><div class="label">Desenvolvimento</div><p>${withLineBreaks(script.body || '-')}</p></article>
-    <article class="card"><div class="label">CTA</div><p>${withLineBreaks(script.cta || '-')}</p></article>
+    <article class="card"><div class="label">Gancho</div>${sanitizeScriptHtml(script.hook || '-')}</article>
+    <article class="card"><div class="label">Desenvolvimento</div>${sanitizeScriptHtml(script.body || '-')}</article>
+    <article class="card"><div class="label">CTA</div>${sanitizeScriptHtml(script.cta || '-')}</article>
     <footer class="footer">DBE - Dos Bastidores ao Espetaculo</footer>
   </main>
 </body>
@@ -195,13 +194,13 @@ export async function downloadScriptDocx(script: Script, options: Partial<Script
   children.push(
     new Paragraph({ text: '' }),
     new Paragraph({ children: [new TextRun({ text: 'Gancho', bold: true })] }),
-    new Paragraph(script.hook || '-'),
+    new Paragraph(stripHtml(script.hook) || '-'),
     new Paragraph({ text: '' }),
     new Paragraph({ children: [new TextRun({ text: 'Desenvolvimento', bold: true })] }),
-    new Paragraph(script.body || '-'),
+    new Paragraph(stripHtml(script.body) || '-'),
     new Paragraph({ text: '' }),
     new Paragraph({ children: [new TextRun({ text: 'CTA', bold: true })] }),
-    new Paragraph(script.cta || '-'),
+    new Paragraph(stripHtml(script.cta) || '-'),
   )
 
   const doc = new Document({ sections: [{ properties: {}, children }] })

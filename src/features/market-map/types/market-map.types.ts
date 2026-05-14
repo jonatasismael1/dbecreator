@@ -28,6 +28,11 @@ export interface Competitor {
   strength: string
 }
 
+export type MarketMapWizardSuggestion = Pick<
+  MarketMap,
+  'target_audience' | 'main_pain' | 'competitors' | 'differentiators' | 'tone_of_voice'
+>
+
 export type UpsertMarketMapDTO = Omit<
   MarketMap,
   'id' | 'workspace_id' | 'deby_insights' | 'last_insights_at' | 'created_at' | 'updated_at'

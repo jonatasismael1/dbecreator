@@ -6,12 +6,13 @@ interface Workspace {
   id: string
   name: string
   slug: string
+  logo_url?: string | null
 }
 
 async function getOrCreateWorkspace(userId: string, userEmail: string): Promise<Workspace> {
   const { data: member, error: memberErr } = await supabase
     .from('workspace_members')
-    .select('workspace_id, workspaces(id, name, slug)')
+    .select('workspace_id, workspaces(id, name, slug, logo_url)')
     .eq('user_id', userId)
     .order('joined_at', { ascending: true })
     .limit(1)

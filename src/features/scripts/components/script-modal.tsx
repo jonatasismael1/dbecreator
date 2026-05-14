@@ -1,17 +1,18 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence, motion } from 'framer-motion'
 import { BrainCircuit, FileText, Sparkles, X } from 'lucide-react'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils/cn'
 import { DebyAnalysisResult } from '@/features/deby/components/deby-analysis-result'
 import type { AiAnalysis } from '@/features/deby/types/deby.types'
 import type { ContentPillar } from '@/features/pillars/types/pillar.types'
 import type { Campaign } from '@/features/campaigns/types/campaign.types'
 import { ScriptVersionHistory } from './script-version-history'
+import { RichTextEditor } from './rich-text-editor'
 import type { CreateScriptDTO, Script, ScriptStatus, ScriptVersion } from '../types/script.types'
+import { stripHtml } from '../utils/script-content'
 
 const scriptSchema = z.object({
   title: z.string().min(2, 'Titulo obrigatorio'),
@@ -61,10 +62,13 @@ export function ScriptModal({
   const [saving, setSaving] = useState(false)
   const [showDebyPanel, setShowDebyPanel] = useState(false)
 
-  const { register, handleSubmit, reset, setValue, formState: { errors, isDirty } } = useForm<ScriptFormValues>({
+  const { control, register, handleSubmit, reset, setValue, formState: { errors, isDirty } } = useForm<ScriptFormValues>({
     resolver: zodResolver(scriptSchema),
     defaultValues: { status: 'draft', content_pillar_id: '', campaign_id: '' },
   })
+  const watchedHook = useWatch({ control, name: 'hook' }) || ''
+  const watchedBody = useWatch({ control, name: 'body' }) || ''
+  const watchedCta = useWatch({ control, name: 'cta' }) || ''
 
   useEffect(() => {
     if (script) {
@@ -176,15 +180,36 @@ export function ScriptModal({
                 </Field>
 
                 <Field label="Gancho" error={errors.hook?.message}>
-                  <textarea {...register('hook')} rows={3} placeholder="A primeira frase que para o scroll..." className={cn(inputClass, 'resize-none')} />
+                  <Controller
+                    control={control}
+                    name="hook"
+                    render={({ field }) => (
+                      <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="A primeira frase que para o scroll..." minHeight={88} />
+                    )}
+                  />
+                  <FieldHint text="Um bom gancho tem menos de 3 segundos e gera curiosidade imediata." value={watchedHook} />
                 </Field>
 
                 <Field label="Desenvolvimento" error={errors.body?.message}>
-                  <textarea {...register('body')} rows={7} placeholder="Contexto, promessa, prova e argumento central..." className={cn(inputClass, 'resize-y font-mono leading-relaxed')} />
+                  <Controller
+                    control={control}
+                    name="body"
+                    render={({ field }) => (
+                      <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="Contexto, promessa, prova e argumento central..." minHeight={180} />
+                    )}
+                  />
+                  <FieldHint text="Apresente prova e contexto. Mantenha conciso para Reels." value={watchedBody} />
                 </Field>
 
                 <Field label="CTA" error={errors.cta?.message}>
-                  <textarea {...register('cta')} rows={3} placeholder="Uma acao clara para o proximo passo..." className={cn(inputClass, 'resize-none')} />
+                  <Controller
+                    control={control}
+                    name="cta"
+                    render={({ field }) => (
+                      <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="Uma acao clara para o proximo passo..." minHeight={88} />
+                    )}
+                  />
+                  <FieldHint text="Uma unica chamada para acao, clara e direta." value={watchedCta} />
                 </Field>
 
                 {script?.id && onAnalyze && (
@@ -256,5 +281,18 @@ function Field({ label, error, children }: { label: string; error?: string; chil
       {children}
       {error && <span className="mt-1.5 block text-xs text-dbe-red">{error}</span>}
     </label>
+  )
+}
+
+function FieldHint({ text, value }: { text: string; value: string }) {
+  const plainText = stripHtml(value)
+  const words = plainText.trim().split(/\s+/).filter(Boolean).length
+  const seconds = Math.round((words / 130) * 60)
+
+  return (
+    <div className="mt-2 flex flex-col gap-1 text-xs text-dbe-muted sm:flex-row sm:items-center sm:justify-between">
+      <span>{words} palavras · ~{seconds}s</span>
+      <span>{text}</span>
+    </div>
   )
 }
