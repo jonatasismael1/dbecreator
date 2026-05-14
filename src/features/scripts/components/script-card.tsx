@@ -97,6 +97,7 @@ export function ScriptCard({
                 Campanha: {script.campaigns.title}
               </p>
             )}
+            </div>
           </div>
 
           <div className="flex shrink-0 items-center gap-0.5 opacity-100 transition-opacity sm:gap-1 sm:opacity-0 sm:group-hover:opacity-100" onClick={(event) => event.stopPropagation()}>

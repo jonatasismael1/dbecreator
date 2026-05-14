@@ -45,6 +45,8 @@ export interface InstagramInsightsResponse {
     reach?: number | null
     profile_views: number | null
     follower_count: number | null
+    impressions: number | null
+    website_clicks: number | null
   }
   audience?: {
     countries: Record<string, number>
@@ -79,6 +81,7 @@ export interface InstagramMediaInsight {
     profile_activity?: number | null
     profile_visits?: number | null
     total_interactions?: number | null
+    impressions?: number | null
   }
   insight_errors: Record<string, string>
 }
