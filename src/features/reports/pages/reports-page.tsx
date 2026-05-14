@@ -45,7 +45,7 @@ export function ReportsPage() {
   }
 
   const handleDeleteMetric = async (id: string) => {
-    if (confirm('Tem certeza que deseja excluir estas metricas?')) {
+    if (confirm('Tem certeza que deseja excluir estas métricas?')) {
       await deleteMetric.mutateAsync(id)
     }
   }
@@ -58,7 +58,7 @@ export function ReportsPage() {
       setIsInsightModalOpen(false)
       await refetch()
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Erro ao buscar insights do Instagram. Verifique a conexao em Configuracoes.')
+      alert(err instanceof Error ? err.message : 'Erro ao buscar insights do Instagram. Verifique a conexão em Configurações.')
     }
   }
 
@@ -84,7 +84,7 @@ export function ReportsPage() {
 
   return (
     <div className="h-full">
-      <PageHeader title="Relatorios de Performance" description="Acompanhe dados reais dos conteudos publicados.">
+      <PageHeader title="Relatórios de performance" description="Acompanhe dados reais dos conteúdos publicados.">
         <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-3">
           <Button variant="secondary" onClick={handleOpenSync} loading={instagramInsights.isPending} className="w-full sm:w-auto">
             <Instagram className="h-4 w-4" />
@@ -125,7 +125,7 @@ export function ReportsPage() {
           </div>
           {Object.keys(latestInsights.metric_errors).length > 0 && (
             <p className="mt-3 text-xs text-amber-300">
-              Algumas metricas podem depender de permissao aprovada na Meta ou disponibilidade da Graph API.
+              Algumas métricas podem depender de permissão aprovada na Meta ou disponibilidade da Graph API.
             </p>
           )}
           {latestInsights.media.length > 0 && (
@@ -149,7 +149,7 @@ export function ReportsPage() {
                     <PostThumbnail post={post} />
                     <div className="space-y-3 p-3">
                       <div>
-                        <p className="line-clamp-2 min-h-10 text-sm text-dbe-text">{post.caption || 'Publicacao Instagram'}</p>
+                        <p className="line-clamp-2 min-h-10 text-sm text-dbe-text">{post.caption || 'Publicação Instagram'}</p>
                         <p className="mt-1 text-xs text-dbe-muted">
                           {post.media_type || 'MEDIA'}{post.timestamp ? ` - ${format(new Date(post.timestamp), 'dd/MM/yyyy', { locale: ptBR })}` : ''}
                         </p>
@@ -185,7 +185,7 @@ export function ReportsPage() {
           <EmptyState
             icon={BarChart3}
             title="Nenhum dado registrado"
-            description="Atualize os insights do Instagram ou registre metricas manualmente para acompanhar seu crescimento."
+            description="Atualize os insights do Instagram ou registre métricas manualmente para acompanhar seu crescimento."
             action={{ label: 'Atualizar Instagram', onClick: handleOpenSync }}
           />
         </div>
@@ -204,12 +204,12 @@ export function ReportsPage() {
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-dbe-border bg-black/20 text-xs uppercase text-dbe-muted">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Conteudo</th>
+                    <th className="px-4 py-3 font-medium">Conteúdo</th>
                     <th className="px-4 py-3 font-medium">Plataforma</th>
                     <th className="px-4 py-3 font-medium">Data</th>
                     <th className="px-4 py-3 text-right font-medium">Views</th>
                     <th className="px-4 py-3 text-right font-medium">Engajamento</th>
-                    <th className="px-4 py-3 text-right font-medium">Acoes</th>
+                    <th className="px-4 py-3 text-right font-medium">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -220,7 +220,7 @@ export function ReportsPage() {
                           {metric.thumbnail_url && <img src={metric.thumbnail_url} alt="" className="h-10 w-10 rounded-md object-cover" />}
                           <div className="min-w-0">
                             <p className="truncate" title={metric.script?.title || metric.caption || undefined}>
-                              {metric.script?.title || metric.caption || 'Publicacao Instagram'}
+                              {metric.script?.title || metric.caption || 'Publicação Instagram'}
                             </p>
                             {metric.external_permalink && (
                               <a href={metric.external_permalink} target="_blank" rel="noreferrer" className="text-xs text-dbe-blue hover:underline">
@@ -347,7 +347,7 @@ function InsightDetailContent({ insights, post, onClose }: { insights: Instagram
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h4 className="font-medium text-dbe-text">Detalhes do post</h4>
-          <p className="mt-1 line-clamp-2 text-xs text-dbe-muted">{post.caption || 'Publicacao Instagram'}</p>
+          <p className="mt-1 line-clamp-2 text-xs text-dbe-muted">{post.caption || 'Publicação Instagram'}</p>
           {post.timestamp && <span className="mt-1 block text-xs text-dbe-muted">{format(new Date(post.timestamp), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</span>}
         </div>
         <button type="button" onClick={onClose} className="h-8 w-8 shrink-0 rounded-md border border-dbe-border text-dbe-muted transition-colors hover:border-dbe-blue hover:text-dbe-text">×</button>
@@ -358,8 +358,8 @@ function InsightDetailContent({ insights, post, onClose }: { insights: Instagram
           <DetailGroup title="Performance" icon={<BarChart3 className="h-4 w-4 text-dbe-blue" />}>
             <DetailMetric label="Views" value={post.insights.media_views ?? insights.metrics.media_views} />
             <DetailMetric label="Alcance" value={post.insights.media_viewers ?? post.insights.reach ?? insights.metrics.media_viewers ?? insights.metrics.reach ?? null} />
-            <DetailMetric label="Interacoes" value={post.insights.total_interactions ?? null} />
-            <DetailMetric label="Taxa de interacao" value={interactionRate} suffix="%" />
+            <DetailMetric label="Interações" value={post.insights.total_interactions ?? null} />
+            <DetailMetric label="Taxa de interação" value={interactionRate} suffix="%" />
           </DetailGroup>
 
           <DetailGroup title="Engajamento" icon={<Heart className="h-4 w-4 text-red-300" />}>
@@ -372,35 +372,35 @@ function InsightDetailContent({ insights, post, onClose }: { insights: Instagram
           <DetailGroup title="Atividade no perfil" icon={<UserRound className="h-4 w-4 text-green-300" />}>
             <DetailMetric label="Novos seguidores" value={post.insights.follows ?? null} />
             <DetailMetric label="Visitas ao perfil" value={post.insights.profile_visits ?? insights.metrics.profile_views} />
-            <DetailMetric label="Acoes no perfil" value={post.insights.profile_activity ?? null} />
+            <DetailMetric label="Ações no perfil" value={post.insights.profile_activity ?? null} />
             <DetailMetric label="Seguidores atuais" value={insights.metrics.follower_count ?? insights.account.followers_count ?? null} />
           </DetailGroup>
 
-          <DetailGroup title="Retencao" icon={<Clock3 className="h-4 w-4 text-amber-300" />}>
-            <UnavailableMetric label="Tempo medio assistido" />
+          <DetailGroup title="Retenção" icon={<Clock3 className="h-4 w-4 text-amber-300" />}>
+            <UnavailableMetric label="Tempo médio assistido" />
             <UnavailableMetric label="Taxa de reels pulados" />
-            <UnavailableMetric label="Retencao por segundo" />
+            <UnavailableMetric label="Retenção por segundo" />
             <UnavailableMetric label="Replays" />
           </DetailGroup>
         </div>
 
         <div className="grid gap-3">
-          <DetailGroup title="Distribuicao" icon={<Gauge className="h-4 w-4 text-purple-300" />}>
-            <UnavailableMetric label="Seguidores x nao seguidores" />
+          <DetailGroup title="Distribuição" icon={<Gauge className="h-4 w-4 text-purple-300" />}>
+            <UnavailableMetric label="Seguidores x não seguidores" />
             <UnavailableMetric label="Principais fontes" />
             <UnavailableMetric label="Quando curtiram" />
           </DetailGroup>
 
-          <DetailGroup title="Publico" icon={<MapPin className="h-4 w-4 text-pink-300" />}>
-            <AudienceRows title="Paises" values={audience?.countries} />
+          <DetailGroup title="Público" icon={<MapPin className="h-4 w-4 text-pink-300" />}>
+            <AudienceRows title="Países" values={audience?.countries} />
             <AudienceRows title="Cidades" values={audience?.cities} />
-            <AudienceRows title="Genero/idade" values={audience?.gender_age} />
-            <AudienceRows title="Horarios ativos" values={audience?.online_followers} />
+            <AudienceRows title="Gênero/idade" values={audience?.gender_age} />
+            <AudienceRows title="Horários ativos" values={audience?.online_followers} />
           </DetailGroup>
 
           {Object.keys(post.insight_errors).length > 0 && (
             <div className="rounded-md border border-amber-400/20 bg-amber-400/10 p-3 text-xs text-amber-200">
-              {Object.keys(post.insight_errors).length} metricas nao foram retornadas pela API para este post.
+              {Object.keys(post.insight_errors).length} métricas não foram retornadas pela API para este post.
             </div>
           )}
         </div>
@@ -422,7 +422,7 @@ function DetailMetric({ label, value, suffix = '' }: { label: string; value: num
   return (
     <div className="rounded bg-white/[0.03] p-2">
       <p className="text-dbe-muted">{label}</p>
-      <p className="mt-1 font-medium text-dbe-text">{typeof value === 'number' ? `${value.toLocaleString()}${suffix}` : 'Indisponivel'}</p>
+      <p className="mt-1 font-medium text-dbe-text">{typeof value === 'number' ? `${value.toLocaleString()}${suffix}` : 'Indisponível'}</p>
     </div>
   )
 }
@@ -431,7 +431,7 @@ function UnavailableMetric({ label }: { label: string }) {
   return (
     <div className="rounded bg-white/[0.03] p-2">
       <p className="text-dbe-muted">{label}</p>
-      <p className="mt-1 font-medium text-dbe-muted">Nao exposto pela API</p>
+      <p className="mt-1 font-medium text-dbe-muted">Não exposto pela API</p>
     </div>
   )
 }
@@ -454,7 +454,7 @@ function AudienceRows({ title, values }: { title: string; values?: Record<string
           ))}
         </div>
       ) : (
-        <p className="text-dbe-text">Indisponivel</p>
+        <p className="text-dbe-text">Indisponível</p>
       )}
     </div>
   )

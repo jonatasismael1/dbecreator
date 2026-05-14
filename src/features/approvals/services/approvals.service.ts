@@ -12,7 +12,7 @@ export const approvalsService = {
       .from(TABLE)
       .select(`
         *,
-        script:scripts(*)
+        script:scripts(*, campaigns(id,title))
       `)
       .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: false })
@@ -35,37 +35,52 @@ export const approvalsService = {
       .single()
 
     if (error) throw error
+
+    const { error: scriptError } = await supabase
+      .from('scripts')
+      .update({ status: 'in_approval', updated_at: new Date().toISOString() })
+      .eq('id', dto.script_id)
+      .eq('workspace_id', workspaceId)
+
+    if (scriptError) throw scriptError
+
     return data
   },
 
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase.from(TABLE).delete().eq('id', id)
+  async delete(workspaceId: string, id: string): Promise<void> {
+    const { error } = await supabase
+      .from(TABLE)
+      .delete()
+      .eq('id', id)
+      .eq('workspace_id', workspaceId)
     if (error) throw error
   },
 
   // --- Public Methods (Anonymous via Token) ---
 
   async getByToken(token: string): Promise<Approval> {
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select(`
-        *,
-        script:scripts(title, hook, body, cta)
-      `)
-      .eq('token', token)
-      .single()
-
-    if (error) throw error
-    return data
+    const response = await fetch(`/api/public-approval?token=${encodeURIComponent(token)}`)
+    if (!response.ok) throw new Error((await response.json().catch(() => null))?.message || 'Link de aprovação inválido.')
+    return response.json()
   },
 
-  async updateStatusByToken(token: string, status: 'approved' | 'requested_changes'): Promise<void> {
-    const { error } = await supabase
-      .from(TABLE)
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('token', token)
+  async updateStatusByToken(
+    token: string,
+    action: 'approve' | 'request_changes',
+    payload: { authorName?: string; comment?: string } = {},
+  ): Promise<Approval> {
+    const response = await fetch(`/api/public-approval?token=${encodeURIComponent(token)}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        action,
+        author_name: payload.authorName,
+        comment: payload.comment,
+      }),
+    })
 
-    if (error) throw error
+    if (!response.ok) throw new Error((await response.json().catch(() => null))?.message || 'Não foi possível atualizar a aprovação.')
+    return response.json()
   },
 
   async getComments(approvalId: string): Promise<ApprovalComment[]> {

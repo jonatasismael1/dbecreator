@@ -65,11 +65,12 @@
 - `workspace_id`: uuid (FK)
 - `idea_id`: uuid (FK, nullable)
 - `content_pillar_id`: uuid (FK, nullable)
+- `campaign_id`: uuid (FK, nullable)
 - `title`: text
 - `hook`: text
 - `body`: text
 - `cta`: text
-- `status`: text (draft, ready, recorded)
+- `status`: text (draft, ready, in_approval, approved, changes_requested, recorded)
 - `last_analysis_score`: numeric (0-10)
 
 ### `script_versions`
@@ -81,8 +82,9 @@
 - `hook`: text
 - `body`: text
 - `cta`: text
-- `status`: text (draft, ready, recorded)
+- `status`: text (draft, ready, in_approval, approved, changes_requested, recorded)
 - `content_pillar_id`: uuid (FK, nullable)
+- `campaign_id`: uuid (FK, nullable)
 - `created_by`: uuid (FK, nullable)
 - `created_at`: timestamp
 
@@ -98,10 +100,16 @@
 ### `campaigns`
 - `id`: uuid
 - `workspace_id`: uuid (FK)
-- `name`: text
-- `objective`: text
+- `title`: text
+- `description`: text
+- `status`: text (planning, active, completed, paused)
 - `start_date`: date
 - `end_date`: date
+- `goal`: text
+- `checklist`: jsonb
+- `created_by`: uuid (FK, nullable)
+- `created_at`: timestamp
+- `updated_at`: timestamp
 
 ### `calendar_items`
 - `id`: uuid
@@ -115,11 +123,25 @@
 
 ### `approvals`
 - `id`: uuid
+- `workspace_id`: uuid (FK)
 - `script_id`: uuid (FK)
 - `token`: text (para link público)
 - `status`: text (pending, approved, requested_changes)
+- `client_name`: text
+- `client_email`: text
+- `expires_at`: timestamp
+- `created_by`: uuid (FK, nullable)
+- `created_at`: timestamp
+- `updated_at`: timestamp
+
+### `approval_comments`
+- `id`: uuid
+- `approval_id`: uuid (FK)
+- `author_name`: text
+- `content`: text
+- `created_at`: timestamp
 
 ## Segurança (RLS)
 - **Regra Geral:** `auth.uid() IN (SELECT user_id FROM workspace_members WHERE workspace_id = table.workspace_id)`.
 - Perfis são visíveis apenas para membros do mesmo workspace.
-- Links de aprovação possuem bypass de auth via token único.
+- Links de aprovação são servidos por endpoint server-side com Service Role, validando token único e expiração antes de retornar somente os campos públicos do roteiro.

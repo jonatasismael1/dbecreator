@@ -116,7 +116,7 @@ export function SettingsPage() {
       
       if (error) throw error
       setWorkspaceNameDraft('')
-      setSuccessMsg('Workspace atualizado com sucesso! (Recarregue para ver)')
+      setSuccessMsg('Workspace atualizado com sucesso. Recarregue a página para ver a alteração.')
     } catch (err: unknown) {
       console.error(err)
       alert(err instanceof Error ? err.message : 'Erro ao atualizar workspace')
@@ -145,7 +145,7 @@ export function SettingsPage() {
             }`}
           >
             <User className="h-4 w-4" />
-            Perfil do Usuário
+            Perfil do usuário
           </button>
           
           <button
@@ -221,7 +221,7 @@ export function SettingsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-dbe-text mb-1">
-                    Email
+                    E-mail
                   </label>
                   <input
                     type="email"
@@ -229,12 +229,12 @@ export function SettingsPage() {
                     disabled
                     className="w-full bg-black/5 dark:bg-black/20 border border-dbe-border/50 rounded-lg px-4 py-2 text-dbe-muted cursor-not-allowed"
                   />
-                  <p className="text-xs text-dbe-muted mt-1">O email de login não pode ser alterado por aqui.</p>
+                  <p className="text-xs text-dbe-muted mt-1">O e-mail de login não pode ser alterado por aqui.</p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-dbe-text mb-1">
-                    Nome Completo
+                    Nome completo
                   </label>
                   <input
                     type="text"
@@ -246,7 +246,7 @@ export function SettingsPage() {
 
                 <div className="pt-4">
                   <Button type="submit" disabled={isSaving}>
-                    {isSaving ? 'Salvando...' : 'Salvar Perfil'}
+                    {isSaving ? 'Salvando...' : 'Salvar perfil'}
                   </Button>
                 </div>
               </form>
@@ -266,7 +266,7 @@ export function SettingsPage() {
               <form onSubmit={handleSavePassword} className="space-y-4 max-w-md">
                 <div>
                   <label className="block text-sm font-medium text-dbe-text mb-1">
-                    Nova Senha
+                    Nova senha
                   </label>
                   <input
                     type="password"
@@ -278,7 +278,7 @@ export function SettingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-dbe-text mb-1">
-                    Confirmar Nova Senha
+                    Confirmar nova senha
                   </label>
                   <input
                     type="password"
@@ -290,7 +290,7 @@ export function SettingsPage() {
                 </div>
                 <div className="pt-4">
                   <Button type="submit" variant="secondary" disabled={isSaving || !newPassword || !confirmPassword}>
-                    Alterar Senha
+                    Alterar senha
                   </Button>
                 </div>
               </form>
@@ -304,7 +304,7 @@ export function SettingsPage() {
                   <Building className="h-5 w-5 text-dbe-text" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-dbe-text">Configurações do Workspace</h3>
+                  <h3 className="text-lg font-medium text-dbe-text">Configurações do workspace</h3>
                   <p className="text-sm text-dbe-muted">Gerencie as informações do seu espaço de trabalho.</p>
                 </div>
               </div>
@@ -317,7 +317,7 @@ export function SettingsPage() {
                 <form onSubmit={handleSaveWorkspace} className="space-y-4 max-w-md">
                   <div>
                     <label className="block text-sm font-medium text-dbe-text mb-1">
-                      ID do Workspace
+                      ID do workspace
                     </label>
                     <input
                       type="text"
@@ -329,7 +329,7 @@ export function SettingsPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-dbe-text mb-1">
-                      Nome do Workspace
+                      Nome do workspace
                     </label>
                     <input
                       type="text"
@@ -341,7 +341,7 @@ export function SettingsPage() {
 
                   <div className="pt-4">
                     <Button type="submit" disabled={isSaving}>
-                      {isSaving ? 'Salvando...' : 'Salvar Workspace'}
+                      {isSaving ? 'Salvando...' : 'Salvar workspace'}
                     </Button>
                   </div>
                 </form>

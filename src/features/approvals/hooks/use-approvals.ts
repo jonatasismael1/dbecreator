@@ -19,13 +19,16 @@ export function useApprovals() {
     mutationFn: (dto: CreateApprovalDTO) => approvalsService.create(workspaceId, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey })
+      queryClient.invalidateQueries({ queryKey: ['scripts', workspaceId] })
+      queryClient.invalidateQueries({ queryKey: ['campaigns', workspaceId] })
     },
   })
 
   const deleteApproval = useMutation({
-    mutationFn: approvalsService.delete,
+    mutationFn: (id: string) => approvalsService.delete(workspaceId, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey })
+      queryClient.invalidateQueries({ queryKey: ['scripts', workspaceId] })
     },
   })
 
@@ -49,33 +52,22 @@ export function usePublicApproval(token: string) {
     retry: false,
   })
 
-  const commentsQuery = useQuery({
-    queryKey: ['approval_comments', approvalQuery.data?.id],
-    queryFn: () => approvalsService.getComments(approvalQuery.data!.id),
-    enabled: !!approvalQuery.data?.id,
-  })
-
   const updateStatus = useMutation({
-    mutationFn: (status: 'approved' | 'requested_changes') => approvalsService.updateStatusByToken(token, status),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['approval', token] })
-    },
-  })
-
-  const addComment = useMutation({
-    mutationFn: ({ content, authorName }: { content: string; authorName: string }) => 
-      approvalsService.addComment(approvalQuery.data!.id, authorName, content),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['approval_comments', approvalQuery.data?.id] })
+    mutationFn: (input: { action: 'approve' | 'request_changes'; authorName?: string; comment?: string }) =>
+      approvalsService.updateStatusByToken(token, input.action, {
+        authorName: input.authorName,
+        comment: input.comment,
+      }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['approval', token], data)
     },
   })
 
   return {
     approval: approvalQuery.data,
-    comments: commentsQuery.data ?? [],
+    comments: approvalQuery.data?.comments ?? [],
     isLoading: approvalQuery.isLoading,
     isError: approvalQuery.isError,
     updateStatus,
-    addComment,
   }
 }

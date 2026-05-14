@@ -16,34 +16,35 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { LoadingState } from '@/components/shared/loading-state'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { useCalendarItems } from '@/features/calendar/hooks/use-calendar-items'
 import { useDebyHistory } from '@/features/deby/hooks/use-deby'
 import { useIdeas } from '@/features/ideas/hooks/use-ideas'
 import { useMarketMap } from '@/features/market-map/hooks/use-market-map'
 import { usePillars } from '@/features/pillars/hooks/use-pillars'
 import { useScripts } from '@/features/scripts/hooks/use-scripts'
+import { useCampaigns } from '@/features/campaigns/hooks/use-campaigns'
+import { useApprovals } from '@/features/approvals/hooks/use-approvals'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
+import type { ScriptStatus } from '@/features/scripts/types/script.types'
 
 export function DashboardPage() {
   const navigate = useNavigate()
   const { workspaceId } = useWorkspaceContext()
   const { data: ideas = [], isLoading: ideasLoading } = useIdeas(workspaceId)
   const { data: scripts = [], isLoading: scriptsLoading } = useScripts(workspaceId)
-  const { data: calendarItems = [], isLoading: calendarLoading } = useCalendarItems(workspaceId)
+  const { campaigns, isLoading: campaignsLoading } = useCampaigns()
+  const { approvals, isLoading: approvalsLoading } = useApprovals()
   const { data: analyses = [], isLoading: analysesLoading } = useDebyHistory(workspaceId)
   const { data: marketMap, isLoading: marketMapLoading } = useMarketMap(workspaceId)
   const { data: pillars = [], isLoading: pillarsLoading } = usePillars(workspaceId)
 
-  const isLoading = ideasLoading || scriptsLoading || calendarLoading || analysesLoading || marketMapLoading || pillarsLoading
-  const averageScore = analyses.length
-    ? analyses.reduce((sum, analysis) => sum + analysis.result.score, 0) / analyses.length
-    : null
+  const isLoading = ideasLoading || scriptsLoading || campaignsLoading || approvalsLoading || analysesLoading || marketMapLoading || pillarsLoading
   const recentScripts = scripts.slice(0, 4)
   const setupSteps = [
     { label: 'Mapa de Mercado', done: !!marketMap?.is_complete },
-    { label: 'Pilares de Conteudo', done: pillars.length > 0 },
-    { label: 'Primeiro Roteiro', done: scripts.length > 0 },
-    { label: 'Analise Deby', done: analyses.length > 0 },
+    { label: 'Pilares de Conteúdo', done: pillars.length > 0 },
+    { label: 'Primeiro roteiro', done: scripts.length > 0 },
+    { label: 'Primeira campanha', done: campaigns.length > 0 },
+    { label: 'Análise Deby', done: analyses.length > 0 },
   ]
   const progress = Math.round((setupSteps.filter((step) => step.done).length / setupSteps.length) * 100)
 
@@ -51,7 +52,7 @@ export function DashboardPage() {
 
   return (
     <div>
-      <PageHeader title="Dashboard" description="Visao geral do seu workspace de conteudo.">
+      <PageHeader title="Dashboard" description="Visão geral do seu workspace de conteúdo.">
         <Button variant="deby" size="sm" onClick={() => navigate('/deby')}>
           <Sparkles className="h-4 w-4" />
           Analisar com Deby
@@ -61,10 +62,10 @@ export function DashboardPage() {
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Ideias" value={ideas.length} icon={Lightbulb} accent="amber" />
         <StatCard title="Roteiros" value={scripts.length} icon={FileText} accent="blue" />
-        <StatCard title="Agendados" value={calendarItems.length} icon={CalendarDays} accent="green" />
+        <StatCard title="Em aprovação" value={scripts.filter((script) => script.status === 'in_approval').length} icon={CalendarDays} accent="green" />
         <StatCard
-          title="Score Medio"
-          value={averageScore === null ? '-' : formatScore(averageScore)}
+          title="Aprovados"
+          value={scripts.filter((script) => script.status === 'approved').length}
           icon={TrendingUp}
           accent="purple"
         />
@@ -74,32 +75,32 @@ export function DashboardPage() {
         <div className="space-y-6 lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Roteiros Recentes</CardTitle>
+              <CardTitle>Roteiros recentes</CardTitle>
               <Badge variant="blue">{scripts.length} roteiros</Badge>
             </CardHeader>
             {recentScripts.length === 0 ? (
               <EmptyState
                 icon={FileText}
                 title="Nenhum roteiro criado"
-                description="Crie seu primeiro roteiro para a Deby analisar e transformar em conteudo de alta conversao."
-                action={{ label: 'Criar Roteiro', onClick: () => navigate('/scripts') }}
+                description="Crie seu primeiro roteiro para a Deby analisar e transformar em conteúdo de alta conversão."
+                action={{ label: 'Criar roteiro', onClick: () => navigate('/scripts') }}
               />
             ) : (
               <div className="space-y-3">
                 {recentScripts.map((script) => (
                   <button
                     key={script.id}
-                    onClick={() => navigate('/scripts')}
+                    onClick={() => navigate(`/scripts/${script.id}`)}
                     className="flex w-full items-center justify-between gap-4 rounded-xl border border-dbe-border bg-dbe-dark/50 p-4 text-left transition-all hover:border-dbe-blue/40"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-dbe-text">{script.title}</p>
-                      <p className="mt-1 line-clamp-1 text-xs text-dbe-muted">{script.hook}</p>
+                      <p className="mt-1 line-clamp-1 text-xs text-dbe-muted">{script.campaigns?.title || script.hook}</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       {script.last_analysis_score !== null && <Badge variant="purple">{formatScore(script.last_analysis_score)}</Badge>}
-                      <Badge variant={script.status === 'recorded' ? 'success' : script.status === 'ready' ? 'blue' : 'default'}>
-                        {script.status === 'recorded' ? 'Gravado' : script.status === 'ready' ? 'Pronto' : 'Rascunho'}
+                      <Badge variant={script.status === 'recorded' || script.status === 'approved' ? 'success' : script.status === 'ready' || script.status === 'in_approval' ? 'blue' : 'default'}>
+                        {getScriptStatusLabel(script.status)}
                       </Badge>
                     </div>
                   </button>
@@ -110,15 +111,15 @@ export function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Fila de Ideias</CardTitle>
+              <CardTitle>Fila de ideias</CardTitle>
               <Badge variant="default">{ideas.length} ideias</Badge>
             </CardHeader>
             {ideas.length === 0 ? (
               <EmptyState
                 icon={Lightbulb}
-                title="Sua central de ideias esta vazia"
-                description="Capture insights, referencias e ideias que podem virar roteiros poderosos."
-                action={{ label: 'Adicionar Ideia', onClick: () => navigate('/ideas') }}
+                title="Sua central de ideias está vazia"
+                description="Capture insights, referências e ideias que podem virar roteiros poderosos."
+                action={{ label: 'Adicionar ideia', onClick: () => navigate('/ideas') }}
               />
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -129,7 +130,7 @@ export function DashboardPage() {
                     className="rounded-xl border border-dbe-border bg-dbe-dark/50 p-4 text-left transition-all hover:border-dbe-amber/40"
                   >
                     <p className="line-clamp-1 text-sm font-semibold text-dbe-text">{idea.title}</p>
-                    <p className="mt-1 line-clamp-2 text-xs text-dbe-muted">{idea.description ?? 'Sem descricao'}</p>
+                    <p className="mt-1 line-clamp-2 text-xs text-dbe-muted">{idea.description ?? 'Sem descrição'}</p>
                   </button>
                 ))}
               </div>
@@ -139,13 +140,13 @@ export function DashboardPage() {
 
         <div className="space-y-6">
           <Card>
-            <CardTitle className="mb-4">Acoes Rapidas</CardTitle>
+            <CardTitle className="mb-4">Ações rápidas</CardTitle>
             <div className="space-y-2">
               {[
-                { icon: Lightbulb, label: 'Nova Ideia', color: 'text-dbe-amber', path: '/ideas' },
-                { icon: FileText, label: 'Novo Roteiro', color: 'text-dbe-blue', path: '/scripts' },
-                { icon: Sparkles, label: 'Analise Deby', color: 'text-dbe-purple', path: '/deby' },
-                { icon: CalendarDays, label: 'Calendario', color: 'text-dbe-green', path: '/calendar' },
+                { icon: Lightbulb, label: 'Nova ideia', color: 'text-dbe-amber', path: '/ideas' },
+                { icon: FileText, label: 'Novo roteiro', color: 'text-dbe-blue', path: '/scripts' },
+                { icon: Sparkles, label: 'Análise Deby', color: 'text-dbe-purple', path: '/deby' },
+                { icon: CalendarDays, label: 'Calendário', color: 'text-dbe-green', path: '/calendar' },
               ].map((action) => (
                 <button
                   key={action.label}
@@ -161,7 +162,7 @@ export function DashboardPage() {
           </Card>
 
           <Card>
-            <CardTitle className="mb-4">Status do Workspace</CardTitle>
+            <CardTitle className="mb-4">Status do workspace</CardTitle>
             <div className="space-y-3">
               {setupSteps.map((step) => (
                 <div key={step.label} className="flex items-center gap-3">
@@ -193,8 +194,8 @@ export function DashboardPage() {
                 <p className="mb-1 text-sm font-semibold text-dbe-text">Dica da Deby</p>
                 <p className="text-xs leading-relaxed text-dbe-muted">
                   {analyses.length === 0
-                    ? 'Analise um roteiro pronto para descobrir onde ele perde conversao.'
-                    : 'Use os roteiros com maior score como padrao para os proximos conteudos.'}
+                    ? 'Analise um roteiro pronto para descobrir onde ele perde conversão.'
+                    : `Você tem ${approvals.filter((approval) => approval.status === 'pending').length} roteiro(s) aguardando aprovação.`}
                 </p>
               </div>
             </div>
@@ -207,4 +208,17 @@ export function DashboardPage() {
 
 function formatScore(score: number) {
   return score.toLocaleString('pt-BR', { minimumFractionDigits: score % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })
+}
+
+function getScriptStatusLabel(status: ScriptStatus) {
+  const labels: Record<ScriptStatus, string> = {
+    draft: 'Rascunho',
+    ready: 'Pronto',
+    in_approval: 'Enviado para aprovação',
+    approved: 'Aprovado',
+    changes_requested: 'Ajuste solicitado',
+    recorded: 'Gravado',
+  }
+
+  return labels[status]
 }

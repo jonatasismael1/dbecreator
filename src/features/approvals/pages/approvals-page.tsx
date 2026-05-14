@@ -17,7 +17,7 @@ import { ptBR } from 'date-fns/locale'
 const STATUS_CONFIG: Record<ApprovalStatus, { label: string; color: string; icon: LucideIcon }> = {
   pending: { label: 'Pendente', color: 'bg-amber-500/10 text-amber-500 border-amber-500/20', icon: Clock },
   approved: { label: 'Aprovado', color: 'bg-green-500/10 text-green-500 border-green-500/20', icon: CheckCircle2 },
-  requested_changes: { label: 'Alterações', color: 'bg-red-500/10 text-red-500 border-red-500/20', icon: XCircle },
+  requested_changes: { label: 'Ajuste solicitado', color: 'bg-red-500/10 text-red-500 border-red-500/20', icon: XCircle },
 }
 
 export function ApprovalsPage() {
@@ -28,6 +28,7 @@ export function ApprovalsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedScript, setSelectedScript] = useState('')
   const [clientName, setClientName] = useState('')
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null)
   
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,33 +38,33 @@ export function ApprovalsPage() {
     const expires = new Date()
     expires.setDate(expires.getDate() + 7)
     
-    await createApproval.mutateAsync({
+    const approval = await createApproval.mutateAsync({
       script_id: selectedScript,
       client_name: clientName || 'Cliente',
       client_email: null,
       expires_at: expires.toISOString(),
     })
+    setGeneratedLink(buildApprovalLink(approval.token))
     
-    setIsModalOpen(false)
     setSelectedScript('')
     setClientName('')
   }
 
   const copyLink = (token: string) => {
-    const url = `${window.location.origin}/approval/${token}`
+    const url = buildApprovalLink(token)
     navigator.clipboard.writeText(url)
-    alert('Link copiado para a área de transferência!')
+    alert('Link copiado para a área de transferência.')
   }
 
   return (
     <div className="h-full flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <PageHeader 
-          title="Aprovações de Clientes" 
+          title="Aprovações de clientes"
           description="Gere links públicos temporários para enviar seus roteiros para revisão externa."
         />
-        <Button onClick={() => setIsModalOpen(true)}>
-          Gerar Novo Link
+        <Button onClick={() => { setGeneratedLink(null); setIsModalOpen(true) }}>
+          Gerar novo link
         </Button>
       </div>
 
@@ -78,8 +79,8 @@ export function ApprovalsPage() {
             title="Nenhum link gerado"
             description="Crie links de acesso para que clientes possam visualizar e comentar seus roteiros sem precisar de login."
             action={{
-              label: "Gerar Link",
-              onClick: () => setIsModalOpen(true)
+              label: "Gerar link",
+              onClick: () => { setGeneratedLink(null); setIsModalOpen(true) }
             }}
           />
         </div>
@@ -106,7 +107,7 @@ export function ApprovalsPage() {
                 </div>
                 
                 <h3 className="font-semibold text-dbe-text mb-1 truncate" title={approval.script?.title}>
-                  {approval.script?.title || 'Roteiro Excluído'}
+                  {approval.script?.title || 'Roteiro excluído'}
                 </h3>
                 <p className="text-sm text-dbe-muted mb-6">
                   Enviado para: <span className="text-dbe-text">{approval.client_name}</span>
@@ -118,7 +119,7 @@ export function ApprovalsPage() {
                   </div>
                   <Button variant="secondary" size="sm" onClick={() => copyLink(approval.token)}>
                     <Link2 className="h-3.5 w-3.5 mr-2" />
-                    Copiar Link
+                    Copiar link
                   </Button>
                 </div>
               </Card>
@@ -132,7 +133,7 @@ export function ApprovalsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-dbe-navy border border-dbe-border rounded-xl w-full max-w-md overflow-hidden flex flex-col">
             <div className="p-6">
-              <h2 className="text-lg font-semibold text-dbe-text mb-4">Gerar Link de Aprovação</h2>
+              <h2 className="text-lg font-semibold text-dbe-text mb-4">Gerar link de aprovação</h2>
               
               <form id="create-approval-form" onSubmit={handleCreate} className="space-y-4">
                 <div>
@@ -144,7 +145,7 @@ export function ApprovalsPage() {
                     className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-4 py-2 text-dbe-text focus:outline-none focus:border-dbe-blue transition-colors appearance-none"
                   >
                     <option value="" disabled>Selecione um roteiro...</option>
-                    {(scripts as Script[]).filter((script) => script.status === 'ready' || script.status === 'draft').map((script) => (
+                    {(scripts as Script[]).filter((script) => !script.archived_at && !['in_approval', 'approved', 'recorded'].includes(script.status)).map((script) => (
                       <option key={script.id} value={script.id}>{script.title}</option>
                     ))}
                   </select>
@@ -152,7 +153,7 @@ export function ApprovalsPage() {
 
                 
                 <div>
-                  <label className="block text-sm font-medium text-dbe-text mb-1">Nome do Cliente/Aprovador</label>
+                  <label className="block text-sm font-medium text-dbe-text mb-1">Nome do cliente/aprovador</label>
                   <input
                     type="text"
                     value={clientName}
@@ -162,17 +163,30 @@ export function ApprovalsPage() {
                     placeholder="Ex: João Silva"
                   />
                 </div>
+
+                {generatedLink && (
+                  <div className="rounded-lg border border-dbe-green/20 bg-dbe-green/10 p-3">
+                    <p className="text-xs font-medium text-dbe-green">Link de aprovação gerado.</p>
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard.writeText(generatedLink)}
+                      className="mt-2 break-all text-left text-xs text-dbe-text underline decoration-dbe-green/50"
+                    >
+                      {generatedLink}
+                    </button>
+                  </div>
+                )}
                 
                 <p className="text-xs text-dbe-muted mt-2">
-                  O link gerado será válido por 7 dias. Qualquer pessoa com o link poderá visualizar o roteiro e deixar comentários.
+                  O link gerado será válido por 7 dias. Qualquer pessoa com o link poderá visualizar o roteiro e aprovar ou solicitar ajustes.
                 </p>
               </form>
             </div>
             
             <div className="p-4 border-t border-dbe-border flex justify-end gap-3 bg-dbe-navy">
-              <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
+              <Button variant="ghost" onClick={() => { setIsModalOpen(false); setGeneratedLink(null) }}>Cancelar</Button>
               <Button type="submit" form="create-approval-form" disabled={createApproval.isPending}>
-                Gerar Link
+                Gerar link
               </Button>
             </div>
           </div>
@@ -180,4 +194,8 @@ export function ApprovalsPage() {
       )}
     </div>
   )
+}
+
+function buildApprovalLink(token: string) {
+  return `${window.location.origin}/aprovacao/${token}`
 }

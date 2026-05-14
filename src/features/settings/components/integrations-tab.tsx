@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AlertCircle, Camera as Instagram, Check, Trash2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -14,7 +14,9 @@ export function IntegrationsTab() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [isConnecting, setIsConnecting] = useState(false)
-  const [error, setError] = useState<string | null>(() => getMetaErrorMessage(searchParams))
+  const [error, setError] = useState<string | null>(null)
+  const searchParamError = useMemo(() => getMetaErrorMessage(searchParams), [searchParams])
+  const visibleError = error ?? searchParamError
 
   const instagramIntegration = integrations?.find((integration) => integration.platform === 'instagram')
   const isConnected = !!instagramIntegration && instagramIntegration.status === 'connected'
@@ -27,11 +29,6 @@ export function IntegrationsTab() {
     }
   }, [refetch, searchParams, setSearchParams, workspaceId])
 
-  useEffect(() => {
-    const metaError = getMetaErrorMessage(searchParams)
-    if (metaError) setError(metaError)
-  }, [searchParams])
-
   const handleConnectInstagram = async () => {
     setIsConnecting(true)
     setError(null)
@@ -40,17 +37,17 @@ export function IntegrationsTab() {
       const { integrationsService } = await import('@/features/integrations/services/integrations.service')
       await integrationsService.startInstagramOAuth(workspaceId)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao iniciar conexao com Instagram.')
+      setError(err instanceof Error ? err.message : 'Erro ao iniciar conexão com Instagram.')
       setIsConnecting(false)
     }
   }
 
   const handleDisconnect = async () => {
-    if (confirm('Tem certeza que deseja desconectar o Instagram? Isso afetara a sincronizacao dos relatorios.')) {
+    if (confirm('Tem certeza que deseja desconectar o Instagram? Isso afetará a sincronização dos relatórios.')) {
       try {
         await disconnect.mutateAsync('instagram')
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro ao desconectar. Voce precisa ser Administrador para remover integracoes.')
+        setError(err instanceof Error ? err.message : 'Erro ao desconectar. Você precisa ser administrador para remover integrações.')
       }
     }
   }
@@ -64,15 +61,15 @@ export function IntegrationsTab() {
           <Instagram className="h-5 w-5 text-dbe-text" />
         </div>
         <div>
-          <h3 className="text-lg font-medium text-dbe-text">Conexoes de Plataformas</h3>
-          <p className="text-sm text-dbe-muted">Conecte suas contas para habilitar relatorios automaticos.</p>
+          <h3 className="text-lg font-medium text-dbe-text">Conexões de plataformas</h3>
+          <p className="text-sm text-dbe-muted">Conecte suas contas para habilitar relatórios automáticos.</p>
         </div>
       </div>
 
       <div className="space-y-4">
-        {error && (
+        {visibleError && (
           <div className="whitespace-pre-wrap rounded-lg border border-dbe-red/30 bg-dbe-red/10 p-3 text-sm text-red-200">
-            {error}
+            {visibleError}
           </div>
         )}
 
@@ -92,13 +89,13 @@ export function IntegrationsTab() {
                 ) : (
                   <>
                     <AlertCircle className="h-3 w-3" />
-                    Nao conectado
+                    Não conectado
                   </>
                 )}
               </p>
               {isConnected && instagramIntegration?.token_expires_at && (
                 <p className="mt-1 text-xs text-dbe-muted">
-                  Token valido ate {new Date(instagramIntegration.token_expires_at).toLocaleDateString('pt-BR')}
+                  Token válido até {new Date(instagramIntegration.token_expires_at).toLocaleDateString('pt-BR')}
                 </p>
               )}
             </div>
@@ -166,22 +163,22 @@ function mapMetaError(code: string | null): string | null {
   if (!code) return null
 
   const messages: Record<string, string> = {
-    user_denied_permissions: 'Permissoes negadas na Meta. Autorize as permissoes para conectar o Instagram.',
+    user_denied_permissions: 'Permissões negadas na Meta. Autorize as permissões para conectar o Instagram.',
     instagram_oauth_error: 'A Meta retornou erro ao autorizar o Instagram.',
     missing_code: 'O callback do Instagram voltou sem code. Tente conectar novamente.',
-    invalid_state: 'Sessao de conexao expirada ou invalida. Tente conectar novamente.',
-    invalid_oauth_state: 'Sessao de conexao expirada ou invalida. Tente conectar novamente.',
-    expired_oauth_state: 'Sessao de conexao expirada. Tente conectar novamente.',
+    invalid_state: 'Sessão de conexão expirada ou inválida. Tente conectar novamente.',
+    invalid_oauth_state: 'Sessão de conexão expirada ou inválida. Tente conectar novamente.',
+    expired_oauth_state: 'Sessão de conexão expirada. Tente conectar novamente.',
     no_instagram_business_account: 'A conta precisa ser Instagram Business ou Creator.',
     instagram_not_business_or_creator: 'A conta Instagram precisa ser Business ou Creator.',
     token_exchange_failed: 'Falha ao trocar o code pelo token do Instagram.',
-    database_save_failed: 'Erro ao salvar a integracao Instagram.',
+    database_save_failed: 'Erro ao salvar a integração Instagram.',
     profile_save_failed: 'Erro ao salvar os dados Instagram no perfil.',
     token_expired: 'Token expirado. Reconecte o Instagram.',
-    missing_instagram_env: 'Variaveis de ambiente do Instagram OAuth nao configuradas no backend.',
-    meta_app_review_required: 'O app da Meta ainda nao tem App Review aprovado para esta permissao.',
+    missing_instagram_env: 'Variáveis de ambiente do Instagram OAuth não configuradas no backend.',
+    meta_app_review_required: 'O app da Meta ainda não tem App Review aprovado para esta permissão.',
     meta_graph_error: 'A Graph API retornou erro ao conectar o Instagram.',
   }
 
-  return messages[code] || 'Nao foi possivel concluir a autenticacao Meta.'
+  return messages[code] || 'Não foi possível concluir a autenticação Meta.'
 }

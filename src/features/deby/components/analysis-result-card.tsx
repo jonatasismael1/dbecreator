@@ -53,7 +53,7 @@ export function AnalysisResultCard({ analysis, onApply, applying, applied }: Ana
           <Target className="h-3 w-3" />
           {result.pillar_suggestion || 'Sem sugestao de pilar'}
         </Badge>
-        <Badge variant="warning">Risco: {result.conversion_risk || 'Nao informado'}</Badge>
+        <Badge variant="warning">Risco: {result.conversion_risk || 'Não informado'}</Badge>
         {result.alignment_warning && <Badge variant="error">{result.alignment_warning}</Badge>}
       </div>
 
@@ -101,7 +101,7 @@ function InsightList({ title, icon, items }: { title: string; icon: ReactNode; i
         <p className="text-sm font-semibold text-dbe-text">{title}</p>
       </div>
       <ul className="space-y-2 text-xs leading-relaxed text-dbe-muted">
-        {(items.length ? items : ['Nao informado']).map((item) => (
+        {(items.length ? items : ['Não informado']).map((item) => (
           <li key={item}>{item}</li>
         ))}
       </ul>
@@ -114,7 +114,7 @@ function SuggestionBlock({ title, value, large }: { title: string; value: string
     <div className="rounded-xl border border-dbe-border bg-dbe-dark/40 p-4">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-dbe-muted">{title}</p>
       <p className={large ? 'whitespace-pre-wrap text-sm leading-relaxed text-dbe-text' : 'text-sm leading-relaxed text-dbe-text'}>
-        {value || 'Nao informado'}
+        {value || 'Não informado'}
       </p>
     </div>
   )

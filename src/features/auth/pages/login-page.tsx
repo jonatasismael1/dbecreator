@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/context/auth-context'
 
 const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
+  email: z.string().email('E-mail inválido'),
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
 })
 
@@ -27,7 +27,12 @@ export function LoginPage() {
     setServerError(null)
     const { error } = await signIn(data.email, data.password)
     if (error) {
-      setServerError('Email ou senha incorretos. Tente novamente.')
+      const message = error.message.toLowerCase()
+      setServerError(
+        message.includes('email not confirmed') || message.includes('not confirmed')
+          ? 'Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.'
+          : 'E-mail ou senha incorretos. Tente novamente.'
+      )
     } else {
       navigate('/')
     }
@@ -48,7 +53,7 @@ export function LoginPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
           <label htmlFor="login-email" className="block text-sm font-medium text-dbe-muted mb-2">
-            Email
+            E-mail
           </label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dbe-muted" />

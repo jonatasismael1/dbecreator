@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { usePillars } from '@/features/pillars/hooks/use-pillars'
+import { useCampaigns } from '@/features/campaigns/hooks/use-campaigns'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
 import { ScriptCard } from '../components/script-card'
 import { ScriptModal } from '../components/script-modal'
@@ -24,8 +25,11 @@ import {
 import type { CreateScriptDTO, Script, ScriptStatus } from '../types/script.types'
 
 const columns: Array<{ status: ScriptStatus; title: string; description: string }> = [
-  { status: 'draft', title: 'Rascunho', description: 'Ideias em construcao' },
-  { status: 'ready', title: 'Pronto', description: 'Validado para gravar' },
+  { status: 'draft', title: 'Rascunho', description: 'Ideias em construção' },
+  { status: 'ready', title: 'Pronto', description: 'Pronto para aprovação' },
+  { status: 'in_approval', title: 'Em aprovação', description: 'Enviado para cliente' },
+  { status: 'changes_requested', title: 'Ajuste solicitado', description: 'Aguardando revisão' },
+  { status: 'approved', title: 'Aprovado', description: 'Liberado pelo cliente' },
   { status: 'recorded', title: 'Gravado', description: 'Saiu do papel' },
 ]
 
@@ -34,6 +38,7 @@ export function ScriptsPage() {
   const { workspaceId } = useWorkspaceContext()
   const { data: scripts = [], isLoading: scriptsLoading, isError } = useScripts(workspaceId)
   const { data: pillars = [], isLoading: pillarsLoading } = usePillars(workspaceId)
+  const { campaigns, isLoading: campaignsLoading } = useCampaigns()
   const createScript = useCreateScript(workspaceId)
   const updateScript = useUpdateScript(workspaceId)
   const deleteScript = useDeleteScript(workspaceId)
@@ -55,7 +60,14 @@ export function ScriptsPage() {
     return columns.reduce<Record<ScriptStatus, Script[]>>((acc, column) => {
       acc[column.status] = visibleScripts.filter((script) => script.status === column.status)
       return acc
-    }, { draft: [], ready: [], recorded: [] })
+    }, {
+      draft: [],
+      ready: [],
+      in_approval: [],
+      approved: [],
+      changes_requested: [],
+      recorded: [],
+    } as Record<ScriptStatus, Script[]>)
   }, [visibleScripts])
 
   const openCreate = () => {
@@ -108,7 +120,7 @@ export function ScriptsPage() {
     setDraggingScript(null)
   }
 
-  if (scriptsLoading || pillarsLoading) return <LoadingState />
+  if (scriptsLoading || pillarsLoading || campaignsLoading) return <LoadingState />
 
   if (isError) {
     return (
@@ -120,17 +132,17 @@ export function ScriptsPage() {
 
   return (
     <div>
-      <PageHeader title="Roteiros" description="Construa Reels com gancho, desenvolvimento, CTA e pilar estrategico.">
+      <PageHeader title="Roteiros" description="Construa Reels com gancho, desenvolvimento, CTA e pilar estratégico.">
         <Button onClick={openCreate} className="w-full sm:w-auto">
           <Plus className="h-4 w-4" />
-          Novo Roteiro
+          Novo roteiro
         </Button>
       </PageHeader>
 
       <div className="mb-5 grid grid-cols-3 gap-2 sm:mb-6 sm:gap-3">
         <MetricCard label="Ativos" value={activeScripts.length} />
         <MetricCard label="Pilares vinculados" value={new Set(activeScripts.map((s) => s.content_pillar_id).filter(Boolean)).size} icon={<Target className="h-4 w-4 text-dbe-green" />} />
-        <MetricCard label="Prontos para gravar" value={grouped.ready.length} />
+        <MetricCard label="Em aprovação" value={grouped.in_approval.length} />
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
@@ -148,20 +160,20 @@ export function ScriptsPage() {
         <EmptyState
           icon={FileText}
           title={tab === 'archived' ? 'Nenhum roteiro arquivado' : 'Nenhum roteiro criado'}
-          description={tab === 'archived' ? 'Roteiros arquivados continuam disponiveis para consulta e restauracao.' : 'Crie o primeiro roteiro conectado aos seus pilares para transformar estrategia em conteudo gravavel.'}
-          action={tab === 'active' ? { label: 'Novo Roteiro', onClick: openCreate } : undefined}
+          description={tab === 'archived' ? 'Roteiros arquivados continuam disponíveis para consulta e restauração.' : 'Crie o primeiro roteiro conectado aos seus pilares para transformar estratégia em conteúdo gravável.'}
+          action={tab === 'active' ? { label: 'Novo roteiro', onClick: openCreate } : undefined}
         />
       ) : (
         <div className="-mx-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0 lg:overflow-visible">
-          <div className="flex snap-x snap-mandatory gap-3 lg:grid lg:grid-cols-3 lg:gap-4">
+          <div className="flex snap-x snap-mandatory gap-3 xl:grid xl:grid-cols-6 xl:gap-4">
           {columns.map((column) => (
-            <section key={column.status} className="w-[min(82vw,22rem)] shrink-0 snap-start lg:w-auto lg:min-w-0">
+            <section key={column.status} className="w-[min(82vw,22rem)] shrink-0 snap-start xl:w-auto xl:min-w-0">
               <div className="mb-3 flex items-center justify-between">
                 <div>
                   <h2 className="text-sm font-semibold text-dbe-text">{column.title}</h2>
                   <p className="text-xs text-dbe-muted">{column.description}</p>
                 </div>
-                <Badge variant={column.status === 'recorded' ? 'success' : column.status === 'ready' ? 'blue' : 'default'}>
+                <Badge variant={column.status === 'recorded' || column.status === 'approved' ? 'success' : column.status === 'ready' || column.status === 'in_approval' ? 'blue' : 'default'}>
                   {grouped[column.status].length}
                 </Badge>
               </div>
@@ -197,7 +209,7 @@ export function ScriptsPage() {
                 {grouped[column.status].length === 0 && (
                   <div className="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-dbe-border text-xs text-dbe-muted">
                     <span className="sm:hidden">Sem roteiros</span>
-                    <span className="hidden sm:inline">Arraste um roteiro para ca</span>
+                    <span className="hidden sm:inline">Arraste um roteiro para cá</span>
                   </div>
                 )}
               </div>
@@ -211,6 +223,7 @@ export function ScriptsPage() {
         open={modalOpen}
         script={editingScript}
         pillars={pillars.filter((pillar) => pillar.is_active)}
+        campaigns={campaigns}
         versions={versions}
         versionsLoading={versionsLoading}
         onClose={closeModal}

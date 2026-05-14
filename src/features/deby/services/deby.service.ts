@@ -22,7 +22,7 @@ export const debyService = {
     })
 
     if (error) throw error
-    if (!data?.analysis) throw new Error('Resposta da Deby sem analise.')
+    if (!data?.analysis) throw new Error('Resposta da Deby sem análise.')
     return data.analysis as AiAnalysis
   },
 }

@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import type { User, Session } from '@supabase/supabase-js'
+import type { AuthResponse, User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase/client'
 
 interface AuthContextValue {
@@ -8,7 +8,7 @@ interface AuthContextValue {
   session: Session | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>
+  signUp: (email: string, password: string, fullName: string) => Promise<{ data: AuthResponse['data']; error: Error | null }>
   signOut: () => Promise<void>
 }
 
@@ -43,12 +43,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo: `${getAppUrl()}/auth/callback`,
+      },
     })
-    return { error: error as Error | null }
+    return { data, error: error as Error | null }
   }
 
   const signOut = async () => {
@@ -60,6 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
+}
+
+function getAppUrl() {
+  const configuredUrl = import.meta.env.VITE_APP_URL as string | undefined
+  const runtimeUrl = typeof window !== 'undefined' ? window.location.origin : ''
+  return (runtimeUrl || configuredUrl || '').replace(/\/$/, '')
 }
 
 export function useAuth() {

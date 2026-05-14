@@ -4,6 +4,7 @@ import { AuthLayout } from '@/app/layout/auth-layout'
 import { ProtectedRoute, PublicOnlyRoute } from '@/features/auth/components/route-guards'
 import { LoginPage } from '@/features/auth/pages/login-page'
 import { RegisterPage } from '@/features/auth/pages/register-page'
+import { EmailConfirmationPage } from '@/features/auth/pages/email-confirmation-page'
 import { DashboardPage } from '@/features/dashboard/pages/dashboard-page'
 import { IdeasPage } from '@/features/ideas/pages/ideas-page'
 import { MarketMapPage } from '@/features/market-map/pages/market-map-page'
@@ -31,9 +32,12 @@ export const router = createBrowserRouter([
           { path: '/register', element: <RegisterPage /> },
         ],
       },
-      { path: '/approval/:token', element: <PublicApprovalPage /> },
     ],
   },
+  { path: '/auth/callback', element: <EmailConfirmationPage /> },
+  { path: '/confirmacao-email', element: <EmailConfirmationPage /> },
+  { path: '/approval/:token', element: <PublicApprovalPage /> },
+  { path: '/aprovacao/:token', element: <PublicApprovalPage /> },
   {
     element: <ProtectedRoute />,
     children: [

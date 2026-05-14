@@ -1,4 +1,4 @@
-export type ScriptStatus = 'draft' | 'ready' | 'recorded'
+export type ScriptStatus = 'draft' | 'ready' | 'in_approval' | 'approved' | 'changes_requested' | 'recorded'
 
 export interface ScriptPillar {
   id: string
@@ -12,6 +12,7 @@ export interface Script {
   workspace_id: string
   idea_id: string | null
   content_pillar_id: string | null
+  campaign_id: string | null
   title: string
   hook: string
   body: string
@@ -22,6 +23,11 @@ export interface Script {
   created_at: string
   updated_at: string
   content_pillars?: ScriptPillar | null
+  campaigns?: {
+    id: string
+    title: string
+    status: string
+  } | null
 }
 
 export interface ScriptVersion {
@@ -35,13 +41,14 @@ export interface ScriptVersion {
   cta: string
   status: ScriptStatus
   content_pillar_id: string | null
+  campaign_id: string | null
   created_by: string | null
   created_at: string
 }
 
 export type CreateScriptDTO = Pick<
   Script,
-  'title' | 'hook' | 'body' | 'cta' | 'status' | 'content_pillar_id'
+  'title' | 'hook' | 'body' | 'cta' | 'status' | 'content_pillar_id' | 'campaign_id'
 >
 
 export type UpdateScriptDTO = Partial<CreateScriptDTO>

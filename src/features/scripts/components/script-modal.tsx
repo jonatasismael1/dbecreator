@@ -7,16 +7,18 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import type { ContentPillar } from '@/features/pillars/types/pillar.types'
+import type { Campaign } from '@/features/campaigns/types/campaign.types'
 import { ScriptVersionHistory } from './script-version-history'
 import type { CreateScriptDTO, Script, ScriptStatus, ScriptVersion } from '../types/script.types'
 
 const scriptSchema = z.object({
-  title: z.string().min(2, 'Titulo obrigatorio'),
-  hook: z.string().min(5, 'Gancho obrigatorio'),
-  body: z.string().min(10, 'Desenvolvimento obrigatorio'),
-  cta: z.string().min(3, 'CTA obrigatorio'),
-  status: z.enum(['draft', 'ready', 'recorded']),
+  title: z.string().min(2, 'Título obrigatório'),
+  hook: z.string().min(5, 'Gancho obrigatório'),
+  body: z.string().min(10, 'Desenvolvimento obrigatório'),
+  cta: z.string().min(3, 'CTA obrigatório'),
+  status: z.enum(['draft', 'ready', 'in_approval', 'approved', 'changes_requested', 'recorded']),
   content_pillar_id: z.string().optional(),
+  campaign_id: z.string().optional(),
 })
 
 type ScriptFormValues = z.infer<typeof scriptSchema>
@@ -25,6 +27,8 @@ interface ScriptModalProps {
   open: boolean
   script?: Script | null
   pillars: ContentPillar[]
+  campaigns?: Campaign[]
+  initialCampaignId?: string | null
   versions?: ScriptVersion[]
   versionsLoading?: boolean
   onClose: () => void
@@ -33,12 +37,22 @@ interface ScriptModalProps {
 
 const inputClass = 'w-full rounded-lg border border-dbe-border bg-dbe-dark px-4 py-2.5 text-sm text-dbe-text outline-none transition-all placeholder:text-dbe-muted/50 focus:border-dbe-blue/50 focus:ring-1 focus:ring-dbe-blue/20'
 
-export function ScriptModal({ open, script, pillars, versions = [], versionsLoading, onClose, onSave }: ScriptModalProps) {
+export function ScriptModal({
+  open,
+  script,
+  pillars,
+  campaigns = [],
+  initialCampaignId = null,
+  versions = [],
+  versionsLoading,
+  onClose,
+  onSave,
+}: ScriptModalProps) {
   const [saving, setSaving] = useState(false)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ScriptFormValues>({
     resolver: zodResolver(scriptSchema),
-    defaultValues: { status: 'draft', content_pillar_id: '' },
+    defaultValues: { status: 'draft', content_pillar_id: '', campaign_id: '' },
   })
 
   useEffect(() => {
@@ -50,12 +64,13 @@ export function ScriptModal({ open, script, pillars, versions = [], versionsLoad
         cta: script.cta,
         status: script.status,
         content_pillar_id: script.content_pillar_id ?? '',
+        campaign_id: script.campaign_id ?? '',
       })
       return
     }
 
-    reset({ title: '', hook: '', body: '', cta: '', status: 'draft', content_pillar_id: '' })
-  }, [reset, script])
+    reset({ title: '', hook: '', body: '', cta: '', status: 'draft', content_pillar_id: '', campaign_id: initialCampaignId ?? '' })
+  }, [initialCampaignId, reset, script])
 
   const onSubmit = async (values: ScriptFormValues) => {
     setSaving(true)
@@ -67,6 +82,7 @@ export function ScriptModal({ open, script, pillars, versions = [], versionsLoad
         cta: values.cta,
         status: values.status as ScriptStatus,
         content_pillar_id: values.content_pillar_id || null,
+        campaign_id: values.campaign_id || null,
       })
       onClose()
     } finally {
@@ -83,8 +99,8 @@ export function ScriptModal({ open, script, pillars, versions = [], versionsLoad
             <div className="pointer-events-auto flex max-h-[94dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-dbe-border bg-dbe-navy shadow-2xl sm:max-h-[92vh] sm:max-w-2xl sm:rounded-2xl">
               <div className="flex items-center justify-between border-b border-dbe-border px-4 py-4 sm:px-6 sm:py-5">
                 <div>
-                  <h2 className="text-lg font-bold text-dbe-text">{script ? 'Editar Roteiro' : 'Novo Roteiro'}</h2>
-                  <p className="mt-1 text-xs text-dbe-muted">Gancho, desenvolvimento, CTA e pilar estrategico.</p>
+                  <h2 className="text-lg font-bold text-dbe-text">{script ? 'Editar roteiro' : 'Novo roteiro'}</h2>
+                  <p className="mt-1 text-xs text-dbe-muted">Gancho, desenvolvimento, CTA e pilar estratégico.</p>
                 </div>
                 <button onClick={onClose} className="rounded-lg p-2 text-dbe-muted transition-colors hover:bg-white/5 hover:text-dbe-text" aria-label="Fechar modal">
                   <X className="h-5 w-5" />
@@ -92,12 +108,20 @@ export function ScriptModal({ open, script, pillars, versions = [], versionsLoad
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 overflow-y-auto p-4 sm:space-y-5 sm:p-6">
-                <Field label="Titulo" error={errors.title?.message}>
+                <Field label="Título" error={errors.title?.message}>
                   <input {...register('title')} placeholder="Ex: 3 erros que travam seus Reels" className={inputClass} />
                 </Field>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field label="Pilar de conteudo">
+                  <Field label="Campanha">
+                    <select {...register('campaign_id')} className={inputClass}>
+                      <option value="">Sem campanha</option>
+                      {campaigns.map((campaign) => (
+                        <option key={campaign.id} value={campaign.id}>{campaign.title}</option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Pilar de conteúdo">
                     <select {...register('content_pillar_id')} className={inputClass}>
                       <option value="">Sem pilar</option>
                       {pillars.map((pillar) => (
@@ -105,14 +129,18 @@ export function ScriptModal({ open, script, pillars, versions = [], versionsLoad
                       ))}
                     </select>
                   </Field>
-                  <Field label="Status">
-                    <select {...register('status')} className={inputClass}>
-                      <option value="draft">Rascunho</option>
-                      <option value="ready">Pronto</option>
-                      <option value="recorded">Gravado</option>
-                    </select>
-                  </Field>
                 </div>
+
+                <Field label="Status">
+                  <select {...register('status')} className={inputClass}>
+                    <option value="draft">Rascunho</option>
+                    <option value="ready">Pronto para aprovação</option>
+                    <option value="in_approval">Enviado para aprovação</option>
+                    <option value="approved">Aprovado</option>
+                    <option value="changes_requested">Ajuste solicitado</option>
+                    <option value="recorded">Gravado</option>
+                  </select>
+                </Field>
 
                 <Field label="Gancho" error={errors.hook?.message}>
                   <textarea {...register('hook')} rows={3} placeholder="A primeira frase que para o scroll..." className={cn(inputClass, 'resize-none')} />
@@ -123,7 +151,7 @@ export function ScriptModal({ open, script, pillars, versions = [], versionsLoad
                 </Field>
 
                 <Field label="CTA" error={errors.cta?.message}>
-                  <textarea {...register('cta')} rows={3} placeholder="Uma acao clara para o proximo passo..." className={cn(inputClass, 'resize-none')} />
+                  <textarea {...register('cta')} rows={3} placeholder="Uma ação clara para o próximo passo..." className={cn(inputClass, 'resize-none')} />
                 </Field>
 
                 {script && (

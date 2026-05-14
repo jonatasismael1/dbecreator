@@ -8,7 +8,7 @@ interface CampaignScriptRow {
 }
 
 type CampaignRow = Omit<Campaign, 'scripts'> & {
-  scripts?: CampaignScriptRow[]
+  scripts?: Campaign['scripts'] | CampaignScriptRow[]
 }
 
 export const campaignsService = {
@@ -17,9 +17,7 @@ export const campaignsService = {
       .from(TABLE)
       .select(`
         *,
-        scripts:campaign_scripts(
-          script:scripts(*)
-        )
+        scripts(*, content_pillars(id,title,color,type))
       `)
       .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: false })
@@ -29,7 +27,7 @@ export const campaignsService = {
     // Transform nested scripts
     return (data as CampaignRow[] | null)?.map(campaign => ({
       ...campaign,
-      scripts: campaign.scripts?.map((campaignScript) => campaignScript.script) || []
+      scripts: normalizeCampaignScripts(campaign.scripts)
     })) || []
   },
 
@@ -50,11 +48,12 @@ export const campaignsService = {
     return data
   },
 
-  async update(id: string, dto: UpdateCampaignDTO): Promise<Campaign> {
+  async update(workspaceId: string, id: string, dto: UpdateCampaignDTO): Promise<Campaign> {
     const { data, error } = await supabase
       .from(TABLE)
       .update({ ...dto, updated_at: new Date().toISOString() })
       .eq('id', id)
+      .eq('workspace_id', workspaceId)
       .select()
       .single()
 
@@ -62,26 +61,41 @@ export const campaignsService = {
     return data
   },
 
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase.from(TABLE).delete().eq('id', id)
+  async delete(workspaceId: string, id: string): Promise<void> {
+    const { error } = await supabase
+      .from(TABLE)
+      .delete()
+      .eq('id', id)
+      .eq('workspace_id', workspaceId)
     if (error) throw error
   },
 
   async addScriptToCampaign(campaignId: string, scriptId: string): Promise<void> {
     const { error } = await supabase
-      .from('campaign_scripts')
-      .insert({ campaign_id: campaignId, script_id: scriptId })
+      .from('scripts')
+      .update({ campaign_id: campaignId, updated_at: new Date().toISOString() })
+      .eq('id', scriptId)
     
     if (error) throw error
   },
 
   async removeScriptFromCampaign(campaignId: string, scriptId: string): Promise<void> {
     const { error } = await supabase
-      .from('campaign_scripts')
-      .delete()
+      .from('scripts')
+      .update({ campaign_id: null, updated_at: new Date().toISOString() })
+      .eq('id', scriptId)
       .eq('campaign_id', campaignId)
-      .eq('script_id', scriptId)
     
     if (error) throw error
   }
+}
+
+function normalizeCampaignScripts(scripts: CampaignRow['scripts']) {
+  if (!scripts) return []
+  return scripts.map((item) => {
+    if (item && typeof item === 'object' && 'script' in item) {
+      return item.script
+    }
+    return item
+  })
 }

@@ -83,12 +83,12 @@ export function IdeasPage() {
   return (
     <div>
       <PageHeader
-        title="Central de Ideias"
+        title="Central de ideias"
         description="Capture e organize suas melhores ideias de conteúdo."
       >
         <Button onClick={handleOpenCreate}>
           <Plus className="h-4 w-4" />
-          Nova Ideia
+          Nova ideia
         </Button>
       </PageHeader>
 
@@ -139,7 +139,7 @@ export function IdeasPage() {
           icon={Lightbulb}
           title={filterStatus === 'all' ? 'Nenhuma ideia ainda' : `Nenhuma ideia em "${filterStatus}"`}
           description="Capture qualquer insight que possa virar conteúdo estratégico. Não filtre agora — anote tudo."
-          action={{ label: 'Nova Ideia', onClick: handleOpenCreate }}
+          action={{ label: 'Nova ideia', onClick: handleOpenCreate }}
         />
       ) : (
         <AnimatePresence mode="popLayout">

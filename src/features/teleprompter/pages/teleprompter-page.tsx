@@ -162,7 +162,7 @@ export function TeleprompterPage() {
           <Card className="p-5">
             <div className="mb-4 flex items-center gap-2">
               <Type className="h-4 w-4 text-dbe-blue" />
-              <h2 className="text-sm font-semibold text-dbe-text">Conteudo de leitura</h2>
+              <h2 className="text-sm font-semibold text-dbe-text">Conteúdo de leitura</h2>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -232,7 +232,7 @@ export function TeleprompterPage() {
         <Card className="p-5">
           <div className="mb-5 flex items-center gap-2">
             <Settings className="h-4 w-4 text-dbe-blue" />
-            <h2 className="text-sm font-semibold text-dbe-text">Configuracoes</h2>
+            <h2 className="text-sm font-semibold text-dbe-text">Configurações</h2>
           </div>
 
           <div className="space-y-6">

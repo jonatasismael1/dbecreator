@@ -251,7 +251,7 @@ export interface InstagramOAuthConfig {
   instagramRedirectUri: string
 }
 
-export function getInstagramOAuthConfig(_redirectUriOverride?: string | null): InstagramOAuthConfig {
+export function getInstagramOAuthConfig(): InstagramOAuthConfig {
   const instagramAppId = getOptionalEnv('INSTAGRAM_APP_ID') || getOptionalEnv('INSTAGRAM_CLIENT_ID')
   const instagramAppSecret = getOptionalEnv('INSTAGRAM_APP_SECRET') || getOptionalEnv('INSTAGRAM_CLIENT_SECRET')
   const configuredRedirectUri = getOptionalEnv('INSTAGRAM_REDIRECT_URI')?.trim()
@@ -554,13 +554,6 @@ async function loadInsightMetricAliases<T extends Record<string, number | null>>
 
 function isTokenAuthError(error: MetaApiError): boolean {
   return ['token_expired', 'invalid_access_token'].includes(error.code)
-}
-
-function applyInsightPayload<T extends Record<string, number | null>>(payload: InstagramInsightsPayload, target: T) {
-  for (const insight of payload.data ?? []) {
-    if (!(insight.name in target)) continue
-    target[insight.name as keyof T] = getLatestInsightValue(insight) as T[keyof T]
-  }
 }
 
 function getMetricValue(payload: InstagramInsightsPayload, metric: string): number | null {

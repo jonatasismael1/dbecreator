@@ -1,16 +1,15 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { usePublicApproval } from '../hooks/use-approvals'
-import { CheckCircle2, XCircle, Send, AlertTriangle } from 'lucide-react'
+import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function PublicApprovalPage() {
   const { token } = useParams<{ token: string }>()
-  const { approval, comments, isLoading, isError, updateStatus, addComment } = usePublicApproval(token || '')
+  const { approval, comments, isLoading, isError, updateStatus } = usePublicApproval(token || '')
   
   const [commentText, setCommentText] = useState('')
   const [authorName, setAuthorName] = useState('')
-  const [hasStartedCommenting, setHasStartedCommenting] = useState(false)
 
   if (isLoading) {
     return (
@@ -25,7 +24,7 @@ export function PublicApprovalPage() {
       <div className="min-h-screen bg-dbe-dark flex items-center justify-center p-4 text-center">
         <div className="max-w-md w-full p-8 border border-dbe-border bg-dbe-navy rounded-xl">
           <AlertTriangle className="h-12 w-12 text-dbe-red mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-dbe-text mb-2">Link Inválido ou Expirado</h1>
+          <h1 className="text-xl font-bold text-dbe-text mb-2">Link inválido ou expirado</h1>
           <p className="text-dbe-muted">
             Este link de aprovação não existe ou já expirou. Solicite um novo link ao criador de conteúdo.
           </p>
@@ -36,25 +35,22 @@ export function PublicApprovalPage() {
 
   const handleApprove = () => {
     if (confirm('Tem certeza que deseja aprovar este roteiro?')) {
-      updateStatus.mutate('approved')
+      updateStatus.mutate({ action: 'approve', authorName: authorName || 'Cliente' })
     }
   }
 
   const handleRequestChanges = () => {
-    if (confirm('Deseja solicitar alterações neste roteiro? Lembre-se de deixar um comentário explicando o que deve ser mudado.')) {
-      updateStatus.mutate('requested_changes')
-    }
-  }
-
-  const handleAddComment = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!commentText.trim() || !authorName.trim()) return
-    
-    addComment.mutate({ content: commentText, authorName }, {
-      onSuccess: () => {
-        setCommentText('')
+    if (!commentText.trim()) return
+    updateStatus.mutate(
+      {
+        action: 'request_changes',
+        authorName: authorName || 'Cliente',
+        comment: commentText,
+      },
+      {
+        onSuccess: () => setCommentText(''),
       }
-    })
+    )
   }
 
   return (
@@ -67,8 +63,9 @@ export function PublicApprovalPage() {
             <div>
               <h1 className="text-2xl font-bold mb-1">{approval.script?.title || 'Sem título'}</h1>
               <p className="text-sm text-dbe-muted">
-                Para revisão de {approval.client_name}
+                {approval.script?.campaign?.title ? `Campanha: ${approval.script.campaign.title}` : 'Sem campanha vinculada'}
               </p>
+              <p className="mt-1 text-sm text-dbe-muted">Para revisão de {approval.client_name || 'Cliente'}</p>
             </div>
             
             {/* Status Badge */}
@@ -105,26 +102,45 @@ export function PublicApprovalPage() {
             <div className="h-px bg-dbe-border/50" />
             
             <div>
-              <h3 className="text-xs uppercase tracking-wider text-green-500 font-bold mb-2">Call to Action</h3>
+              <h3 className="text-xs uppercase tracking-wider text-green-500 font-bold mb-2">CTA</h3>
               <p className="whitespace-pre-wrap">{approval.script?.cta}</p>
             </div>
           </div>
           
           {/* Action Buttons */}
           {approval.status === 'pending' && (
-            <div className="flex gap-4 pt-4">
+            <div className="space-y-4 pt-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={(event) => setAuthorName(event.target.value)}
+                  placeholder="Seu nome"
+                  className="w-full rounded-lg border border-dbe-border bg-dbe-navy px-3 py-2 text-sm text-dbe-text outline-none transition-colors placeholder:text-dbe-muted/60 focus:border-dbe-blue"
+                />
+                <Button
+                  className="bg-green-500 text-black hover:bg-green-600"
+                  onClick={handleApprove}
+                  loading={updateStatus.isPending}
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-2" /> Aprovar roteiro
+                </Button>
+              </div>
+              <textarea
+                value={commentText}
+                onChange={(event) => setCommentText(event.target.value)}
+                placeholder="Observações para solicitar ajuste..."
+                rows={4}
+                className="w-full resize-none rounded-lg border border-dbe-border bg-dbe-navy px-3 py-2 text-sm text-dbe-text outline-none transition-colors placeholder:text-dbe-muted/60 focus:border-dbe-blue"
+              />
               <Button 
                 variant="secondary" 
-                className="flex-1 border-red-500/50 text-red-500 hover:bg-red-500/10 hover:text-red-500"
+                className="w-full border-red-500/50 text-red-500 hover:bg-red-500/10 hover:text-red-500"
                 onClick={handleRequestChanges}
+                disabled={!commentText.trim()}
+                loading={updateStatus.isPending}
               >
-                <XCircle className="h-4 w-4 mr-2" /> Solicitar Alteração
-              </Button>
-              <Button 
-                className="flex-1 bg-green-500 hover:bg-green-600 text-black"
-                onClick={handleApprove}
-              >
-                <CheckCircle2 className="h-4 w-4 mr-2" /> Aprovar Roteiro
+                <XCircle className="h-4 w-4 mr-2" /> Solicitar ajuste
               </Button>
             </div>
           )}
@@ -134,13 +150,13 @@ export function PublicApprovalPage() {
         <div className="w-full md:w-80 flex flex-col h-[calc(100vh-4rem)] sticky top-8">
           <div className="bg-dbe-navy border border-dbe-border rounded-xl flex flex-col h-full overflow-hidden">
             <div className="p-4 border-b border-dbe-border bg-black/20">
-              <h2 className="font-semibold">Comentários e Feedbacks</h2>
+              <h2 className="font-semibold">Observações do cliente</h2>
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {comments.length === 0 ? (
                 <p className="text-sm text-dbe-muted text-center py-8">
-                  Nenhum comentário ainda. Deixe seu feedback sobre o roteiro.
+                  Nenhuma observação enviada.
                 </p>
               ) : (
                 comments.map(comment => (
@@ -154,39 +170,11 @@ export function PublicApprovalPage() {
               )}
             </div>
             
-            <div className="p-4 border-t border-dbe-border bg-black/20">
-              <form onSubmit={handleAddComment} className="space-y-3">
-                {!hasStartedCommenting && (
-                  <input
-                    type="text"
-                    value={authorName}
-                    onChange={(e) => setAuthorName(e.target.value)}
-                    onFocus={() => setHasStartedCommenting(true)}
-                    placeholder="Seu Nome"
-                    required
-                    className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-3 py-2 text-sm text-dbe-text focus:outline-none focus:border-dbe-blue"
-                  />
-                )}
-                
-                <textarea
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Escreva um comentário..."
-                  rows={3}
-                  required
-                  className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-3 py-2 text-sm text-dbe-text focus:outline-none focus:border-dbe-blue resize-none"
-                />
-                
-                <Button 
-                  type="submit" 
-                  size="sm" 
-                  className="w-full"
-                  disabled={addComment.isPending || !commentText.trim()}
-                >
-                  <Send className="h-3 w-3 mr-2" /> Enviar Feedback
-                </Button>
-              </form>
-            </div>
+            {approval.status !== 'pending' && (
+              <div className="border-t border-dbe-border bg-black/20 p-4 text-xs text-dbe-muted">
+                Esta revisão já foi respondida.
+              </div>
+            )}
           </div>
         </div>
 

@@ -22,7 +22,13 @@ export interface Approval {
   created_by: string | null
   created_at: string
   updated_at: string
-  script?: Script
+  script?: (Script & {
+    campaign?: {
+      id: string
+      title: string
+    } | null
+  }) | null
+  comments?: ApprovalComment[]
 }
 
 export type CreateApprovalDTO = Pick<

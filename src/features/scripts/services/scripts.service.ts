@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase/client'
 import type { CreateScriptDTO, Script, ScriptVersion, UpdateScriptDTO } from '../types/script.types'
 
 const TABLE = 'scripts'
-const SELECT_COLUMNS = '*, content_pillars(id,title,color,type)'
+const SELECT_COLUMNS = '*, content_pillars(id,title,color,type), campaigns(id,title,status)'
 
 export const scriptsService = {
   async getAll(workspaceId: string): Promise<Script[]> {

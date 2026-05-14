@@ -23,14 +23,14 @@ export function useCampaigns() {
 
   const updateCampaign = useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateCampaignDTO }) =>
-      campaignsService.update(id, dto),
+      campaignsService.update(workspaceId, id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey })
     },
   })
 
   const deleteCampaign = useMutation({
-    mutationFn: campaignsService.delete,
+    mutationFn: (id: string) => campaignsService.delete(workspaceId, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey })
     },

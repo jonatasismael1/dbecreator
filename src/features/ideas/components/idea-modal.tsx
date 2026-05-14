@@ -78,7 +78,7 @@ export function IdeaModal({ open, onClose, onSave, idea }: IdeaModalProps) {
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-dbe-border">
                 <h2 className="text-lg font-bold text-dbe-text">
-                  {idea ? 'Editar Ideia' : 'Nova Ideia'}
+                  {idea ? 'Editar ideia' : 'Nova ideia'}
                 </h2>
                 <button onClick={onClose} className="rounded-lg p-2 text-dbe-muted hover:text-dbe-text hover:bg-white/5 transition-colors">
                   <X className="h-5 w-5" />
@@ -136,7 +136,7 @@ export function IdeaModal({ open, onClose, onSave, idea }: IdeaModalProps) {
                   </Button>
                   <Button type="submit" loading={saving} className="flex-1">
                     <Plus className="h-4 w-4" />
-                    {idea ? 'Salvar' : 'Criar Ideia'}
+                    {idea ? 'Salvar' : 'Criar ideia'}
                   </Button>
                 </div>
               </form>

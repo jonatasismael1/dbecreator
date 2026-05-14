@@ -7,6 +7,7 @@ import type { Campaign, CampaignStatus } from '../types/campaign.types'
 
 interface CampaignCardProps {
   campaign: Campaign
+  onOpen?: (campaign: Campaign) => void
   onEdit: (campaign: Campaign) => void
   onDelete: (id: string) => void
 }
@@ -18,7 +19,7 @@ const STATUS_CONFIG: Record<CampaignStatus, { label: string; color: string }> = 
   completed: { label: 'Concluída', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
 }
 
-export function CampaignCard({ campaign, onEdit, onDelete }: CampaignCardProps) {
+export function CampaignCard({ campaign, onOpen, onEdit, onDelete }: CampaignCardProps) {
   const statusConfig = STATUS_CONFIG[campaign.status]
   
   const checklistTotal = campaign.checklist?.length || 0
@@ -42,7 +43,7 @@ export function CampaignCard({ campaign, onEdit, onDelete }: CampaignCardProps) 
   const dateRange = startDate && endDate ? `${startDate} - ${endDate}` : startDate || endDate || 'Sem data'
 
   return (
-    <Card className="p-5 flex flex-col group relative overflow-hidden">
+    <Card className="p-5 flex flex-col group relative overflow-hidden cursor-pointer" onClick={() => onOpen?.(campaign)}>
       {/* Top Banner Status */}
       <div className={`absolute top-0 left-0 w-1 h-full ${statusConfig.color.split(' ')[1].replace('text-', 'bg-')}`} />
       
@@ -55,10 +56,10 @@ export function CampaignCard({ campaign, onEdit, onDelete }: CampaignCardProps) 
         </div>
         
         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={() => onEdit(campaign)} className="p-1.5 text-dbe-muted hover:text-dbe-text bg-white/5 hover:bg-white/10 rounded-md transition-colors">
+          <button onClick={(event) => { event.stopPropagation(); onEdit(campaign) }} className="p-1.5 text-dbe-muted hover:text-dbe-text bg-white/5 hover:bg-white/10 rounded-md transition-colors" aria-label="Editar campanha">
             <Edit className="h-4 w-4" />
           </button>
-          <button onClick={() => onDelete(campaign.id)} className="p-1.5 text-dbe-muted hover:text-dbe-red bg-white/5 hover:bg-dbe-red/10 rounded-md transition-colors">
+          <button onClick={(event) => { event.stopPropagation(); onDelete(campaign.id) }} className="p-1.5 text-dbe-muted hover:text-dbe-red bg-white/5 hover:bg-dbe-red/10 rounded-md transition-colors" aria-label="Excluir campanha">
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
@@ -103,7 +104,7 @@ export function CampaignCard({ campaign, onEdit, onDelete }: CampaignCardProps) 
       <div className="flex justify-between items-center mt-4 pt-3 border-t border-dbe-border text-xs text-dbe-muted">
         <div className="flex items-center gap-1.5">
           <Flag className="h-3.5 w-3.5" />
-          <span>{campaign.scripts?.length || 0} Roteiros</span>
+          <span>{campaign.scripts?.length || 0} roteiros</span>
         </div>
         <div className="flex items-center gap-1">
           {progress === 100 ? (

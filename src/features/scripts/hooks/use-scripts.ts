@@ -17,7 +17,10 @@ export function useCreateScript(workspaceId: string) {
 
   return useMutation({
     mutationFn: (dto: CreateScriptDTO) => scriptsService.create(workspaceId, dto),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY(workspaceId) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEY(workspaceId) })
+      qc.invalidateQueries({ queryKey: ['campaigns', workspaceId] })
+    },
   })
 }
 
@@ -29,6 +32,7 @@ export function useUpdateScript(workspaceId: string) {
       scriptsService.update(workspaceId, id, dto),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: KEY(workspaceId) })
+      qc.invalidateQueries({ queryKey: ['campaigns', workspaceId] })
       qc.invalidateQueries({ queryKey: ['script_versions', workspaceId, variables.id] })
     },
   })
@@ -39,7 +43,10 @@ export function useDeleteScript(workspaceId: string) {
 
   return useMutation({
     mutationFn: (id: string) => scriptsService.delete(workspaceId, id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY(workspaceId) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEY(workspaceId) })
+      qc.invalidateQueries({ queryKey: ['campaigns', workspaceId] })
+    },
   })
 }
 
@@ -48,7 +55,10 @@ export function useArchiveScript(workspaceId: string) {
 
   return useMutation({
     mutationFn: (id: string) => scriptsService.archive(workspaceId, id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY(workspaceId) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEY(workspaceId) })
+      qc.invalidateQueries({ queryKey: ['campaigns', workspaceId] })
+    },
   })
 }
 
@@ -57,7 +67,10 @@ export function useRestoreScript(workspaceId: string) {
 
   return useMutation({
     mutationFn: (id: string) => scriptsService.restore(workspaceId, id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY(workspaceId) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEY(workspaceId) })
+      qc.invalidateQueries({ queryKey: ['campaigns', workspaceId] })
+    },
   })
 }
 

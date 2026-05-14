@@ -61,14 +61,14 @@ export function DebyPage() {
   if (isError) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-dbe-muted">Erro ao carregar analises da Deby.</p>
+        <p className="text-sm text-dbe-muted">Erro ao carregar análises da Deby.</p>
       </div>
     )
   }
 
   return (
     <div>
-      <PageHeader title="Deby IA" description="Analise tecnica e estrategica dos seus roteiros de Reels." />
+      <PageHeader title="Deby IA" description="Análise técnica e estratégica dos seus roteiros de Reels." />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[380px_1fr]">
         <div className="space-y-4">
@@ -78,7 +78,7 @@ export function DebyPage() {
                 <BrainCircuit className="h-5 w-5 text-dbe-purple" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-dbe-text">Nova analise</h2>
+                <h2 className="text-sm font-semibold text-dbe-text">Nova análise</h2>
                 <p className="text-xs text-dbe-muted">O frontend envia apenas o ID do roteiro.</p>
               </div>
             </div>
@@ -116,11 +116,11 @@ export function DebyPage() {
 
           <Card>
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-dbe-text">Historico</h2>
+              <h2 className="text-sm font-semibold text-dbe-text">Histórico</h2>
               <Badge variant="purple">{history.length}</Badge>
             </div>
             {history.length === 0 ? (
-              <p className="text-xs leading-relaxed text-dbe-muted">As analises aparecem aqui depois da primeira execucao.</p>
+              <p className="text-xs leading-relaxed text-dbe-muted">As análises aparecem aqui depois da primeira execução.</p>
             ) : (
               <div className="space-y-2">
                 {history.slice(0, 8).map((analysis) => (
@@ -154,7 +154,7 @@ export function DebyPage() {
         ) : (
           <EmptyState
             icon={FileText}
-            title="Nenhuma analise ainda"
+            title="Nenhuma análise ainda"
             description="Escolha um roteiro e peça para a Deby avaliar score, riscos, alinhamento e melhorias."
           />
         )}

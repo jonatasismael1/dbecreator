@@ -30,7 +30,7 @@ export function handleError(error: unknown, scope: string): Response {
   }
 
   console.error(`[${scope}]`, error instanceof Error ? error.message : error)
-  return json({ error: 'internal_error', message: 'Erro interno ao processar a integracao Instagram.' }, 500)
+  return json({ error: 'internal_error', message: 'Erro interno ao processar a solicitação.' }, 500)
 }
 
 export function redirectToApp(path: string): Response {

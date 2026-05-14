@@ -63,5 +63,5 @@ function InsightList({ icon, title, items }: { icon: ReactNode; title: string; i
 }
 
 function fallbackList(items: string[]) {
-  return items.length ? items : ['Nao informado']
+  return items.length ? items : ['Não informado']
 }

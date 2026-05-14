@@ -105,7 +105,7 @@ export function CampaignModal({ isOpen, onClose, onSave, campaign, isLoading }: 
       <div className="bg-dbe-navy border border-dbe-border rounded-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-4 border-b border-dbe-border">
           <h2 className="text-lg font-semibold text-dbe-text">
-            {campaign ? 'Editar Campanha' : 'Nova Campanha'}
+            {campaign ? 'Editar campanha' : 'Nova campanha'}
           </h2>
           <button onClick={onClose} className="text-dbe-muted hover:text-dbe-text transition-colors">
             <X className="h-5 w-5" />
@@ -148,7 +148,7 @@ export function CampaignModal({ isOpen, onClose, onSave, campaign, isLoading }: 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-dbe-text mb-1">Meta / Objetivo Numérico</label>
+                <label className="block text-sm font-medium text-dbe-text mb-1">Meta / objetivo numérico</label>
                 <input
                   {...register('goal')}
                   className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-4 py-2 text-dbe-text focus:outline-none focus:border-dbe-blue transition-colors"
@@ -157,7 +157,7 @@ export function CampaignModal({ isOpen, onClose, onSave, campaign, isLoading }: 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-dbe-text mb-1">Data de Início</label>
+                <label className="block text-sm font-medium text-dbe-text mb-1">Data de início</label>
                 <input
                   type="date"
                   {...register('start_date')}
@@ -167,7 +167,7 @@ export function CampaignModal({ isOpen, onClose, onSave, campaign, isLoading }: 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-dbe-text mb-1">Data de Término</label>
+                <label className="block text-sm font-medium text-dbe-text mb-1">Data de término</label>
                 <input
                   type="date"
                   {...register('end_date')}
@@ -179,14 +179,14 @@ export function CampaignModal({ isOpen, onClose, onSave, campaign, isLoading }: 
 
             <div className="pt-4 border-t border-dbe-border">
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-dbe-text">Checklist de Tarefas</label>
+                <label className="block text-sm font-medium text-dbe-text">Checklist de tarefas</label>
                 <Button 
                   type="button" 
                   variant="secondary" 
                   size="sm"
                   onClick={() => append({ id: crypto.randomUUID(), task: '', completed: false })}
                 >
-                  <Plus className="h-3 w-3 mr-1" /> Add
+                  <Plus className="h-3 w-3 mr-1" /> Adicionar
                 </Button>
               </div>
               
@@ -228,7 +228,7 @@ export function CampaignModal({ isOpen, onClose, onSave, campaign, isLoading }: 
             Cancelar
           </Button>
           <Button type="submit" form="campaign-form" disabled={isLoading}>
-            {isLoading ? 'Salvando...' : 'Salvar Campanha'}
+            {isLoading ? 'Salvando...' : 'Salvar campanha'}
           </Button>
         </div>
       </div>

@@ -27,6 +27,9 @@ import type { ScriptStatus } from '../types/script.types'
 const statusConfig: Record<ScriptStatus, { label: string; variant: 'default' | 'blue' | 'success' }> = {
   draft: { label: 'Rascunho', variant: 'default' },
   ready: { label: 'Pronto', variant: 'blue' },
+  in_approval: { label: 'Enviado para aprovação', variant: 'blue' },
+  approved: { label: 'Aprovado', variant: 'success' },
+  changes_requested: { label: 'Ajuste solicitado', variant: 'default' },
   recorded: { label: 'Gravado', variant: 'success' },
 }
 
@@ -72,7 +75,7 @@ export function ScriptPreviewPage() {
       <div className="mx-auto max-w-xl py-16">
         <Card className="text-center">
           <FileText className="mx-auto h-10 w-10 text-dbe-muted" />
-          <h1 className="mt-4 text-xl font-bold text-dbe-text">Roteiro nao encontrado</h1>
+          <h1 className="mt-4 text-xl font-bold text-dbe-text">Roteiro não encontrado</h1>
           <p className="mt-2 text-sm text-dbe-muted">Ele pode ter sido removido ou pertence a outro workspace.</p>
           <Button className="mt-5" onClick={() => navigate('/scripts')}>
             Voltar para roteiros

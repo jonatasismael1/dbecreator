@@ -9,7 +9,7 @@ import { useAuth } from '@/features/auth/context/auth-context'
 
 const registerSchema = z.object({
   fullName: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
+  email: z.string().email('E-mail inválido'),
   password: z.string().min(8, 'Senha deve ter pelo menos 8 caracteres'),
 })
 
@@ -32,7 +32,6 @@ export function RegisterPage() {
       setServerError(error.message || 'Erro ao criar conta. Tente novamente.')
     } else {
       setSuccess(true)
-      setTimeout(() => navigate('/'), 2000)
     }
   }
 
@@ -42,8 +41,13 @@ export function RegisterPage() {
         <div className="rounded-full bg-dbe-green/10 border border-dbe-green/20 p-4 mb-4">
           <CheckCircle className="h-8 w-8 text-dbe-green" />
         </div>
-        <h2 className="text-xl font-bold text-dbe-text mb-2">Conta criada!</h2>
-        <p className="text-sm text-dbe-muted">Redirecionando para o dashboard...</p>
+        <h2 className="text-xl font-bold text-dbe-text mb-2">Conta criada com sucesso.</h2>
+        <p className="max-w-sm text-sm text-dbe-muted">
+          Enviamos um e-mail de confirmação. Clique no link recebido para liberar o acesso à sua conta.
+        </p>
+        <Button className="mt-6" onClick={() => navigate('/login')}>
+          Entrar na minha conta
+        </Button>
       </div>
     )
   }
@@ -80,7 +84,7 @@ export function RegisterPage() {
 
         <div>
           <label htmlFor="register-email" className="block text-sm font-medium text-dbe-muted mb-2">
-            Email
+            E-mail
           </label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dbe-muted" />

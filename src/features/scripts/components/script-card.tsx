@@ -8,12 +8,18 @@ import type { Script, ScriptStatus } from '../types/script.types'
 const statusConfig: Record<ScriptStatus, { label: string; variant: 'default' | 'blue' | 'success' }> = {
   draft: { label: 'Rascunho', variant: 'default' },
   ready: { label: 'Pronto', variant: 'blue' },
+  in_approval: { label: 'Em aprovação', variant: 'blue' },
+  approved: { label: 'Aprovado', variant: 'success' },
+  changes_requested: { label: 'Ajuste solicitado', variant: 'default' },
   recorded: { label: 'Gravado', variant: 'success' },
 }
 
 const nextStatus: Record<ScriptStatus, ScriptStatus> = {
   draft: 'ready',
-  ready: 'recorded',
+  ready: 'in_approval',
+  in_approval: 'approved',
+  approved: 'recorded',
+  changes_requested: 'ready',
   recorded: 'draft',
 }
 
@@ -70,6 +76,11 @@ export function ScriptCard({
                 <span className="truncate">{pillar.title}</span>
               </div>
             )}
+            {script.campaigns && (
+              <p className="mt-1 truncate text-xs text-dbe-muted">
+                Campanha: {script.campaigns.title}
+              </p>
+            )}
           </div>
 
           <div className="flex shrink-0 items-center gap-0.5 opacity-100 transition-opacity sm:gap-1 sm:opacity-0 sm:group-hover:opacity-100" onClick={(event) => event.stopPropagation()}>
@@ -119,9 +130,9 @@ export function ScriptCard({
                 onStatusChange(script.id, nextStatus[script.status])
               }}
               className="flex items-center gap-1 text-[11px] text-dbe-muted transition-colors hover:text-dbe-blue"
-              aria-label={`Avancar roteiro para ${statusConfig[nextStatus[script.status]].label}`}
+              aria-label={`Avançar roteiro para ${statusConfig[nextStatus[script.status]].label}`}
             >
-              Avancar <ArrowRight className="h-3 w-3" />
+              Avançar <ArrowRight className="h-3 w-3" />
             </button>
           )}
         </div>

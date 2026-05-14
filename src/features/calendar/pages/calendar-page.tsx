@@ -74,7 +74,7 @@ export function CalendarPage() {
 
   return (
     <div>
-      <PageHeader title="Calendario Editorial" description="Arraste roteiros para montar sua agenda de publicacao.">
+      <PageHeader title="Calendário editorial" description="Arraste roteiros para montar sua agenda de publicação.">
         <div className="flex items-center gap-2">
           <Button variant="secondary" size="sm" onClick={() => setCursor(addMonths(cursor, -1))}>
             <ChevronLeft className="h-4 w-4" />
@@ -110,13 +110,13 @@ export function CalendarPage() {
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold text-dbe-text">Roteiros sem data</h3>
-              <p className="text-xs text-dbe-muted">Arraste para um dia do calendario.</p>
+              <p className="text-xs text-dbe-muted">Arraste para um dia do calendário.</p>
             </div>
             <Badge variant="blue">{unscheduledScripts.length}</Badge>
           </div>
 
           {unscheduledScripts.length === 0 ? (
-            <EmptyState icon={Clock} title="Tudo agendado" description="Todos os roteiros ja possuem uma data no calendario." />
+            <EmptyState icon={Clock} title="Tudo agendado" description="Todos os roteiros já possuem uma data no calendário." />
           ) : (
             <div className="space-y-2">
               {unscheduledScripts.map((script) => (
@@ -130,7 +130,7 @@ export function CalendarPage() {
                   className="cursor-grab rounded-lg border border-dbe-border bg-dbe-dark/60 p-3 active:cursor-grabbing"
                 >
                   <p className="line-clamp-2 text-sm font-semibold text-dbe-text">{script.title}</p>
-                  <p className="mt-1 text-xs text-dbe-muted">{script.status === 'ready' ? 'Pronto' : 'Rascunho'}</p>
+                  <p className="mt-1 text-xs text-dbe-muted">{script.status === 'ready' ? 'Pronto' : script.status === 'approved' ? 'Aprovado' : 'Rascunho'}</p>
                 </div>
               ))}
             </div>
@@ -179,7 +179,7 @@ export function CalendarPage() {
                         className="group cursor-grab rounded-lg border border-dbe-border bg-dbe-dark/80 p-2 active:cursor-grabbing"
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <p className="line-clamp-2 text-xs font-semibold leading-snug text-dbe-text">{item.scripts?.title ?? 'Roteiro sem titulo'}</p>
+                          <p className="line-clamp-2 text-xs font-semibold leading-snug text-dbe-text">{item.scripts?.title ?? 'Roteiro sem título'}</p>
                           <button onClick={() => deleteItem.mutateAsync(item.id)} className="text-dbe-muted opacity-0 transition-all hover:text-dbe-red group-hover:opacity-100">
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
