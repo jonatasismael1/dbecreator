@@ -254,6 +254,7 @@ export interface InstagramOAuthConfig {
 }
 
 export function getInstagramOAuthConfig(_redirectUriOverride?: string | null): InstagramOAuthConfig {
+  void _redirectUriOverride
   const instagramAppId = getOptionalEnv('INSTAGRAM_APP_ID') || getOptionalEnv('INSTAGRAM_CLIENT_ID')
   const instagramAppSecret = getOptionalEnv('INSTAGRAM_APP_SECRET') || getOptionalEnv('INSTAGRAM_CLIENT_SECRET')
   const configuredRedirectUri = getOptionalEnv('INSTAGRAM_REDIRECT_URI')?.trim()
@@ -629,7 +630,6 @@ async function instagramOAuthTokenRequest<T>(url: string, params: Record<string,
   const safeBodyString = redactSerializedFormBody(bodyString)
   const serializedRedirectUri = new URLSearchParams(bodyString).get('redirect_uri')
 
-  console.log('[meta] POST body:', safeBodyString)
   console.info('[meta] Body do POST OAuth Instagram', {
     endpoint: url,
     content_type: FORM_CONTENT_TYPE,
@@ -640,6 +640,7 @@ async function instagramOAuthTokenRequest<T>(url: string, params: Record<string,
     redirect_uri_roundtrip_ok: serializedRedirectUri === params.redirect_uri,
     code_used_without_trim: params.code === params.code.trim(),
     code_has_outer_whitespace: params.code !== params.code.trim(),
+    safe_body_string: safeBodyString,
     body: {
       client_id: params.client_id,
       client_secret: '[redacted]',

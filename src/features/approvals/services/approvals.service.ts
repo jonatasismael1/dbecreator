@@ -22,29 +22,30 @@ export const approvalsService = {
   },
 
   async create(workspaceId: string, dto: CreateApprovalDTO): Promise<Approval> {
-    const { data: user } = await supabase.auth.getUser()
-    
-    const { data, error } = await supabase
-      .from(TABLE)
-      .insert({
-        ...dto,
+    const { data: sessionData } = await supabase.auth.getSession()
+    const token = sessionData.session?.access_token
+    if (!token) throw new Error('Sessao expirada. Entre novamente para gerar o link.')
+
+    const response = await fetch('/api/approvals/generate-link', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
         workspace_id: workspaceId,
-        created_by: user.user?.id,
-      })
-      .select()
-      .single()
+        script_id: dto.script_id,
+        client_name: dto.client_name,
+      }),
+    })
 
-    if (error) throw error
+    const payload = await response.json().catch(() => null)
+    if (!response.ok) {
+      throw new Error(payload?.message || 'Nao foi possivel gerar o link. Tente novamente.')
+    }
 
-    const { error: scriptError } = await supabase
-      .from('scripts')
-      .update({ status: 'in_approval', updated_at: new Date().toISOString() })
-      .eq('id', dto.script_id)
-      .eq('workspace_id', workspaceId)
-
-    if (scriptError) throw scriptError
-
-    return data
+    if (!payload?.approval) throw new Error('Resposta invalida ao gerar link de aprovacao.')
+    return payload.approval as Approval
   },
 
   async delete(workspaceId: string, id: string): Promise<void> {

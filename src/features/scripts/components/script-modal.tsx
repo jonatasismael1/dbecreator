@@ -2,20 +2,22 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence, motion } from 'framer-motion'
-import { FileText, X } from 'lucide-react'
+import { BrainCircuit, FileText, Sparkles, X } from 'lucide-react'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
+import { DebyAnalysisResult } from '@/features/deby/components/deby-analysis-result'
+import type { AiAnalysis } from '@/features/deby/types/deby.types'
 import type { ContentPillar } from '@/features/pillars/types/pillar.types'
 import type { Campaign } from '@/features/campaigns/types/campaign.types'
 import { ScriptVersionHistory } from './script-version-history'
 import type { CreateScriptDTO, Script, ScriptStatus, ScriptVersion } from '../types/script.types'
 
 const scriptSchema = z.object({
-  title: z.string().min(2, 'Título obrigatório'),
-  hook: z.string().min(5, 'Gancho obrigatório'),
-  body: z.string().min(10, 'Desenvolvimento obrigatório'),
-  cta: z.string().min(3, 'CTA obrigatório'),
+  title: z.string().min(2, 'Titulo obrigatorio'),
+  hook: z.string().min(5, 'Gancho obrigatorio'),
+  body: z.string().min(10, 'Desenvolvimento obrigatorio'),
+  cta: z.string().min(3, 'CTA obrigatorio'),
   status: z.enum(['draft', 'ready', 'in_approval', 'approved', 'changes_requested', 'recorded']),
   content_pillar_id: z.string().optional(),
   campaign_id: z.string().optional(),
@@ -31,6 +33,10 @@ interface ScriptModalProps {
   initialCampaignId?: string | null
   versions?: ScriptVersion[]
   versionsLoading?: boolean
+  analysis?: AiAnalysis | null
+  analysisError?: Error | null
+  analyzing?: boolean
+  onAnalyze?: (scriptId: string) => Promise<AiAnalysis | null>
   onClose: () => void
   onSave: (data: CreateScriptDTO) => Promise<void>
 }
@@ -45,12 +51,17 @@ export function ScriptModal({
   initialCampaignId = null,
   versions = [],
   versionsLoading,
+  analysis,
+  analysisError,
+  analyzing,
+  onAnalyze,
   onClose,
   onSave,
 }: ScriptModalProps) {
   const [saving, setSaving] = useState(false)
+  const [showDebyPanel, setShowDebyPanel] = useState(false)
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<ScriptFormValues>({
+  const { register, handleSubmit, reset, setValue, formState: { errors, isDirty } } = useForm<ScriptFormValues>({
     resolver: zodResolver(scriptSchema),
     defaultValues: { status: 'draft', content_pillar_id: '', campaign_id: '' },
   })
@@ -90,17 +101,39 @@ export function ScriptModal({
     }
   }
 
+  const canAnalyze = Boolean(script?.id && onAnalyze && !isDirty)
+  const analysisStatus = analyzing
+    ? 'loading'
+    : analysisError
+      ? 'error'
+      : showDebyPanel && analysis
+        ? 'success'
+        : 'idle'
+
+  const handleAnalyze = async () => {
+    if (!script?.id || !onAnalyze || isDirty) return
+    setShowDebyPanel(true)
+    await onAnalyze(script.id).catch(() => null)
+  }
+
+  const applyDebySuggestions = () => {
+    if (!analysis) return
+    setValue('hook', analysis.result.improved_hook || '', { shouldDirty: true, shouldValidate: true })
+    setValue('body', analysis.result.rewritten_script || '', { shouldDirty: true, shouldValidate: true })
+    setValue('cta', analysis.result.improved_cta || '', { shouldDirty: true, shouldValidate: true })
+  }
+
   return (
     <AnimatePresence>
       {open && (
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-          <motion.div initial={{ opacity: 0, scale: 0.98, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: 24 }} className="fixed inset-0 z-50 flex items-end justify-center p-0 pointer-events-none sm:items-center sm:p-4">
-            <div className="pointer-events-auto flex max-h-[94dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-dbe-border bg-dbe-navy shadow-2xl sm:max-h-[92vh] sm:max-w-2xl sm:rounded-2xl">
+          <motion.div initial={{ opacity: 0, scale: 0.98, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: 24 }} className="pointer-events-none fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
+            <div className="pointer-events-auto flex max-h-[94dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-dbe-border bg-dbe-navy shadow-2xl sm:max-h-[92vh] sm:max-w-3xl sm:rounded-2xl">
               <div className="flex items-center justify-between border-b border-dbe-border px-4 py-4 sm:px-6 sm:py-5">
                 <div>
                   <h2 className="text-lg font-bold text-dbe-text">{script ? 'Editar roteiro' : 'Novo roteiro'}</h2>
-                  <p className="mt-1 text-xs text-dbe-muted">Gancho, desenvolvimento, CTA e pilar estratégico.</p>
+                  <p className="mt-1 text-xs text-dbe-muted">Gancho, desenvolvimento, CTA e pilar estrategico.</p>
                 </div>
                 <button onClick={onClose} className="rounded-lg p-2 text-dbe-muted transition-colors hover:bg-white/5 hover:text-dbe-text" aria-label="Fechar modal">
                   <X className="h-5 w-5" />
@@ -108,7 +141,7 @@ export function ScriptModal({
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 overflow-y-auto p-4 sm:space-y-5 sm:p-6">
-                <Field label="Título" error={errors.title?.message}>
+                <Field label="Titulo" error={errors.title?.message}>
                   <input {...register('title')} placeholder="Ex: 3 erros que travam seus Reels" className={inputClass} />
                 </Field>
 
@@ -121,7 +154,7 @@ export function ScriptModal({
                       ))}
                     </select>
                   </Field>
-                  <Field label="Pilar de conteúdo">
+                  <Field label="Pilar de conteudo">
                     <select {...register('content_pillar_id')} className={inputClass}>
                       <option value="">Sem pilar</option>
                       {pillars.map((pillar) => (
@@ -134,8 +167,8 @@ export function ScriptModal({
                 <Field label="Status">
                   <select {...register('status')} className={inputClass}>
                     <option value="draft">Rascunho</option>
-                    <option value="ready">Pronto para aprovação</option>
-                    <option value="in_approval">Enviado para aprovação</option>
+                    <option value="ready">Pronto para aprovacao</option>
+                    <option value="in_approval">Enviado para aprovacao</option>
                     <option value="approved">Aprovado</option>
                     <option value="changes_requested">Ajuste solicitado</option>
                     <option value="recorded">Gravado</option>
@@ -151,8 +184,50 @@ export function ScriptModal({
                 </Field>
 
                 <Field label="CTA" error={errors.cta?.message}>
-                  <textarea {...register('cta')} rows={3} placeholder="Uma ação clara para o próximo passo..." className={cn(inputClass, 'resize-none')} />
+                  <textarea {...register('cta')} rows={3} placeholder="Uma acao clara para o proximo passo..." className={cn(inputClass, 'resize-none')} />
                 </Field>
+
+                {script?.id && onAnalyze && (
+                  <div className="rounded-xl border border-dbe-purple/20 bg-dbe-purple/10 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-dbe-purple/20 bg-dbe-purple/10">
+                          <BrainCircuit className="h-4 w-4 text-dbe-purple" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-dbe-text">Analisar roteiro completo</p>
+                          <p className="mt-1 text-xs leading-relaxed text-dbe-muted">
+                            {isDirty
+                              ? 'Salve as alteracoes antes de pedir uma nova analise da Deby.'
+                              : 'A Deby avalia retencao, riscos e melhorias sem bloquear sua escrita.'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="deby"
+                        onClick={handleAnalyze}
+                        loading={analyzing}
+                        disabled={!canAnalyze}
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        Analisar com Deby
+                      </Button>
+                    </div>
+
+                    {showDebyPanel && (
+                      <div className="mt-4">
+                        <DebyAnalysisResult
+                          status={analysisStatus}
+                          analysis={analysis}
+                          errorMessage={analysisError?.message}
+                          onRetry={canAnalyze ? handleAnalyze : undefined}
+                          onApply={analysis ? applyDebySuggestions : undefined}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {script && (
                   <ScriptVersionHistory versions={versions} isLoading={versionsLoading} />

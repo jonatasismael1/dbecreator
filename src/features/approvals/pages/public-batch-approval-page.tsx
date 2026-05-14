@@ -4,7 +4,36 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, XCircle, AlertTriangle, ListChecks } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-async function fetchBatch(token: string) {
+interface PublicBatchScript {
+  id: string
+  title: string
+  hook: string
+  body: string
+  cta: string
+  status: string
+}
+
+interface PublicBatchItem {
+  id: string
+  status: 'pending' | 'approved' | 'requested_changes'
+  client_feedback: string | null
+  script: PublicBatchScript
+}
+
+interface PublicBatch {
+  client_name: string | null
+  campaign?: {
+    title?: string | null
+  } | null
+  items: PublicBatchItem[]
+}
+
+type UpdateBatchPayload =
+  | { action: 'approve_all'; author_name: string }
+  | { action: 'approve_item'; item_id: string; author_name: string }
+  | { action: 'request_changes_item'; item_id: string; author_name: string; comment: string }
+
+async function fetchBatch(token: string): Promise<PublicBatch> {
   const res = await fetch(`/api/public-batch-approval?token=${token}`)
   if (!res.ok) throw new Error('Falha ao buscar lote')
   return res.json()
@@ -24,7 +53,7 @@ export function PublicBatchApprovalPage() {
   })
 
   const updateStatus = useMutation({
-    mutationFn: async (body: any) => {
+    mutationFn: async (body: UpdateBatchPayload) => {
       const res = await fetch(`/api/public-batch-approval?token=${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,7 +137,7 @@ export function PublicBatchApprovalPage() {
               placeholder="Seu nome"
               className="w-40 rounded-lg border border-dbe-border bg-dbe-navy px-3 py-2 text-sm text-dbe-text outline-none transition-colors placeholder:text-dbe-muted/60 focus:border-dbe-blue"
             />
-            {batch.items.some((i: any) => i.status === 'pending') && (
+            {batch.items.some((item) => item.status === 'pending') && (
               <Button
                 className="bg-green-500 text-black hover:bg-green-600"
                 onClick={handleApproveAll}
@@ -121,7 +150,7 @@ export function PublicBatchApprovalPage() {
         </div>
 
         <div className="space-y-6">
-          {batch.items.map((item: any) => (
+          {batch.items.map((item) => (
             <div key={item.id} className="rounded-xl border border-dbe-border bg-dbe-navy p-6">
               <div className="mb-4 flex items-start justify-between border-b border-dbe-border/50 pb-4">
                 <h2 className="text-lg font-bold">{item.script.title}</h2>

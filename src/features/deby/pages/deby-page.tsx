@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useScripts, useUpdateScript } from '@/features/scripts/hooks/use-scripts'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
-import { AnalysisResultCard } from '../components/analysis-result-card'
+import { DebyAnalysisResult } from '../components/deby-analysis-result'
 import { useAnalyzeScript, useDebyHistory } from '../hooks/use-deby'
 import type { AiAnalysis } from '../types/deby.types'
 
@@ -32,12 +32,25 @@ export function DebyPage() {
     () => scripts.find((script) => script.id === visibleAnalysis?.script_id),
     [scripts, visibleAnalysis?.script_id],
   )
+  const analysisStatus = analyzeScript.isPending
+    ? 'loading'
+    : analyzeScript.isError
+      ? 'error'
+      : visibleAnalysis
+        ? 'success'
+        : 'idle'
 
   const handleAnalyze = async () => {
     if (!selectedScriptId) return
-    const analysis = await analyzeScript.mutateAsync(selectedScriptId)
-    setActiveAnalysis(analysis)
-    setAppliedAnalysisId(null)
+    analyzeScript.reset()
+    try {
+      const analysis = await analyzeScript.mutateAsync(selectedScriptId)
+      setActiveAnalysis(analysis)
+      setAppliedAnalysisId(null)
+    } catch {
+      setActiveAnalysis(null)
+      setAppliedAnalysisId(null)
+    }
   }
 
   const handleApplyAnalysis = async () => {
@@ -144,12 +157,15 @@ export function DebyPage() {
           </Card>
         </div>
 
-        {visibleAnalysis ? (
-          <AnalysisResultCard
+        {analysisStatus !== 'idle' ? (
+          <DebyAnalysisResult
+            status={analysisStatus}
             analysis={visibleAnalysis}
+            errorMessage={analyzeScript.error instanceof Error ? analyzeScript.error.message : undefined}
+            onRetry={selectedScriptId ? handleAnalyze : undefined}
             onApply={visibleScript ? handleApplyAnalysis : undefined}
             applying={updateScript.isPending}
-            applied={appliedAnalysisId === visibleAnalysis.id}
+            applied={Boolean(visibleAnalysis && appliedAnalysisId === visibleAnalysis.id)}
           />
         ) : (
           <EmptyState

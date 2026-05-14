@@ -6,7 +6,6 @@ import {
   FileText,
   Lightbulb,
   Sparkles,
-  TrendingUp,
   Zap,
 } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header'

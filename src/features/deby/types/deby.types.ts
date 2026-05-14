@@ -25,3 +25,5 @@ export interface AiAnalysis {
     title: string
   } | null
 }
+
+export type DebyAnalysisStatus = 'idle' | 'loading' | 'success' | 'error'

@@ -11,6 +11,8 @@ import { Card } from '@/components/ui/card'
 import { usePillars } from '@/features/pillars/hooks/use-pillars'
 import { useCampaigns } from '@/features/campaigns/hooks/use-campaigns'
 import { useBatchApprovals } from '@/features/approvals/hooks/use-batch-approvals'
+import { useAnalyzeScript } from '@/features/deby/hooks/use-deby'
+import type { AiAnalysis } from '@/features/deby/types/deby.types'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
 import { ScriptCard } from '../components/script-card'
 import { ScriptModal } from '../components/script-modal'
@@ -46,9 +48,11 @@ export function ScriptsPage() {
   const archiveScript = useArchiveScript(workspaceId)
   const restoreScript = useRestoreScript(workspaceId)
   const { createBatch } = useBatchApprovals()
+  const analyzeScript = useAnalyzeScript(workspaceId)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingScript, setEditingScript] = useState<Script | null>(null)
+  const [modalAnalysis, setModalAnalysis] = useState<AiAnalysis | null>(null)
   const [draggingScript, setDraggingScript] = useState<Script | null>(null)
   const [dragOverStatus, setDragOverStatus] = useState<ScriptStatus | null>(null)
   const [tab, setTab] = useState<'active' | 'archived'>('active')
@@ -77,17 +81,23 @@ export function ScriptsPage() {
 
   const openCreate = () => {
     setEditingScript(null)
+    setModalAnalysis(null)
+    analyzeScript.reset()
     setModalOpen(true)
   }
 
   const openEdit = (script: Script) => {
     setEditingScript(script)
+    setModalAnalysis(null)
+    analyzeScript.reset()
     setModalOpen(true)
   }
 
   const closeModal = () => {
     setModalOpen(false)
     setEditingScript(null)
+    setModalAnalysis(null)
+    analyzeScript.reset()
   }
 
   const handleSave = async (data: CreateScriptDTO) => {
@@ -139,6 +149,21 @@ export function ScriptsPage() {
     setApprovalLink(link)
     setSelectionMode(false)
     setSelectedScriptIds(new Set())
+  }
+
+  const handleAnalyzeInModal = async (scriptId: string) => {
+    try {
+      const analysis = await analyzeScript.mutateAsync(scriptId)
+      const script = scripts.find((item) => item.id === scriptId)
+      const enriched = script
+        ? { ...analysis, scripts: { id: script.id, title: script.title } }
+        : analysis
+      setModalAnalysis(enriched)
+      return enriched
+    } catch {
+      setModalAnalysis(null)
+      return null
+    }
   }
 
   if (scriptsLoading || pillarsLoading || campaignsLoading) return <LoadingState />
@@ -277,12 +302,17 @@ export function ScriptsPage() {
       )}
 
       <ScriptModal
+        key={editingScript?.id ?? 'new-script'}
         open={modalOpen}
         script={editingScript}
         pillars={pillars.filter((pillar) => pillar.is_active)}
         campaigns={campaigns}
         versions={versions}
         versionsLoading={versionsLoading}
+        analysis={modalAnalysis}
+        analysisError={analyzeScript.error instanceof Error ? analyzeScript.error : null}
+        analyzing={analyzeScript.isPending}
+        onAnalyze={editingScript ? handleAnalyzeInModal : undefined}
         onClose={closeModal}
         onSave={handleSave}
       />
