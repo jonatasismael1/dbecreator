@@ -12,6 +12,7 @@ export const INSTAGRAM_OAUTH_DEBUG_VERSION = 'instagram_oauth_debug_preserve_003
 export const INSTAGRAM_AUTHORIZE_ENDPOINT = 'https://www.instagram.com/oauth/authorize'
 export const INSTAGRAM_TOKEN_ENDPOINT = 'https://api.instagram.com/oauth/access_token'
 export const INSTAGRAM_LONG_LIVED_TOKEN_PATH = 'access_token'
+export const INSTAGRAM_REFRESH_TOKEN_PATH = 'refresh_access_token'
 export const INSTAGRAM_CALLBACK_REDIRECT_URI = 'https://dbecreator.netlify.app/auth/instagram/callback'
 
 export interface InstagramOAuthToken {
@@ -139,19 +140,12 @@ export async function exchangeCodeForInstagramToken(code: string, redirectUri?: 
     permissions: parsePermissions(shortLived.permissions),
   })
 
-  const longLived = await exchangeForLongLivedInstagramToken(shortLived.access_token, config).catch((error) => {
-    console.warn('[meta] Troca para token longo Instagram falhou; salvando token inicial valido', {
-      debug_version: INSTAGRAM_OAUTH_DEBUG_VERSION,
-      step: 'long_lived_token_exchange',
-      error: sanitizeErrorForLog(error),
-    })
-    return null
-  })
+  const longLived = await exchangeForLongLivedInstagramToken(shortLived.access_token)
 
   return {
-    accessToken: longLived?.access_token || shortLived.access_token,
+    accessToken: longLived.access_token,
     userId: shortLived.user_id ? String(shortLived.user_id) : '',
-    expiresIn: longLived?.expires_in ?? shortLived.expires_in ?? null,
+    expiresIn: longLived.expires_in ?? null,
     permissions: parsePermissions(shortLived.permissions),
   }
 }
@@ -251,7 +245,7 @@ export interface InstagramOAuthConfig {
   instagramRedirectUri: string
 }
 
-export function getInstagramOAuthConfig(): InstagramOAuthConfig {
+export function getInstagramOAuthConfig(_redirectUriOverride?: string | null): InstagramOAuthConfig {
   const instagramAppId = getOptionalEnv('INSTAGRAM_APP_ID') || getOptionalEnv('INSTAGRAM_CLIENT_ID')
   const instagramAppSecret = getOptionalEnv('INSTAGRAM_APP_SECRET') || getOptionalEnv('INSTAGRAM_CLIENT_SECRET')
   const configuredRedirectUri = getOptionalEnv('INSTAGRAM_REDIRECT_URI')?.trim()
@@ -370,21 +364,38 @@ async function fetchJson<T>(url: URL, params: Record<string, string>): Promise<T
   return data as T
 }
 
+export async function refreshLongLivedInstagramToken(
+  accessToken: string,
+): Promise<{ access_token: string; token_type?: string; expires_in?: number }> {
+  const url = new URL(`https://graph.instagram.com/${getGraphApiVersion()}/${INSTAGRAM_REFRESH_TOKEN_PATH}`)
+  url.searchParams.set('grant_type', 'ig_refresh_token')
+  url.searchParams.set('access_token', accessToken)
+
+  return instagramTokenLifecycleRequest(url, 'refresh_token_failed', 'Falha ao renovar token longo do Instagram.')
+}
+
 async function exchangeForLongLivedInstagramToken(
   accessToken: string,
-  config: InstagramOAuthConfig,
 ): Promise<{ access_token: string; token_type?: string; expires_in?: number }> {
-  const url = new URL(`https://graph.facebook.com/${getGraphApiVersion()}/${INSTAGRAM_LONG_LIVED_TOKEN_PATH}`)
+  const config = getInstagramOAuthConfig()
+  const url = new URL(`https://graph.instagram.com/${getGraphApiVersion()}/${INSTAGRAM_LONG_LIVED_TOKEN_PATH}`)
   url.searchParams.set('grant_type', 'ig_exchange_token')
-  url.searchParams.set('client_id', config.instagramAppId)
   url.searchParams.set('client_secret', config.instagramAppSecret)
   url.searchParams.set('access_token', accessToken)
 
+  return instagramTokenLifecycleRequest(url, 'long_lived_token_exchange_failed', 'Falha ao gerar token longo do Instagram.')
+}
+
+async function instagramTokenLifecycleRequest(
+  url: URL,
+  code: string,
+  message: string,
+): Promise<{ access_token: string; token_type?: string; expires_in?: number }> {
   let response: Response
   try {
     response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
   } catch (error) {
-    throw new ApiError(502, 'long_lived_token_exchange_failed', 'Falha de rede ao gerar token longo do Instagram.', {
+    throw new ApiError(502, code, message, {
       debug_version: INSTAGRAM_OAUTH_DEBUG_VERSION,
       endpoint: url.origin + url.pathname,
       status: null,
@@ -400,7 +411,7 @@ async function exchangeForLongLivedInstagramToken(
       response.status,
       typeof graphError?.code === 'number' ? graphError.code : null,
       typeof graphError?.error_subcode === 'number' ? graphError.error_subcode : null,
-      graphError?.message || 'Erro ao gerar token longo do Instagram.',
+      graphError?.message || message,
       {
         debug_version: INSTAGRAM_OAUTH_DEBUG_VERSION,
         endpoint: url.origin + url.pathname,
@@ -413,7 +424,8 @@ async function exchangeForLongLivedInstagramToken(
     )
   }
 
-  console.info('[meta] Resposta da troca para token longo Instagram', {
+  console.info('[meta] Resposta do ciclo de vida do token Instagram', {
+    endpoint: url.origin + url.pathname,
     has_access_token: Boolean(data.access_token),
     token_type: data.token_type ?? null,
     expires_in: data.expires_in ?? null,

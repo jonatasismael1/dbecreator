@@ -1,5 +1,5 @@
-import { decryptToken } from './_shared/crypto'
-import { getInstagramInsights } from './_shared/meta'
+import { decryptToken, encryptToken } from './_shared/crypto'
+import { getInstagramInsights, refreshLongLivedInstagramToken } from './_shared/meta'
 import { ApiError, handleError, json, methodNotAllowed } from './_shared/responses'
 import { getWorkspaceId, requireAuth, requireWorkspaceMember } from './_shared/supabase'
 
@@ -35,13 +35,56 @@ export default async function handler(request: Request): Promise<Response> {
       throw new ApiError(401, 'token_expired', 'Token da Meta expirado. Reconecte o Instagram.')
     }
 
-    const instagramAccessToken = decryptToken(integration.page_access_token_encrypted)
+    let instagramAccessToken = decryptToken(integration.page_access_token_encrypted)
+    let tokenExpiresAt = integration.token_expires_at as string | null
+    let tokenRefreshedAt = typeof integration.metadata?.token_refreshed_at === 'string'
+      ? integration.metadata.token_refreshed_at
+      : null
+
+    if (shouldRefreshInstagramToken(tokenExpiresAt)) {
+      const refreshed = await refreshLongLivedInstagramToken(instagramAccessToken)
+      instagramAccessToken = refreshed.access_token
+      tokenExpiresAt = refreshed.expires_in
+        ? new Date(Date.now() + refreshed.expires_in * 1000).toISOString()
+        : tokenExpiresAt
+      tokenRefreshedAt = new Date().toISOString()
+
+      await admin
+        .from('workspace_integrations')
+        .update({
+          page_access_token_encrypted: encryptToken(instagramAccessToken),
+          token_expires_at: tokenExpiresAt,
+          updated_at: new Date().toISOString(),
+          metadata: {
+            ...(integration.metadata ?? {}),
+            token_refreshed_at: tokenRefreshedAt,
+          },
+        })
+        .eq('id', integration.id)
+
+      await admin
+        .from('profiles')
+        .update({
+          ig_access_token: encryptToken(instagramAccessToken),
+          ig_token_expires_at: tokenExpiresAt,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id)
+
+      console.info('[meta-instagram-insights] Token Instagram renovado', {
+        user_id: user.id,
+        workspace_id: workspaceId,
+        integration_id: integration.id,
+        token_expires_at: tokenExpiresAt,
+      })
+    }
+
     console.info('[meta-instagram-insights] Buscando insights com token salvo da integracao', {
       user_id: user.id,
       workspace_id: workspaceId,
       integration_id: integration.id,
       instagram_business_account_id: integration.instagram_business_account_id,
-      token_expires_at: integration.token_expires_at,
+      token_expires_at: tokenExpiresAt,
     })
 
     const insights = await getInstagramInsights(integration.instagram_business_account_id, instagramAccessToken)
@@ -54,6 +97,7 @@ export default async function handler(request: Request): Promise<Response> {
           last_insights_sync_at: insights.synced_at,
           last_insights_metrics: insights.metrics,
           last_insights_metric_errors: insights.metric_errors,
+          token_refreshed_at: tokenRefreshedAt,
         },
         updated_at: new Date().toISOString(),
       })
@@ -72,11 +116,17 @@ export default async function handler(request: Request): Promise<Response> {
         account_name: integration.account_name,
         facebook_page_name: integration.facebook_page_name,
         instagram_business_account_id: integration.instagram_business_account_id,
-        token_expires_at: integration.token_expires_at,
+        token_expires_at: tokenExpiresAt,
       },
       ...insights,
     })
   } catch (error) {
     return handleError(error, 'meta-instagram-insights')
   }
+}
+
+function shouldRefreshInstagramToken(expiresAt: string | null): boolean {
+  if (!expiresAt) return false
+  const refreshWindowMs = 7 * 24 * 60 * 60 * 1000
+  return new Date(expiresAt).getTime() - Date.now() < refreshWindowMs
 }
