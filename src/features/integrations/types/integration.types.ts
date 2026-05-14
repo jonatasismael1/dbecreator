@@ -46,6 +46,12 @@ export interface InstagramInsightsResponse {
     profile_views: number | null
     follower_count: number | null
   }
+  audience?: {
+    countries: Record<string, number>
+    cities: Record<string, number>
+    gender_age: Record<string, number>
+    online_followers: Record<string, number>
+  }
   media: InstagramMediaInsight[]
   metric_errors: Record<string, string>
   synced_at: string
@@ -69,6 +75,9 @@ export interface InstagramMediaInsight {
     comments: number | null
     saved: number | null
     shares?: number | null
+    follows?: number | null
+    profile_activity?: number | null
+    profile_visits?: number | null
     total_interactions?: number | null
   }
   insight_errors: Record<string, string>

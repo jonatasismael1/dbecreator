@@ -47,6 +47,13 @@ interface InstagramInsightsPayload {
   data?: InstagramInsight[]
 }
 
+export interface InstagramAudienceInsights {
+  countries: Record<string, number>
+  cities: Record<string, number>
+  gender_age: Record<string, number>
+  online_followers: Record<string, number>
+}
+
 export interface InstagramMedia {
   id: string
   caption?: string
@@ -65,6 +72,9 @@ export interface InstagramMedia {
     comments: number | null
     saved: number | null
     shares: number | null
+    follows: number | null
+    profile_activity: number | null
+    profile_visits: number | null
     total_interactions: number | null
   }
   insight_errors: Record<string, string>
@@ -192,6 +202,7 @@ export async function getInstagramInsights(igAccountId: string, instagramAccessT
     profile_views: null as number | null,
   }
   const metricErrors: Record<string, string> = {}
+  const audience = await getAudienceInsights(igAccountId, instagramAccessToken, metricErrors)
 
   await loadInsightMetricAliases(
     `${igAccountId}/insights`,
@@ -213,6 +224,7 @@ export async function getInstagramInsights(igAccountId: string, instagramAccessT
   return {
     account: profile,
     metrics,
+    audience,
     media,
     metric_errors: metricErrors,
     synced_at: new Date().toISOString(),
@@ -430,6 +442,9 @@ async function getRecentInstagramMedia(igAccountId: string, instagramAccessToken
       comments: typeof item.comments_count === 'number' ? item.comments_count : null,
       saved: null as number | null,
       shares: null as number | null,
+      follows: null as number | null,
+      profile_activity: null as number | null,
+      profile_visits: null as number | null,
       total_interactions: null as number | null,
     }
     const insightErrors: Record<string, string> = {}
@@ -445,6 +460,9 @@ async function getRecentInstagramMedia(igAccountId: string, instagramAccessToken
         { key: 'comments', aliases: ['comments'] },
         { key: 'saved', aliases: ['saved', 'saves'] },
         { key: 'shares', aliases: ['shares'] },
+        { key: 'follows', aliases: ['follows'] },
+        { key: 'profile_activity', aliases: ['profile_activity'] },
+        { key: 'profile_visits', aliases: ['profile_visits'] },
         { key: 'total_interactions', aliases: ['total_interactions'] },
       ],
       insights,
@@ -457,6 +475,48 @@ async function getRecentInstagramMedia(igAccountId: string, instagramAccessToken
       insight_errors: insightErrors,
     }
   }))
+}
+
+async function getAudienceInsights(
+  igAccountId: string,
+  accessToken: string,
+  metricErrors: Record<string, string>,
+): Promise<InstagramAudienceInsights> {
+  const audience: InstagramAudienceInsights = {
+    countries: {},
+    cities: {},
+    gender_age: {},
+    online_followers: {},
+  }
+
+  await Promise.all([
+    loadAudienceMetric(`${igAccountId}/insights`, accessToken, 'audience_country', 'countries', audience, metricErrors),
+    loadAudienceMetric(`${igAccountId}/insights`, accessToken, 'audience_city', 'cities', audience, metricErrors),
+    loadAudienceMetric(`${igAccountId}/insights`, accessToken, 'audience_gender_age', 'gender_age', audience, metricErrors),
+    loadAudienceMetric(`${igAccountId}/insights`, accessToken, 'online_followers', 'online_followers', audience, metricErrors),
+  ])
+
+  return audience
+}
+
+async function loadAudienceMetric(
+  path: string,
+  accessToken: string,
+  metric: string,
+  key: keyof InstagramAudienceInsights,
+  target: InstagramAudienceInsights,
+  metricErrors: Record<string, string>,
+) {
+  try {
+    const insights = await instagramGraphGet<InstagramInsightsPayload>(path, accessToken, {
+      metric,
+      period: 'lifetime',
+    })
+    target[key] = getLatestInsightMap(insights, metric)
+  } catch (error) {
+    if (error instanceof MetaApiError && isTokenAuthError(error)) throw error
+    metricErrors[metric] = error instanceof Error ? error.message : 'Metrica indisponivel.'
+  }
 }
 
 interface InsightMetricAlias<T extends Record<string, number | null>> {
@@ -506,6 +566,16 @@ function applyInsightPayload<T extends Record<string, number | null>>(payload: I
 function getMetricValue(payload: InstagramInsightsPayload, metric: string): number | null {
   const insight = (payload.data ?? []).find((item) => item.name === metric) ?? payload.data?.[0]
   return insight ? getLatestInsightValue(insight) : null
+}
+
+function getLatestInsightMap(payload: InstagramInsightsPayload, metric: string): Record<string, number> {
+  const insight = (payload.data ?? []).find((item) => item.name === metric) ?? payload.data?.[0]
+  const value = insight?.values?.at(-1)?.value
+  if (!value || typeof value !== 'object') return {}
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => [key, Number(entry || 0)]),
+  )
 }
 
 function normalizeInstagramProfile(profile: InstagramProfile & { user_id?: string | number; profile_pic?: string }, fallbackId?: string): InstagramProfile {
