@@ -23,6 +23,7 @@ export function ReportsPage() {
   const [editingMetric, setEditingMetric] = useState<PerformanceMetric | null>(null)
   const [latestInsights, setLatestInsights] = useState<InstagramInsightsResponse | null>(null)
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
+  const [isInsightModalOpen, setIsInsightModalOpen] = useState(false)
 
   const handleOpenModal = (metric?: PerformanceMetric) => {
     setEditingMetric(metric || null)
@@ -53,7 +54,8 @@ export function ReportsPage() {
     try {
       const insights = await instagramInsights.mutateAsync()
       setLatestInsights(insights)
-      setSelectedPostId(insights.media[0]?.id ?? null)
+      setSelectedPostId(null)
+      setIsInsightModalOpen(false)
       await refetch()
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Erro ao buscar insights do Instagram. Verifique a conexao em Configuracoes.')
@@ -74,6 +76,11 @@ export function ReportsPage() {
     if (!latestInsights) return null
     return latestInsights.media.find((post) => post.id === selectedPostId) ?? latestInsights.media[0] ?? null
   }, [latestInsights, selectedPostId])
+
+  const openInsightModal = (postId: string) => {
+    setSelectedPostId(postId)
+    setIsInsightModalOpen(true)
+  }
 
   return (
     <div className="h-full">
@@ -111,31 +118,33 @@ export function ReportsPage() {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <SummaryCard icon={<Eye className="h-4 w-4" />} label="Views" value={latestInsights.metrics.media_views} onClick={() => setSelectedPostId(null)} />
-            <SummaryCard icon={<Users className="h-4 w-4 text-blue-300" />} label="Alcance" value={latestInsights.metrics.media_viewers ?? latestInsights.metrics.reach ?? null} onClick={() => setSelectedPostId(null)} />
-            <SummaryCard icon={<UserRound className="h-4 w-4 text-green-300" />} label="Seguidores" value={latestInsights.metrics.follower_count ?? latestInsights.account.followers_count ?? null} onClick={() => setSelectedPostId(null)} />
-            <SummaryCard icon={<Instagram className="h-4 w-4 text-pink-400" />} label="Visitas" value={latestInsights.metrics.profile_views} onClick={() => setSelectedPostId(null)} />
+            <SummaryCard icon={<Eye className="h-4 w-4" />} label="Views" value={latestInsights.metrics.media_views} />
+            <SummaryCard icon={<Users className="h-4 w-4 text-blue-300" />} label="Alcance" value={latestInsights.metrics.media_viewers ?? latestInsights.metrics.reach ?? null} />
+            <SummaryCard icon={<UserRound className="h-4 w-4 text-green-300" />} label="Seguidores" value={latestInsights.metrics.follower_count ?? latestInsights.account.followers_count ?? null} />
+            <SummaryCard icon={<Instagram className="h-4 w-4 text-pink-400" />} label="Visitas" value={latestInsights.metrics.profile_views} />
           </div>
           {Object.keys(latestInsights.metric_errors).length > 0 && (
             <p className="mt-3 text-xs text-amber-300">
               Algumas metricas podem depender de permissao aprovada na Meta ou disponibilidade da Graph API.
             </p>
           )}
-          <InsightDetailPanel insights={latestInsights} post={selectedInsightPost} />
           {latestInsights.media.length > 0 && (
             <div className="mt-5">
-              <h4 className="mb-3 text-sm font-medium text-dbe-text">Posts recentes</h4>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h4 className="text-sm font-medium text-dbe-text">Posts recentes</h4>
+                <span className="text-xs text-dbe-muted">Toque em um post para detalhes</span>
+              </div>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {latestInsights.media.map((post) => (
                   <div
                     key={post.id}
                     role="button"
                     tabIndex={0}
-                    onClick={() => setSelectedPostId(post.id)}
+                    onClick={() => openInsightModal(post.id)}
                     onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') setSelectedPostId(post.id)
+                      if (event.key === 'Enter' || event.key === ' ') openInsightModal(post.id)
                     }}
-                    className={`overflow-hidden rounded-lg border bg-black/20 text-left transition-colors hover:border-dbe-blue/70 ${selectedPostId === post.id ? 'border-dbe-blue' : 'border-dbe-border'}`}
+                    className="overflow-hidden rounded-lg border border-dbe-border bg-black/20 text-left transition-colors hover:border-dbe-blue/70"
                   >
                     <PostThumbnail post={post} />
                     <div className="space-y-3 p-3">
@@ -253,6 +262,15 @@ export function ReportsPage() {
         metric={editingMetric}
         isLoading={createMetric.isPending || updateMetric.isPending}
       />
+
+      {latestInsights && selectedInsightPost && (
+        <InsightDetailsModal
+          isOpen={isInsightModalOpen}
+          onClose={() => setIsInsightModalOpen(false)}
+          insights={latestInsights}
+          post={selectedInsightPost}
+        />
+      )}
     </div>
   )
 }
@@ -300,59 +318,77 @@ function getPostImage(post: InstagramInsightsResponse['media'][number]) {
   return post.thumbnail_url || post.media_url || null
 }
 
-function InsightDetailPanel({ insights, post }: { insights: InstagramInsightsResponse; post: InstagramInsightsResponse['media'][number] | null }) {
+function InsightDetailsModal({ isOpen, onClose, insights, post }: { isOpen: boolean; onClose: () => void; insights: InstagramInsightsResponse; post: InstagramInsightsResponse['media'][number] }) {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="max-h-[88vh] w-full overflow-y-auto rounded-t-xl border border-dbe-border bg-dbe-navy p-4 shadow-2xl sm:max-w-4xl sm:rounded-xl sm:p-5"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <InsightDetailContent insights={insights} post={post} onClose={onClose} />
+      </div>
+    </div>
+  )
+}
+
+function InsightDetailContent({ insights, post, onClose }: { insights: InstagramInsightsResponse; post: InstagramInsightsResponse['media'][number]; onClose: () => void }) {
   const audience = insights.audience
-  const engagementBase = post?.insights.media_views ?? insights.metrics.media_views
-  const interactionRate = post && engagementBase
+  const engagementBase = post.insights.media_views ?? insights.metrics.media_views
+  const interactionRate = engagementBase
     ? Math.round(((post.insights.total_interactions ?? 0) / engagementBase) * 1000) / 10
     : null
 
   return (
-    <div className="mt-5 rounded-lg border border-dbe-border bg-black/20 p-4">
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <div className="mb-4 flex items-start justify-between gap-3">
         <div>
-          <h4 className="font-medium text-dbe-text">{post ? 'Detalhes do post selecionado' : 'Detalhes da conta'}</h4>
-          <p className="line-clamp-1 text-xs text-dbe-muted">{post?.caption || 'Resumo agregado dos insights disponiveis.'}</p>
+          <h4 className="font-medium text-dbe-text">Detalhes do post</h4>
+          <p className="mt-1 line-clamp-2 text-xs text-dbe-muted">{post.caption || 'Publicacao Instagram'}</p>
+          {post.timestamp && <span className="mt-1 block text-xs text-dbe-muted">{format(new Date(post.timestamp), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</span>}
         </div>
-        {post?.timestamp && <span className="text-xs text-dbe-muted">{format(new Date(post.timestamp), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</span>}
+        <button type="button" onClick={onClose} className="h-8 w-8 shrink-0 rounded-md border border-dbe-border text-dbe-muted transition-colors hover:border-dbe-blue hover:text-dbe-text">×</button>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="grid gap-3 md:grid-cols-2">
           <DetailGroup title="Performance" icon={<BarChart3 className="h-4 w-4 text-dbe-blue" />}>
-            <DetailMetric label="Views" value={post?.insights.media_views ?? insights.metrics.media_views} />
-            <DetailMetric label="Alcance" value={post?.insights.media_viewers ?? post?.insights.reach ?? insights.metrics.media_viewers ?? insights.metrics.reach ?? null} />
-            <DetailMetric label="Interacoes" value={post?.insights.total_interactions ?? null} />
+            <DetailMetric label="Views" value={post.insights.media_views ?? insights.metrics.media_views} />
+            <DetailMetric label="Alcance" value={post.insights.media_viewers ?? post.insights.reach ?? insights.metrics.media_viewers ?? insights.metrics.reach ?? null} />
+            <DetailMetric label="Interacoes" value={post.insights.total_interactions ?? null} />
             <DetailMetric label="Taxa de interacao" value={interactionRate} suffix="%" />
           </DetailGroup>
 
           <DetailGroup title="Engajamento" icon={<Heart className="h-4 w-4 text-red-300" />}>
-            <DetailMetric label="Curtidas" value={post?.insights.likes ?? post?.like_count ?? null} />
-            <DetailMetric label="Comentarios" value={post?.insights.comments ?? post?.comments_count ?? null} />
-            <DetailMetric label="Salvamentos" value={post?.insights.saved ?? null} />
-            <DetailMetric label="Compartilhamentos" value={post?.insights.shares ?? null} />
+            <DetailMetric label="Curtidas" value={post.insights.likes ?? post.like_count ?? null} />
+            <DetailMetric label="Comentarios" value={post.insights.comments ?? post.comments_count ?? null} />
+            <DetailMetric label="Salvamentos" value={post.insights.saved ?? null} />
+            <DetailMetric label="Compartilhamentos" value={post.insights.shares ?? null} />
           </DetailGroup>
 
           <DetailGroup title="Atividade no perfil" icon={<UserRound className="h-4 w-4 text-green-300" />}>
-            <DetailMetric label="Novos seguidores" value={post?.insights.follows ?? null} />
-            <DetailMetric label="Visitas ao perfil" value={post?.insights.profile_visits ?? insights.metrics.profile_views} />
-            <DetailMetric label="Acoes no perfil" value={post?.insights.profile_activity ?? null} />
+            <DetailMetric label="Novos seguidores" value={post.insights.follows ?? null} />
+            <DetailMetric label="Visitas ao perfil" value={post.insights.profile_visits ?? insights.metrics.profile_views} />
+            <DetailMetric label="Acoes no perfil" value={post.insights.profile_activity ?? null} />
             <DetailMetric label="Seguidores atuais" value={insights.metrics.follower_count ?? insights.account.followers_count ?? null} />
           </DetailGroup>
 
           <DetailGroup title="Retencao" icon={<Clock3 className="h-4 w-4 text-amber-300" />}>
-            <DetailMetric label="Tempo medio assistido" value={null} />
-            <DetailMetric label="Taxa de reels pulados" value={null} />
-            <DetailMetric label="Retencao por segundo" value={null} />
-            <DetailMetric label="Replays" value={null} />
+            <UnavailableMetric label="Tempo medio assistido" />
+            <UnavailableMetric label="Taxa de reels pulados" />
+            <UnavailableMetric label="Retencao por segundo" />
+            <UnavailableMetric label="Replays" />
           </DetailGroup>
         </div>
 
         <div className="grid gap-3">
           <DetailGroup title="Distribuicao" icon={<Gauge className="h-4 w-4 text-purple-300" />}>
-            <DetailMetric label="Seguidores x nao seguidores" value={null} />
-            <DetailMetric label="Principais fontes" value={null} />
-            <DetailMetric label="Quando curtiram" value={null} />
+            <UnavailableMetric label="Seguidores x nao seguidores" />
+            <UnavailableMetric label="Principais fontes" />
+            <UnavailableMetric label="Quando curtiram" />
           </DetailGroup>
 
           <DetailGroup title="Publico" icon={<MapPin className="h-4 w-4 text-pink-300" />}>
@@ -362,7 +398,7 @@ function InsightDetailPanel({ insights, post }: { insights: InstagramInsightsRes
             <AudienceRows title="Horarios ativos" values={audience?.online_followers} />
           </DetailGroup>
 
-          {post && Object.keys(post.insight_errors).length > 0 && (
+          {Object.keys(post.insight_errors).length > 0 && (
             <div className="rounded-md border border-amber-400/20 bg-amber-400/10 p-3 text-xs text-amber-200">
               {Object.keys(post.insight_errors).length} metricas nao foram retornadas pela API para este post.
             </div>
@@ -387,6 +423,15 @@ function DetailMetric({ label, value, suffix = '' }: { label: string; value: num
     <div className="rounded bg-white/[0.03] p-2">
       <p className="text-dbe-muted">{label}</p>
       <p className="mt-1 font-medium text-dbe-text">{typeof value === 'number' ? `${value.toLocaleString()}${suffix}` : 'Indisponivel'}</p>
+    </div>
+  )
+}
+
+function UnavailableMetric({ label }: { label: string }) {
+  return (
+    <div className="rounded bg-white/[0.03] p-2">
+      <p className="text-dbe-muted">{label}</p>
+      <p className="mt-1 font-medium text-dbe-muted">Nao exposto pela API</p>
     </div>
   )
 }
