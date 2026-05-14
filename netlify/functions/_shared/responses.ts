@@ -30,12 +30,26 @@ export function handleError(error: unknown, scope: string): Response {
   }
 
   console.error(`[${scope}]`, error instanceof Error ? error.message : error)
-  return json({ error: 'internal_error', message: 'Erro interno ao processar a integracao Meta.' }, 500)
+  return json({ error: 'internal_error', message: 'Erro interno ao processar a integracao Instagram.' }, 500)
 }
 
 export function redirectToApp(path: string): Response {
   const baseUrl = getPublicAppUrl()
-  return Response.redirect(new URL(path, baseUrl).toString(), 302)
+  return Response.redirect(new URL(getSafeAppRedirectPath(path), baseUrl).toString(), 302)
+}
+
+export function getSafeAppRedirectPath(path: string | null | undefined, fallback = '/settings'): string {
+  if (!path?.trim()) return fallback
+
+  const trimmed = path.trim()
+  if (!trimmed.startsWith('/') || trimmed.startsWith('//')) return fallback
+
+  try {
+    const url = new URL(trimmed, 'https://app.local')
+    return `${url.pathname}${url.search}${url.hash}`
+  } catch {
+    return fallback
+  }
 }
 
 function getPublicAppUrl() {

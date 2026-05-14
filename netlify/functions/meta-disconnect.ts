@@ -33,6 +33,18 @@ export default async function handler(request: Request): Promise<Response> {
 
     if (error) throw new ApiError(500, 'disconnect_failed', 'Erro ao desconectar Instagram.')
 
+    const { error: profileError } = await admin
+      .from('profiles')
+      .update({
+        ig_user_id: null,
+        ig_access_token: null,
+        ig_token_expires_at: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id)
+
+    if (profileError) throw new ApiError(500, 'disconnect_profile_failed', 'Erro ao limpar dados Instagram do perfil.')
+
     await admin
       .from('meta_pending_instagram_accounts')
       .delete()

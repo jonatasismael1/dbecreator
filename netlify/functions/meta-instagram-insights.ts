@@ -21,6 +21,7 @@ export default async function handler(request: Request): Promise<Response> {
       .select('id,status,page_access_token_encrypted,instagram_business_account_id,account_name,facebook_page_name,token_expires_at,metadata')
       .eq('workspace_id', workspaceId)
       .eq('platform', 'instagram')
+      .eq('user_id', user.id)
       .maybeSingle()
 
     if (error) throw new ApiError(500, 'integration_lookup_failed', 'Erro ao consultar integracao Instagram.')
@@ -34,8 +35,16 @@ export default async function handler(request: Request): Promise<Response> {
       throw new ApiError(401, 'token_expired', 'Token da Meta expirado. Reconecte o Instagram.')
     }
 
-    const pageAccessToken = decryptToken(integration.page_access_token_encrypted)
-    const insights = await getInstagramInsights(integration.instagram_business_account_id, pageAccessToken)
+    const instagramAccessToken = decryptToken(integration.page_access_token_encrypted)
+    console.info('[meta-instagram-insights] Buscando insights com token salvo da integracao', {
+      user_id: user.id,
+      workspace_id: workspaceId,
+      integration_id: integration.id,
+      instagram_business_account_id: integration.instagram_business_account_id,
+      token_expires_at: integration.token_expires_at,
+    })
+
+    const insights = await getInstagramInsights(integration.instagram_business_account_id, instagramAccessToken)
 
     await admin
       .from('workspace_integrations')
@@ -49,6 +58,13 @@ export default async function handler(request: Request): Promise<Response> {
         updated_at: new Date().toISOString(),
       })
       .eq('id', integration.id)
+
+    console.info('[meta-instagram-insights] Insights sincronizados', {
+      user_id: user.id,
+      workspace_id: workspaceId,
+      integration_id: integration.id,
+      synced_at: insights.synced_at,
+    })
 
     return json({
       integration: {

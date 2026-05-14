@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { BarChart3, Bookmark, Camera as Instagram, Eye, Heart, MessageCircle, Plus, Share2 } from 'lucide-react'
+import { BarChart3, Bookmark, Camera as Instagram, Eye, Heart, MessageCircle, Plus, UserRound, Users } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { Button } from '@/components/ui/button'
@@ -85,25 +85,67 @@ export function ReportsPage() {
 
       {latestInsights && (
         <Card className="mb-6 border-dbe-border bg-dbe-navy/50 p-4">
-          <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 className="font-medium text-dbe-text">Insights reais do Instagram</h3>
-              <p className="text-xs text-dbe-muted">
-                @{latestInsights.account.username || latestInsights.integration.account_name || 'instagram'} sincronizado em{' '}
-                {format(new Date(latestInsights.synced_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-              </p>
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              {latestInsights.account.profile_picture_url ? (
+                <img src={latestInsights.account.profile_picture_url} alt="" className="h-12 w-12 rounded-full object-cover" />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5">
+                  <Instagram className="h-5 w-5 text-pink-300" />
+                </div>
+              )}
+              <div>
+                <h3 className="font-medium text-dbe-text">@{latestInsights.account.username || latestInsights.integration.account_name || 'instagram'}</h3>
+                <p className="text-xs text-dbe-muted">
+                  {latestInsights.account.name || 'Perfil Instagram'} sincronizado em{' '}
+                  {format(new Date(latestInsights.synced_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                </p>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <SummaryCard icon={<Eye className="h-4 w-4" />} label="Alcance" value={latestInsights.metrics.reach} />
+            <SummaryCard icon={<Eye className="h-4 w-4" />} label="Views" value={latestInsights.metrics.media_views} />
+            <SummaryCard icon={<Users className="h-4 w-4 text-blue-300" />} label="Alcance" value={latestInsights.metrics.media_viewers ?? latestInsights.metrics.reach ?? null} />
+            <SummaryCard icon={<UserRound className="h-4 w-4 text-green-300" />} label="Seguidores" value={latestInsights.metrics.follower_count ?? latestInsights.account.followers_count ?? null} />
             <SummaryCard icon={<Instagram className="h-4 w-4 text-pink-400" />} label="Visitas" value={latestInsights.metrics.profile_views} />
-            <SummaryCard icon={<Share2 className="h-4 w-4 text-green-400" />} label="Cliques site" value={latestInsights.metrics.website_clicks} />
-            <SummaryCard icon={<Heart className="h-4 w-4 text-red-400" />} label="Seguidores" value={latestInsights.metrics.follower_count} />
           </div>
           {Object.keys(latestInsights.metric_errors).length > 0 && (
             <p className="mt-3 text-xs text-amber-300">
               Algumas metricas podem depender de permissao aprovada na Meta ou disponibilidade da Graph API.
             </p>
+          )}
+          {latestInsights.media.length > 0 && (
+            <div className="mt-5">
+              <h4 className="mb-3 text-sm font-medium text-dbe-text">Posts recentes</h4>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {latestInsights.media.map((post) => (
+                  <div key={post.id} className="overflow-hidden rounded-lg border border-dbe-border bg-black/20">
+                    <PostThumbnail post={post} />
+                    <div className="space-y-3 p-3">
+                      <div>
+                        <p className="line-clamp-2 min-h-10 text-sm text-dbe-text">{post.caption || 'Publicacao Instagram'}</p>
+                        <p className="mt-1 text-xs text-dbe-muted">
+                          {post.media_type || 'MEDIA'}{post.timestamp ? ` - ${format(new Date(post.timestamp), 'dd/MM/yyyy', { locale: ptBR })}` : ''}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs text-dbe-muted">
+                        <MiniMetric label="Views" value={post.insights.media_views} />
+                        <MiniMetric label="Likes" value={post.insights.likes ?? post.like_count ?? null} />
+                        <MiniMetric label="Com." value={post.insights.comments ?? post.comments_count ?? null} />
+                        <MiniMetric label="Salvos" value={post.insights.saved} />
+                        <MiniMetric label="Comp." value={post.insights.shares ?? null} />
+                        <MiniMetric label="Inter." value={post.insights.total_interactions ?? null} />
+                      </div>
+                      {post.permalink && (
+                        <a href={post.permalink} target="_blank" rel="noreferrer" className="inline-flex text-xs text-dbe-blue hover:underline">
+                          Abrir no Instagram
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </Card>
       )}
@@ -127,7 +169,7 @@ export function ReportsPage() {
             <SummaryCard icon={<Eye className="h-4 w-4" />} label="Views" value={totals.views} />
             <SummaryCard icon={<Heart className="h-4 w-4 text-red-400" />} label="Curtidas" value={totals.likes} />
             <SummaryCard icon={<MessageCircle className="h-4 w-4 text-blue-400" />} label="Comentarios" value={totals.comments} />
-            <SummaryCard icon={<Share2 className="h-4 w-4 text-green-400" />} label="Compart." value={totals.shares} />
+            <SummaryCard icon={<Instagram className="h-4 w-4 text-green-400" />} label="Compart." value={totals.shares} />
             <SummaryCard icon={<Bookmark className="h-4 w-4 text-amber-400" />} label="Salvos" value={totals.saves} />
           </div>
 
@@ -200,9 +242,29 @@ export function ReportsPage() {
 
 function SummaryCard({ icon, label, value }: { icon: ReactNode; label: string; value: number | null }) {
   return (
-    <Card className="border-dbe-border bg-dbe-navy/50 p-4">
+    <div className="rounded-lg border border-dbe-border bg-dbe-navy/50 p-4">
       <div className="mb-2 flex items-center gap-2 text-dbe-muted">{icon} {label}</div>
       <div className="text-2xl font-bold text-dbe-text">{typeof value === 'number' ? value.toLocaleString() : '-'}</div>
-    </Card>
+    </div>
   )
+}
+
+function MiniMetric({ label, value }: { label: string; value: number | null }) {
+  return (
+    <div className="rounded-md bg-white/5 px-2 py-1.5">
+      <p>{label}</p>
+      <p className="mt-0.5 font-medium text-dbe-text">{typeof value === 'number' ? value.toLocaleString() : '-'}</p>
+    </div>
+  )
+}
+
+function PostThumbnail({ post }: { post: InstagramInsightsResponse['media'][number] }) {
+  const image = getPostImage(post)
+  if (!image) return null
+
+  return <img src={image} alt="" className="h-36 w-full object-cover" />
+}
+
+function getPostImage(post: InstagramInsightsResponse['media'][number]) {
+  return post.thumbnail_url || post.media_url || null
 }

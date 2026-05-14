@@ -3,7 +3,6 @@ import type {
   WorkspaceIntegration,
   CreateIntegrationDTO,
   Platform,
-  InstagramAccountsResponse,
   InstagramInsightsResponse,
 } from '../types/integration.types'
 
@@ -46,28 +45,14 @@ export const integrationsService = {
   },
 
   async startInstagramOAuth(workspaceId: string): Promise<void> {
+    clearInstagramOAuthClientState()
+
     const data = await apiRequest<{ auth_url: string }>(`/api/meta/login?${new URLSearchParams({
       workspace_id: workspaceId,
       format: 'json',
     })}`)
 
     window.location.href = data.auth_url
-  },
-
-  async getInstagramAccounts(workspaceId: string): Promise<InstagramAccountsResponse> {
-    return apiRequest(`/api/meta/instagram-accounts?${new URLSearchParams({ workspace_id: workspaceId })}`)
-  },
-
-  async selectInstagramAccount(workspaceId: string, pendingAccountId: string): Promise<WorkspaceIntegration> {
-    const data = await apiRequest<{ integration: WorkspaceIntegration }>('/api/meta/instagram-accounts', {
-      method: 'POST',
-      body: JSON.stringify({
-        workspace_id: workspaceId,
-        pending_account_id: pendingAccountId,
-      }),
-    })
-
-    return data.integration
   },
 
   async getInstagramInsights(workspaceId: string): Promise<InstagramInsightsResponse> {
@@ -93,6 +78,17 @@ export const integrationsService = {
   }
 }
 
+function clearInstagramOAuthClientState() {
+  for (const storage of [localStorage, sessionStorage]) {
+    for (const key of Object.keys(storage)) {
+      const normalized = key.toLowerCase()
+      if (normalized.includes('instagram') || normalized.includes('meta_oauth') || normalized.includes('meta-error')) {
+        storage.removeItem(key)
+      }
+    }
+  }
+}
+
 async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const { data: sessionData } = await supabase.auth.getSession()
   const token = sessionData.session?.access_token
@@ -110,6 +106,9 @@ async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   const data = await response.json().catch(() => ({}))
   if (!response.ok) {
+    if (data?.error === 'token_expired') {
+      window.location.assign('/settings?meta_error=token_expired')
+    }
     throw new Error(data?.message || data?.error || 'Erro na integracao Meta.')
   }
 

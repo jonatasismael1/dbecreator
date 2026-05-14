@@ -36,6 +36,8 @@ export function decryptToken(payload: string | null | undefined): string {
 }
 
 function getEncryptionKey(): Buffer {
-  const secret = getOptionalEnv('META_TOKEN_ENCRYPTION_KEY') || getEnv('META_APP_SECRET')
+  const secret = getOptionalEnv('INSTAGRAM_TOKEN_ENCRYPTION_KEY')
+    || getOptionalEnv('META_TOKEN_ENCRYPTION_KEY')
+    || getEnv('INSTAGRAM_APP_SECRET')
   return createHash('sha256').update(secret).digest()
 }

@@ -21,33 +21,6 @@ export interface WorkspaceIntegration {
 export type CreateIntegrationDTO = Omit<WorkspaceIntegration, 'id' | 'created_at' | 'updated_at'>
 export type UpdateIntegrationDTO = Partial<Omit<WorkspaceIntegration, 'id' | 'workspace_id' | 'platform' | 'created_at' | 'updated_at'>>
 
-export interface ConnectableInstagramAccount {
-  id: string
-  facebook_page_id: string
-  facebook_page_name: string
-  instagram_business_account_id: string
-  instagram_username: string | null
-  permissions: string[]
-  expires_at: string
-}
-
-export interface InstagramAccountsResponse {
-  connected: Pick<
-    WorkspaceIntegration,
-    | 'id'
-    | 'status'
-    | 'account_id'
-    | 'account_name'
-    | 'facebook_page_id'
-    | 'facebook_page_name'
-    | 'instagram_business_account_id'
-    | 'token_expires_at'
-    | 'permissions'
-    | 'updated_at'
-  > | null
-  accounts: ConnectableInstagramAccount[]
-}
-
 export interface InstagramInsightsResponse {
   integration: {
     id: string
@@ -60,15 +33,43 @@ export interface InstagramInsightsResponse {
     id: string
     username?: string
     name?: string
+    biography?: string
     followers_count?: number
+    follows_count?: number
     media_count?: number
+    profile_picture_url?: string
   }
   metrics: {
-    reach: number | null
+    media_views: number | null
+    media_viewers: number | null
+    reach?: number | null
     profile_views: number | null
-    website_clicks: number | null
     follower_count: number | null
   }
+  media: InstagramMediaInsight[]
   metric_errors: Record<string, string>
   synced_at: string
+}
+
+export interface InstagramMediaInsight {
+  id: string
+  caption?: string
+  media_type?: string
+  timestamp?: string
+  like_count?: number
+  comments_count?: number
+  media_url?: string
+  permalink?: string
+  thumbnail_url?: string
+  insights: {
+    media_views: number | null
+    media_viewers: number | null
+    reach?: number | null
+    likes: number | null
+    comments: number | null
+    saved: number | null
+    shares?: number | null
+    total_interactions?: number | null
+  }
+  insight_errors: Record<string, string>
 }

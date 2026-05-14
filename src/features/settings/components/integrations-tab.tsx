@@ -1,62 +1,41 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { AlertCircle, Camera as Instagram, Check, RefreshCw, Trash2 } from 'lucide-react'
+import { AlertCircle, Camera as Instagram, Check, Trash2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { LoadingState } from '@/components/shared/loading-state'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
-import { useDisconnectIntegration, useIntegrations, useUpsertIntegration } from '@/features/integrations/hooks/use-integrations'
-import type { ConnectableInstagramAccount } from '@/features/integrations/types/integration.types'
+import { useDisconnectIntegration, useIntegrations } from '@/features/integrations/hooks/use-integrations'
 
 export function IntegrationsTab() {
   const { workspaceId } = useWorkspaceContext()
   const { data: integrations, isLoading, refetch } = useIntegrations(workspaceId)
-  const upsert = useUpsertIntegration(workspaceId)
   const disconnect = useDisconnectIntegration(workspaceId)
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [isConnecting, setIsConnecting] = useState(false)
-  const [isLoadingAccounts, setIsLoadingAccounts] = useState(false)
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null)
-  const [pendingAccounts, setPendingAccounts] = useState<ConnectableInstagramAccount[]>([])
-  const [error, setError] = useState<string | null>(
-    searchParams.get('meta_message') || mapMetaError(searchParams.get('meta_error')),
-  )
+  const [error, setError] = useState<string | null>(() => getMetaErrorMessage(searchParams))
 
   const instagramIntegration = integrations?.find((integration) => integration.platform === 'instagram')
   const isConnected = !!instagramIntegration && instagramIntegration.status === 'connected'
 
-  async function loadInstagramAccounts() {
-    setIsLoadingAccounts(true)
-    setError(null)
-    try {
-      const { integrationsService } = await import('@/features/integrations/services/integrations.service')
-      const data = await integrationsService.getInstagramAccounts(workspaceId)
-      setPendingAccounts(data.accounts)
-      if (data.accounts.length === 0 && !data.connected) {
-        setError('Nenhuma conta Instagram profissional pendente foi encontrada. Tente conectar novamente.')
-      }
-      await refetch()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar contas Instagram.')
-    } finally {
-      setIsLoadingAccounts(false)
-    }
-  }
-
   useEffect(() => {
     if (!workspaceId) return
-    if (searchParams.get('instagram') === 'select') {
-      queueMicrotask(() => {
-        void loadInstagramAccounts()
-      })
+    if (searchParams.get('connected') === 'instagram') {
+      void refetch()
+      setSearchParams({}, { replace: true })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workspaceId])
+  }, [refetch, searchParams, setSearchParams, workspaceId])
+
+  useEffect(() => {
+    const metaError = getMetaErrorMessage(searchParams)
+    if (metaError) setError(metaError)
+  }, [searchParams])
 
   const handleConnectInstagram = async () => {
     setIsConnecting(true)
     setError(null)
+    setSearchParams({}, { replace: true })
     try {
       const { integrationsService } = await import('@/features/integrations/services/integrations.service')
       await integrationsService.startInstagramOAuth(workspaceId)
@@ -66,27 +45,10 @@ export function IntegrationsTab() {
     }
   }
 
-  const handleSelectAccount = async (accountId: string) => {
-    setSelectedAccountId(accountId)
-    setError(null)
-    try {
-      const { integrationsService } = await import('@/features/integrations/services/integrations.service')
-      await integrationsService.selectInstagramAccount(workspaceId, accountId)
-      setPendingAccounts([])
-      setSearchParams({}, { replace: true })
-      await refetch()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao salvar conta Instagram.')
-    } finally {
-      setSelectedAccountId(null)
-    }
-  }
-
   const handleDisconnect = async () => {
     if (confirm('Tem certeza que deseja desconectar o Instagram? Isso afetara a sincronizacao dos relatorios.')) {
       try {
         await disconnect.mutateAsync('instagram')
-        setPendingAccounts([])
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro ao desconectar. Voce precisa ser Administrador para remover integracoes.')
       }
@@ -109,7 +71,7 @@ export function IntegrationsTab() {
 
       <div className="space-y-4">
         {error && (
-          <div className="rounded-lg border border-dbe-red/30 bg-dbe-red/10 p-3 text-sm text-red-200">
+          <div className="whitespace-pre-wrap rounded-lg border border-dbe-red/30 bg-dbe-red/10 p-3 text-sm text-red-200">
             {error}
           </div>
         )}
@@ -125,7 +87,7 @@ export function IntegrationsTab() {
                 {isConnected ? (
                   <>
                     <Check className="h-3 w-3 text-dbe-green" />
-                    <span className="text-dbe-green">Conectado como {instagramIntegration?.account_name || 'Usuario'}</span>
+                    <span className="text-dbe-green">Instagram conectado{instagramIntegration?.account_name ? ` como @${instagramIntegration.account_name}` : ''}</span>
                   </>
                 ) : (
                   <>
@@ -134,8 +96,10 @@ export function IntegrationsTab() {
                   </>
                 )}
               </p>
-              {isConnected && instagramIntegration?.facebook_page_name && (
-                <p className="mt-1 text-xs text-dbe-muted">Pagina: {instagramIntegration.facebook_page_name}</p>
+              {isConnected && instagramIntegration?.token_expires_at && (
+                <p className="mt-1 text-xs text-dbe-muted">
+                  Token valido ate {new Date(instagramIntegration.token_expires_at).toLocaleDateString('pt-BR')}
+                </p>
               )}
             </div>
           </div>
@@ -147,50 +111,55 @@ export function IntegrationsTab() {
                 Desconectar
               </Button>
             ) : (
-              <Button onClick={handleConnectInstagram} loading={isConnecting || upsert.isPending}>
-                Conectar Instagram Profissional
+              <Button onClick={handleConnectInstagram} loading={isConnecting}>
+                Conectar Instagram
               </Button>
             )}
           </div>
         </div>
-
-        {(pendingAccounts.length > 0 || isLoadingAccounts) && (
-          <div className="rounded-lg border border-dbe-border bg-dbe-dark p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div>
-                <h4 className="font-medium text-dbe-text">Escolha a conta profissional</h4>
-                <p className="text-xs text-dbe-muted">As contas abaixo vieram da Meta e ficam disponiveis por poucos minutos.</p>
-              </div>
-              <Button variant="ghost" size="sm" onClick={loadInstagramAccounts} disabled={isLoadingAccounts}>
-                <RefreshCw className={`h-4 w-4 ${isLoadingAccounts ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              {pendingAccounts.map((account) => (
-                <div key={account.id} className="flex flex-col gap-3 rounded-md border border-dbe-border/70 bg-white/[0.03] p-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="font-medium text-dbe-text">
-                      {account.instagram_username ? `@${account.instagram_username}` : account.instagram_business_account_id}
-                    </p>
-                    <p className="text-xs text-dbe-muted">Pagina: {account.facebook_page_name}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleSelectAccount(account.id)}
-                    loading={selectedAccountId === account.id}
-                    className="w-full sm:w-auto"
-                  >
-                    Usar esta conta
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </Card>
   )
+}
+
+function getMetaErrorMessage(searchParams: URLSearchParams): string | null {
+  const debugMessage = formatMetaDebug(searchParams.get('meta_debug'))
+  const message = [
+    searchParams.get('meta_message') || mapMetaError(searchParams.get('meta_error')),
+    debugMessage,
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  return message || null
+}
+
+function formatMetaDebug(raw: string | null): string | null {
+  if (!raw) return null
+
+  try {
+    const debug = JSON.parse(raw) as Record<string, unknown>
+    return [
+      `Debug: version=${debug.debug_version ?? 'n/a'} etapa=${debug.step ?? 'n/a'} status=${debug.status ?? 'n/a'} ${debug.status_text ?? ''}`.trim(),
+      `endpoint=${debug.endpoint ?? 'n/a'}`,
+      `body=${JSON.stringify(debug.body ?? null)}`,
+      `redirect_uri=${debug.redirect_uri ?? 'n/a'}`,
+      `code_length=${debug.code_length ?? 'n/a'} code_prefix=${debug.code_prefix ?? 'n/a'}`,
+      `network_error=${JSON.stringify(debug.network_error ?? null)}`,
+      `type=${debug.type ?? 'n/a'} fbtrace_id=${debug.fbtrace_id ?? 'n/a'}`,
+      `attempts=${JSON.stringify(debug.attempts ?? null)}`,
+      `client_id=${debug.client_id ?? 'n/a'} app_id=${formatBool(debug.has_app_id)} secret=${formatBool(debug.has_secret ?? debug.has_instagram_app_secret)} redirect=${formatBool(debug.has_redirect_uri)} content_type=${debug.content_type ?? 'n/a'}`,
+      `raw_error=${JSON.stringify(debug.raw_error ?? null)}`,
+    ].join('\n')
+  } catch {
+    return `Debug: ${raw}`
+  }
+}
+
+function formatBool(value: unknown): string {
+  if (value === true) return 'presente'
+  if (value === false) return 'ausente'
+  return 'n/a'
 }
 
 function mapMetaError(code: string | null): string | null {
@@ -198,10 +167,18 @@ function mapMetaError(code: string | null): string | null {
 
   const messages: Record<string, string> = {
     user_denied_permissions: 'Permissoes negadas na Meta. Autorize as permissoes para conectar o Instagram.',
-    no_facebook_pages: 'Nenhuma Pagina do Facebook administrada por voce foi encontrada.',
-    no_instagram_business_account: 'Nenhuma Pagina com Instagram Business ou Creator conectado foi encontrada.',
+    instagram_oauth_error: 'A Meta retornou erro ao autorizar o Instagram.',
+    missing_code: 'O callback do Instagram voltou sem code. Tente conectar novamente.',
+    invalid_state: 'Sessao de conexao expirada ou invalida. Tente conectar novamente.',
+    invalid_oauth_state: 'Sessao de conexao expirada ou invalida. Tente conectar novamente.',
+    expired_oauth_state: 'Sessao de conexao expirada. Tente conectar novamente.',
+    no_instagram_business_account: 'A conta precisa ser Instagram Business ou Creator.',
     instagram_not_business_or_creator: 'A conta Instagram precisa ser Business ou Creator.',
+    token_exchange_failed: 'Falha ao trocar o code pelo token do Instagram.',
+    database_save_failed: 'Erro ao salvar a integracao Instagram.',
+    profile_save_failed: 'Erro ao salvar os dados Instagram no perfil.',
     token_expired: 'Token expirado. Reconecte o Instagram.',
+    missing_instagram_env: 'Variaveis de ambiente do Instagram OAuth nao configuradas no backend.',
     meta_app_review_required: 'O app da Meta ainda nao tem App Review aprovado para esta permissao.',
     meta_graph_error: 'A Graph API retornou erro ao conectar o Instagram.',
   }
