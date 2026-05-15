@@ -1,5 +1,5 @@
-import { useMemo, useState, type DragEvent, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState, type DragEvent, type ReactNode } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { Archive, FileText, Filter, Plus, Target } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-state'
@@ -51,6 +51,7 @@ const FILTER_OPTIONS: { value: FilterStatus; label: string }[] = [
 
 export function ScriptsPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { workspaceId } = useWorkspaceContext()
   const { data: scripts = [], isLoading: scriptsLoading, isError } = useScripts(workspaceId)
   const { data: pillars = [], isLoading: pillarsLoading } = usePillars(workspaceId)
@@ -74,6 +75,19 @@ export function ScriptsPage() {
   const [selectedScriptIds, setSelectedScriptIds] = useState<Set<string>>(new Set())
   const [approvalLink, setApprovalLink] = useState<string | null>(null)
   const { data: versions = [], isLoading: versionsLoading } = useScriptVersions(workspaceId, editingScript?.id)
+
+  // Open edit modal from navigation state (e.g. from ScriptPreviewPage)
+  useEffect(() => {
+    const openEditId = location.state?.openEditId as string | undefined
+    if (!openEditId || scripts.length === 0) return
+    const target = scripts.find((s) => s.id === openEditId)
+    if (target) {
+      openEdit(target)
+      // Clear state to avoid re-opening on back navigation
+      window.history.replaceState({}, '')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state?.openEditId, scripts])
 
   const activeScripts = useMemo(() => scripts.filter((script) => !script.archived_at), [scripts])
   const archivedScripts = useMemo(() => scripts.filter((script) => script.archived_at), [scripts])

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { usePublicApproval } from '../hooks/use-approvals'
-import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
+import { CheckCircle2, ExternalLink, Link, MessageSquare, XCircle, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScriptContentBlock } from '@/features/scripts/components/script-content-block'
 
@@ -115,6 +115,36 @@ export function PublicApprovalPage() {
               <ScriptContentBlock value={approval.script?.cta} />
             </div>
           </div>
+
+          {/* Reference Link */}
+          {approval.script?.reference_link && (
+            <div className="rounded-xl border border-dbe-blue/20 bg-dbe-navy p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <Link className="h-4 w-4 text-dbe-blue" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-dbe-blue">Referência</h3>
+              </div>
+              <a
+                href={approval.script.reference_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm text-dbe-blue underline underline-offset-4 hover:text-dbe-blue/80 break-all"
+              >
+                {approval.script.reference_link}
+                <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+              </a>
+            </div>
+          )}
+
+          {/* Observations */}
+          {approval.script?.observations && (
+            <div className="rounded-xl border border-dbe-border bg-dbe-navy p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageSquare className="h-4 w-4 text-dbe-muted" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-dbe-muted">Observações</h3>
+              </div>
+              <p className="text-sm leading-relaxed text-dbe-text whitespace-pre-wrap">{approval.script.observations}</p>
+            </div>
+          )}
           
           {/* Action Buttons */}
           {approval.status === 'pending' && (

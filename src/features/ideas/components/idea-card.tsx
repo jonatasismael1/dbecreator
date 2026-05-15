@@ -88,7 +88,7 @@ export function IdeaCard({ idea, onEdit, onDelete, onStatusChange, onDebyDevelop
               className="tap-feedback flex flex-1 items-center justify-center gap-1.5 rounded-[var(--r-sm)] border border-dbe-green/30 bg-dbe-green/8 px-2.5 py-2 text-[11px] font-semibold text-dbe-green transition-all hover:border-dbe-green/50 hover:bg-dbe-green/15"
             >
               <Sparkles className="h-3 w-3 shrink-0" />
-              <span>Deby AI desenvolver</span>
+              <span>Usar a Deby AI</span>
             </button>
           )}
           <button

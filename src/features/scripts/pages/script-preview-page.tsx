@@ -5,7 +5,11 @@ import {
   Check,
   Copy,
   Download,
+  Edit2,
+  ExternalLink,
   FileText,
+  Link,
+  MessageSquare,
   MonitorPlay,
   Printer,
   Target,
@@ -114,6 +118,14 @@ export function ScriptPreviewPage() {
         </div>
 
         <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
+          <Button
+            variant="secondary"
+            onClick={() => navigate('/scripts', { state: { openEditId: script.id } })}
+            className="col-span-2 w-full border-dbe-blue/30 text-dbe-blue hover:bg-dbe-blue/10 sm:col-span-1 sm:w-auto"
+          >
+            <Edit2 className="h-4 w-4" />
+            Editar roteiro
+          </Button>
           <Button variant="secondary" onClick={() => navigate(`/teleprompter/${script.id}`)} className="w-full sm:w-auto">
             <MonitorPlay className="h-4 w-4" />
             Teleprompter
@@ -141,6 +153,34 @@ export function ScriptPreviewPage() {
         <ScriptSection title="Gancho" accent="green" value={script.hook} />
         <ScriptSection title="Desenvolvimento" accent="blue" value={script.body} />
         <ScriptSection title="CTA" accent="green" value={script.cta} />
+
+        {script.reference_link && (
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Link className="h-4 w-4 text-dbe-blue" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-dbe-blue">Referência</h2>
+            </div>
+            <a
+              href={script.reference_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-dbe-blue underline underline-offset-4 hover:text-dbe-blue/80 break-all"
+            >
+              {script.reference_link}
+              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+            </a>
+          </Card>
+        )}
+
+        {script.observations && (
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <MessageSquare className="h-4 w-4 text-dbe-muted" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-dbe-muted">Observações</h2>
+            </div>
+            <p className="text-sm leading-relaxed text-dbe-text whitespace-pre-wrap">{script.observations}</p>
+          </Card>
+        )}
       </div>
     </div>
   )

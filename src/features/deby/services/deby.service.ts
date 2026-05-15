@@ -81,6 +81,23 @@ export const debyService = {
     return (data ?? []) as Array<{ id: string; insight_text: string; recommendation_text: string; created_at: string }>
   },
 
+  async generateScript(prompt: string): Promise<{
+    title: string
+    pillar_suggestion: string
+    hook: string
+    body: string
+    cta: string
+  }> {
+    const authorization = await getAuthHeader()
+    const { data, error } = await supabase.functions.invoke('deby-generate-script', {
+      headers: { authorization },
+      body: { prompt },
+    })
+    if (error) throw error
+    if (!data?.script) throw new Error('Resposta inesperada da Deby.')
+    return data.script as { title: string; pillar_suggestion: string; hook: string; body: string; cta: string }
+  },
+
   async generateReportInsights(workspaceId: string) {
     const authorization = await getAuthHeader()
     const { data, error } = await supabase.functions.invoke('deby-report-insights', {

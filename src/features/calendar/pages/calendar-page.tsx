@@ -12,11 +12,12 @@ import { useWorkspaceContext } from '@/features/workspaces/context/workspace-con
 import { useCalendarItems, useCreateCalendarItem, useDeleteCalendarItem, useUpdateCalendarItem } from '../hooks/use-calendar-items'
 import type { CalendarItem, CalendarPlatform } from '../types/calendar.types'
 
-const platforms: Array<{ value: CalendarPlatform | 'all'; label: string }> = [
-  { value: 'all', label: 'Todas' },
-  { value: 'reels', label: 'Reels' },
-  { value: 'tiktok', label: 'TikTok' },
-  { value: 'shorts', label: 'Shorts' },
+type CalendarStageFilter = 'all' | 'recording' | 'editing' | 'posting'
+
+const stageFilters: Array<{ value: CalendarStageFilter; label: string }> = [
+  { value: 'recording', label: 'Gravação' },
+  { value: 'editing', label: 'Edição' },
+  { value: 'posting', label: 'Postagem' },
 ]
 
 const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab']
@@ -33,12 +34,24 @@ export function CalendarPage() {
   
   const [cursor, setCursor] = useState(startOfMonth(new Date()))
   const [weekCursor, setWeekCursor] = useState(startOfWeek(new Date()))
-  const [platform, setPlatform] = useState<CalendarPlatform | 'all'>('all')
+  const [stage, setStage] = useState<CalendarStageFilter>('posting')
   const [dragOverDay, setDragOverDay] = useState<string | null>(null)
   const [mobileView, setMobileView] = useState<MobileViewType>('week')
   const [selectedScriptId, setSelectedScriptId] = useState<string | null>(null)
 
-  const filteredItems = platform === 'all' ? items : items.filter((item) => item.platform === platform)
+  // Stage filter: filter calendar items by associated script dates
+  const filteredItems = useMemo(() => {
+    if (stage === 'all') return items
+    return items.filter((item) => {
+      const script = scripts.find((s) => s.id === item.script_id)
+      if (!script) return false
+      if (stage === 'recording') return Boolean(script.recording_date)
+      if (stage === 'posting') return Boolean(script.posting_date)
+      // 'editing': scripts that have recording_date but no posting_date yet (between stages)
+      if (stage === 'editing') return Boolean(script.recording_date) && !script.posting_date
+      return true
+    })
+  }, [items, scripts, stage])
   const scheduledScriptIds = new Set(items.map((item) => item.script_id).filter(Boolean))
   const unscheduledScripts = scripts.filter((script) => !scheduledScriptIds.has(script.id))
   
@@ -58,7 +71,7 @@ export function CalendarPage() {
     await createItem.mutateAsync({
       script_id: scriptId,
       publish_date: atNoon(date).toISOString(),
-      platform: platform === 'all' ? 'reels' : platform,
+      platform: 'reels',
     })
     setSelectedScriptId(null)
   }
@@ -151,13 +164,13 @@ export function CalendarPage() {
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-            {platforms.map((option) => (
+            {stageFilters.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setPlatform(option.value)}
+                onClick={() => setStage(option.value)}
                 className={cn(
                   'whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
-                  platform === option.value ? 'border-primary/30 bg-primary/10 text-primary' : 'border-border text-text-muted hover:text-text',
+                  stage === option.value ? 'border-primary/30 bg-primary/10 text-primary' : 'border-border text-text-muted hover:text-text',
                 )}
               >
                 {option.label}
@@ -167,7 +180,7 @@ export function CalendarPage() {
         </div>
       </div>
 
-      <div className="grid flex-1 grid-cols-1 gap-5 lg:grid-cols-[280px_1fr]">
+      <div className="grid flex-1 grid-cols-1 gap-5 lg:grid-cols-[1fr_260px]">
         <div className="space-y-4 md:hidden">
           {mobileView === 'week' ? (
             <div className="flex gap-3 overflow-x-auto pb-4 snap-x">
@@ -286,6 +299,7 @@ export function CalendarPage() {
           )}
         </div>
 
+        {/* Desktop calendar — takes the main 1fr column */}
         <div className="hidden overflow-x-auto rounded-[var(--r-lg)] border border-border bg-surface md:block custom-scrollbar">
           <div className="min-w-[900px]">
             <div className="grid grid-cols-7 border-b border-border bg-surface2/50">
@@ -339,7 +353,7 @@ export function CalendarPage() {
                             </button>
                           </div>
                           <div className="mt-1.5 flex items-center justify-between">
-                             <span className="text-[9px] font-bold uppercase text-primary/80">{item.platform}</span>
+                             <span className="text-[9px] font-bold uppercase text-primary/80">{item.scripts?.status ?? item.platform}</span>
                              <div className="h-1 w-1 rounded-full bg-primary/40" />
                           </div>
                         </article>
@@ -357,7 +371,7 @@ export function CalendarPage() {
           </div>
         </div>
 
-        {/* Unscheduled scripts panel */}
+        {/* Unscheduled scripts panel — right sidebar */}
         <Card className="h-full flex flex-col p-4 bg-surface2/30 border-border">
           <div className="mb-4 flex items-center justify-between shrink-0">
             <div>

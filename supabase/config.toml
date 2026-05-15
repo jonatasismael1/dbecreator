@@ -36,3 +36,8 @@ entrypoint = "./functions/sync-instagram-metrics/index.ts"
 enabled = true
 verify_jwt = true
 entrypoint = "./functions/connect-instagram/index.ts"
+
+[functions.deby-generate-script]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/deby-generate-script/index.ts"
