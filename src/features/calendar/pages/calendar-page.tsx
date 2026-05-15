@@ -286,64 +286,74 @@ export function CalendarPage() {
           )}
         </div>
 
-        <div className="hidden overflow-hidden rounded-[var(--r-lg)] border border-border bg-surface md:block">
-          <div className="grid grid-cols-7 border-b border-border bg-surface2/50">
-            {weekDays.map((day) => (
-              <div key={day} className="px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-text-muted">{day}</div>
-            ))}
-          </div>
-          <div className="grid grid-cols-7">
-            {days.map((day) => {
-              const key = toDateKey(day)
-              const dayItems = itemsByDate[key] ?? []
-              const outside = day.getMonth() !== cursor.getMonth()
-              return (
-                <div
-                  key={key}
-                  onClick={() => handleDayClick(day)}
-                  onDragOver={(event) => {
-                    event.preventDefault()
-                    setDragOverDay(key)
-                  }}
-                  onDragLeave={() => setDragOverDay(null)}
-                  onDrop={(event) => handleDrop(event, day)}
-                  className={cn(
-                    'min-h-[140px] min-w-0 border-b border-r border-border p-1.5 transition-all cursor-pointer hover:bg-surface2/30',
-                    outside ? 'bg-surface2/20 opacity-40' : 'bg-surface',
-                    dragOverDay === key ? 'bg-primary/5 ring-1 ring-inset ring-primary' : '',
-                    selectedScriptId && !outside ? 'ring-1 ring-inset ring-primary/30 bg-primary/5' : ''
-                  )}
-                >
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <span className={cn("text-[10px] font-bold", isToday(day) ? "text-primary" : "text-text-subtle")}>{day.getDate()}</span>
-                    {isToday(day) && <Badge variant="success" className="px-1 py-0 text-[9px] h-4">Hoje</Badge>}
-                  </div>
-                  <div className="space-y-1">
-                    {dayItems.map((item) => (
-                      <article
-                        key={item.id}
-                        draggable
-                        onDragStart={(event) => {
-                          event.dataTransfer.effectAllowed = 'move'
-                          event.dataTransfer.setData('application/dbe-calendar-item', item.id)
-                        }}
-                        className="group cursor-grab rounded-md border border-border bg-surface2 p-1.5 active:cursor-grabbing hover:border-primary/40 shadow-sm"
-                      >
-                        <div className="flex items-start justify-between gap-1">
-                          <p className="line-clamp-2 text-[10px] font-medium leading-tight text-text">{item.scripts?.title ?? 'Roteiro sem título'}</p>
-                          <button onClick={(e) => { e.stopPropagation(); deleteItem.mutateAsync(item.id) }} className="rounded-sm text-text-muted opacity-0 transition-all hover:text-danger group-hover:opacity-100">
-                            <Trash2 className="h-3 w-3" />
-                          </button>
+        <div className="hidden overflow-x-auto rounded-[var(--r-lg)] border border-border bg-surface md:block custom-scrollbar">
+          <div className="min-w-[900px]">
+            <div className="grid grid-cols-7 border-b border-border bg-surface2/50">
+              {weekDays.map((day) => (
+                <div key={day} className="px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-text-muted">{day}</div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7">
+              {days.map((day) => {
+                const key = toDateKey(day)
+                const dayItems = itemsByDate[key] ?? []
+                const outside = day.getMonth() !== cursor.getMonth()
+                return (
+                  <div
+                    key={key}
+                    onClick={() => handleDayClick(day)}
+                    onDragOver={(event) => {
+                      event.preventDefault()
+                      setDragOverDay(key)
+                    }}
+                    onDragLeave={() => setDragOverDay(null)}
+                    onDrop={(event) => handleDrop(event, day)}
+                    className={cn(
+                      'min-h-[160px] min-w-0 border-b border-r border-border p-2 transition-all cursor-pointer hover:bg-surface2/30',
+                      outside ? 'bg-surface2/20 opacity-40' : 'bg-surface',
+                      dragOverDay === key ? 'bg-primary/5 ring-2 ring-inset ring-primary' : '',
+                      selectedScriptId && !outside ? 'ring-2 ring-inset ring-primary/40 bg-primary/5' : ''
+                    )}
+                  >
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className={cn("text-xs font-bold", isToday(day) ? "text-primary" : "text-text-subtle")}>{day.getDate()}</span>
+                      {isToday(day) && <Badge variant="success" className="px-1.5 py-0 text-[9px] h-4">Hoje</Badge>}
+                    </div>
+                    <div className="space-y-1.5">
+                      {dayItems.map((item) => (
+                        <article
+                          key={item.id}
+                          draggable
+                          onDragStart={(event) => {
+                            event.dataTransfer.effectAllowed = 'move'
+                            event.dataTransfer.setData('application/dbe-calendar-item', item.id)
+                          }}
+                          className="group cursor-grab rounded-lg border border-border bg-surface2 p-2 active:cursor-grabbing hover:border-primary/40 shadow-sm transition-all"
+                        >
+                          <div className="flex items-start justify-between gap-1">
+                            <p className="line-clamp-3 text-[10px] font-semibold leading-tight text-text">
+                              {item.scripts?.title ?? 'Roteiro sem título'}
+                            </p>
+                            <button onClick={(e) => { e.stopPropagation(); deleteItem.mutateAsync(item.id) }} className="rounded-sm text-text-muted opacity-0 transition-all hover:text-danger group-hover:opacity-100">
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                          <div className="mt-1.5 flex items-center justify-between">
+                             <span className="text-[9px] font-bold uppercase text-primary/80">{item.platform}</span>
+                             <div className="h-1 w-1 rounded-full bg-primary/40" />
+                          </div>
+                        </article>
+                      ))}
+                      {dayItems.length === 0 && selectedScriptId && !outside && (
+                        <div className="flex h-12 items-center justify-center rounded-lg border border-dashed border-primary/30 bg-primary/5">
+                          <span className="text-[9px] font-medium text-primary uppercase">Agendar</span>
                         </div>
-                        <div className="mt-1 flex items-center justify-between">
-                           <span className="text-[8px] font-bold uppercase text-primary/70">{item.platform}</span>
-                        </div>
-                      </article>
-                    ))}
+                      )}
+                    </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         </div>
 

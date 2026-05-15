@@ -258,30 +258,42 @@ export function ScriptsPage() {
         )}
       </div>
 
-      {/* Status Filter Pills */}
+      {/* Status Filter */}
       {tab === 'active' && (
-        <div className="mb-6 flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 mr-2 text-text-subtle">
-            <Filter className="h-4 w-4" />
-            <span className="text-xs font-medium uppercase tracking-wider">Filtrar:</span>
+        <div className="mb-6 flex items-center gap-3">
+          <div className="relative w-full sm:w-auto">
+            <label htmlFor="status-filter" className="sr-only">Filtrar por status</label>
+            <div className="group relative">
+              <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted transition-colors group-focus-within:text-primary" />
+              <select
+                id="status-filter"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
+                className="h-11 w-full appearance-none rounded-2xl border border-border bg-surface pl-10 pr-10 text-sm font-medium text-text outline-none transition-all hover:border-border-strong focus:border-primary focus:ring-2 focus:ring-primary/20 sm:w-64"
+              >
+                {FILTER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label} ({statusCounts[opt.value]})
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
-          {FILTER_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setFilterStatus(opt.value)}
-              className={cn(
-                'inline-flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all border',
-                filterStatus === opt.value
-                  ? 'bg-primary/10 text-primary border-primary/20 shadow-sm'
-                  : 'bg-surface text-text-muted border-border hover:border-border-strong hover:text-text'
-              )}
+          {filterStatus !== 'all' && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setFilterStatus('all')}
+              className="hidden h-11 text-xs text-text-muted hover:text-text sm:flex"
             >
-              {opt.label}
-              <Badge variant={filterStatus === opt.value ? 'primary' : 'default'} className="text-[10px] px-1.5 py-0 min-w-[1.5rem] justify-center">
-                {statusCounts[opt.value]}
-              </Badge>
-            </button>
-          ))}
+              Limpar filtro
+            </Button>
+          )}
         </div>
       )}
 

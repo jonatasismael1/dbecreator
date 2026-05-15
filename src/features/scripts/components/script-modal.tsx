@@ -24,8 +24,12 @@ const scriptSchema = z.object({
   body: z.string().min(10, 'Desenvolvimento obrigatorio'),
   cta: z.string().min(3, 'CTA obrigatorio'),
   status: z.enum(['draft', 'ready', 'in_approval', 'approved', 'changes_requested', 'recorded']),
-  content_pillar_id: z.string().optional(),
-  campaign_id: z.string().optional(),
+  content_pillar_id: z.string().optional().nullable(),
+  campaign_id: z.string().optional().nullable(),
+  reference_link: z.string().url('Link invalido').or(z.literal('')).optional().nullable(),
+  observations: z.string().optional().nullable(),
+  recording_date: z.string().optional().nullable(),
+  posting_date: z.string().optional().nullable(),
 })
 
 type ScriptFormValues = z.infer<typeof scriptSchema>
@@ -108,11 +112,27 @@ export function ScriptModal({
         status: script.status,
         content_pillar_id: script.content_pillar_id ?? '',
         campaign_id: script.campaign_id ?? '',
+        reference_link: script.reference_link ?? '',
+        observations: script.observations ?? '',
+        recording_date: script.recording_date ?? '',
+        posting_date: script.posting_date ?? '',
       })
       return
     }
 
-    reset({ title: '', hook: '', body: '', cta: '', status: 'draft', content_pillar_id: '', campaign_id: initialCampaignId ?? '' })
+    reset({ 
+      title: '', 
+      hook: '', 
+      body: '', 
+      cta: '', 
+      status: 'draft', 
+      content_pillar_id: '', 
+      campaign_id: initialCampaignId ?? '',
+      reference_link: '',
+      observations: '',
+      recording_date: '',
+      posting_date: '',
+    })
   }, [initialCampaignId, reset, script])
 
   const onSubmit = async (values: ScriptFormValues) => {
@@ -126,6 +146,10 @@ export function ScriptModal({
         status: values.status as ScriptStatus,
         content_pillar_id: values.content_pillar_id || null,
         campaign_id: values.campaign_id || null,
+        reference_link: values.reference_link || null,
+        observations: values.observations || null,
+        recording_date: values.recording_date || null,
+        posting_date: values.posting_date || null,
       })
       onClose()
     } finally {
@@ -298,6 +322,24 @@ export function ScriptModal({
                     <option value="changes_requested">Ajuste solicitado</option>
                     <option value="recorded">Gravado</option>
                   </select>
+                </Field>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field label="Link de referencia" error={errors.reference_link?.message}>
+                    <input {...register('reference_link')} placeholder="https://..." className={inputClass} />
+                  </Field>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Gravacao" error={errors.recording_date?.message}>
+                      <input type="date" {...register('recording_date')} className={inputClass} />
+                    </Field>
+                    <Field label="Postagem" error={errors.posting_date?.message}>
+                      <input type="date" {...register('posting_date')} className={inputClass} />
+                    </Field>
+                  </div>
+                </div>
+
+                <Field label="Observacoes" error={errors.observations?.message}>
+                  <textarea {...register('observations')} rows={2} placeholder="Notas adicionais sobre a gravacao ou edicao..." className={cn(inputClass, 'resize-none')} />
                 </Field>
 
                 <Field label="Gancho" error={errors.hook?.message}>

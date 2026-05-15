@@ -1,10 +1,9 @@
-import { Archive, ArchiveRestore, ArrowRight, Edit2, Eye, PlayCircle, Target, Trash2 } from 'lucide-react'
+import { Archive, ArchiveRestore, ArrowRight, CalendarDays, Edit2, Eye, PlayCircle, Target, Trash2, Zap } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils/cn'
 import type { Script, ScriptStatus } from '../types/script.types'
-import { stripHtml } from '../utils/script-content'
 
 const statusConfig: Record<ScriptStatus, { label: string; variant: 'default' | 'primary' | 'success' }> = {
   draft: { label: 'Rascunho', variant: 'default' },
@@ -93,47 +92,46 @@ export function ScriptCard({
                 <span className="truncate">{pillar.title}</span>
               </div>
             )}
-            {script.campaigns && (
-              <p className="mt-1 truncate text-xs text-text-muted">
-                Campanha: {script.campaigns.title}
-              </p>
-            )}
             </div>
           </div>
         </div>
 
-        <div className="mt-3 sm:mt-4">
-          <div className="sm:hidden">
-            <p className="line-clamp-2 break-words text-xs leading-relaxed text-text-muted">{stripHtml(script.hook)}</p>
-          </div>
-          <div className="hidden space-y-3 sm:block">
-            <ScriptExcerpt label="Gancho" value={script.hook} />
-            <ScriptExcerpt label="Desenvolvimento" value={script.body} />
-            <ScriptExcerpt label="CTA" value={script.cta} />
-          </div>
+        <div className="mt-3 flex flex-col gap-1.5">
+          {script.posting_date && (
+            <div className="flex items-center gap-1.5 text-[11px] text-text-muted">
+              <CalendarDays className="h-3.5 w-3.5" />
+              <span>Postagem: {new Date(script.posting_date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+            </div>
+          )}
+          {script.campaigns && (
+            <div className="flex items-center gap-1.5 text-[11px] text-text-muted">
+              <Zap className="h-3.5 w-3.5" />
+              <span className="truncate">Campanha: {script.campaigns.title}</span>
+            </div>
+          )}
         </div>
 
-        <div className="mt-3 grid grid-cols-5 gap-1 rounded-lg border border-border/60 bg-white/[0.03] p-1" onClick={(event) => event.stopPropagation()}>
-          <button onClick={event => { event.stopPropagation(); onView?.(script); }} className="inline-flex h-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-muted hover:text-text" title="Visualizar" aria-label="Visualizar roteiro">
-            <Eye className="h-3.5 w-3.5" strokeWidth={2.5} />
+        <div className="mt-4 grid grid-cols-5 gap-1 rounded-xl border border-border/60 bg-surface-muted/50 p-1" onClick={(event) => event.stopPropagation()}>
+          <button onClick={event => { event.stopPropagation(); onView?.(script); }} className="inline-flex h-9 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-surface hover:text-text" title="Visualizar" aria-label="Visualizar roteiro">
+            <Eye className="h-4 w-4" strokeWidth={2} />
           </button>
-          <button onClick={event => { event.stopPropagation(); onTeleprompter?.(script); }} className="inline-flex h-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-primary-soft hover:text-primary" title="Teleprompter" aria-label="Abrir teleprompter">
-            <PlayCircle className="h-3.5 w-3.5" strokeWidth={2.5} />
+          <button onClick={event => { event.stopPropagation(); onTeleprompter?.(script); }} className="inline-flex h-9 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-primary-soft hover:text-primary" title="Teleprompter" aria-label="Abrir teleprompter">
+            <PlayCircle className="h-4 w-4" strokeWidth={2} />
           </button>
           {isArchived ? (
-            <button onClick={() => onRestore?.(script)} className="inline-flex h-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-success-soft hover:text-success" title="Restaurar" aria-label="Restaurar roteiro">
-              <ArchiveRestore className="h-3.5 w-3.5" strokeWidth={2.5} />
+            <button onClick={() => onRestore?.(script)} className="inline-flex h-9 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-success-soft hover:text-success" title="Restaurar" aria-label="Restaurar roteiro">
+              <ArchiveRestore className="h-4 w-4" strokeWidth={2} />
             </button>
           ) : (
-            <button onClick={() => onArchive?.(script)} className="inline-flex h-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-muted hover:text-text" title="Arquivar" aria-label="Arquivar roteiro">
-              <Archive className="h-3.5 w-3.5" strokeWidth={2.5} />
+            <button onClick={() => onArchive?.(script)} className="inline-flex h-9 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-surface hover:text-text" title="Arquivar" aria-label="Arquivar roteiro">
+              <Archive className="h-4 w-4" strokeWidth={2} />
             </button>
           )}
-          <button onClick={() => onEdit(script)} className="inline-flex h-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-muted hover:text-text" title="Editar" aria-label="Editar roteiro">
-            <Edit2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+          <button onClick={() => onEdit(script)} className="inline-flex h-9 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-surface hover:text-text" title="Editar" aria-label="Editar roteiro">
+            <Edit2 className="h-4 w-4" strokeWidth={2} />
           </button>
-          <button onClick={() => onDelete(script.id)} className="inline-flex h-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-danger-soft hover:text-danger" title="Excluir" aria-label="Excluir roteiro">
-            <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+          <button onClick={() => onDelete(script.id)} className="inline-flex h-9 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-danger-soft hover:text-danger" title="Excluir" aria-label="Excluir roteiro">
+            <Trash2 className="h-4 w-4" strokeWidth={2} />
           </button>
         </div>
 
@@ -147,7 +145,7 @@ export function ScriptCard({
                 event.stopPropagation()
                 onStatusChange(script.id, nextStatus[script.status])
               }}
-              className="flex items-center gap-1 text-[11px] text-text-muted transition-colors hover:text-primary"
+              className="flex items-center gap-1 text-[11px] font-medium text-text-muted transition-colors hover:text-primary"
               aria-label={`Avançar roteiro para ${statusConfig[nextStatus[script.status]].label}`}
             >
               Avançar <ArrowRight className="h-3 w-3" />
@@ -156,15 +154,6 @@ export function ScriptCard({
         </div>
       </Card>
     </motion.div>
-    </div>
-  )
-}
-
-function ScriptExcerpt({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-text-muted/70">{label}</p>
-      <p className="mt-1 line-clamp-2 break-words text-xs leading-relaxed text-text-muted">{stripHtml(value)}</p>
     </div>
   )
 }

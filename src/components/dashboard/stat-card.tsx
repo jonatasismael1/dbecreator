@@ -10,52 +10,63 @@ interface StatCardProps {
     value: string
     positive: boolean
   }
-  accent?: 'blue' | 'green' | 'purple' | 'amber'
+  accent?: 'primary' | 'success' | 'blue' | 'green'
+  onClick?: () => void
 }
 
 const accentColors = {
+  primary: {
+    bg: 'bg-primary/10',
+    text: 'text-primary',
+    border: 'border-primary/20',
+  },
+  success: {
+    bg: 'bg-success/10',
+    text: 'text-success',
+    border: 'border-success/20',
+  },
   blue: {
-    bg: 'bg-dbe-blue/10',
-    text: 'text-dbe-blue',
-    border: 'border-dbe-blue/20',
+    bg: 'bg-primary/10',
+    text: 'text-primary',
+    border: 'border-primary/20',
   },
   green: {
-    bg: 'bg-dbe-green/10',
-    text: 'text-dbe-green',
-    border: 'border-dbe-green/20',
-  },
-  purple: {
-    bg: 'bg-dbe-green/10',
-    text: 'text-dbe-green',
-    border: 'border-dbe-green/25',
-  },
-  amber: {
-    bg: 'bg-dbe-blue/10',
-    text: 'text-dbe-blue',
-    border: 'border-dbe-blue/25',
+    bg: 'bg-success/10',
+    text: 'text-success',
+    border: 'border-success/20',
   },
 }
 
-export function StatCard({ title, value, icon: Icon, trend, accent = 'blue' }: StatCardProps) {
-  const colors = accentColors[accent]
+export function StatCard({ title, value, icon: Icon, trend, accent = 'primary', onClick }: StatCardProps) {
+  const colors = accentColors[accent as keyof typeof accentColors] || accentColors.primary
+
+  const Component = onClick ? 'button' : 'div'
 
   return (
-    <Card className="relative overflow-hidden">
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm text-dbe-muted mb-1">{title}</p>
-          <p className="truncate text-3xl font-bold text-dbe-text tracking-tight">{value}</p>
-          {trend && (
-            <p className={cn('text-xs mt-2 font-medium', trend.positive ? 'text-dbe-green' : 'text-dbe-red')}>
-              {trend.positive ? '↑' : '↓'} {trend.value}
-            </p>
-          )}
+    <Card 
+      className={cn(
+        'relative overflow-hidden transition-all border-border',
+        onClick && 'cursor-pointer hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 active:scale-[0.98]'
+      )}
+      onClick={onClick}
+    >
+      <Component className="w-full text-left p-4 sm:p-5">
+        <div className="flex min-w-0 items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm text-text-muted mb-1 font-medium">{title}</p>
+            <p className="truncate text-3xl font-bold text-text tracking-tight">{value}</p>
+            {trend && (
+              <p className={cn('text-xs mt-2 font-medium', trend.positive ? 'text-success' : 'text-danger')}>
+                {trend.positive ? '↑' : '↓'} {trend.value}
+              </p>
+            )}
+          </div>
+          <div className={cn('shrink-0 rounded-2xl p-3 border shadow-sm', colors.bg, colors.border)}>
+            <Icon className={cn('h-5 w-5', colors.text)} />
+          </div>
         </div>
-        <div className={cn('shrink-0 rounded-[var(--r-lg)] p-3 border', colors.bg, colors.border)}>
-          <Icon className={cn('h-5 w-5', colors.text)} />
-        </div>
-      </div>
-      <div className={cn('absolute bottom-0 left-0 right-0 h-0.5 opacity-60', `bg-gradient-to-r from-transparent via-current to-transparent`, colors.text)} />
+        <div className={cn('absolute bottom-0 left-0 right-0 h-0.5 opacity-40', `bg-gradient-to-r from-transparent via-current to-transparent`, colors.text)} />
+      </Component>
     </Card>
   )
 }

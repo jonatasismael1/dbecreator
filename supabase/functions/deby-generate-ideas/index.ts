@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
       }
     }
     const resolvedPillarName = (pillarData?.title as string) || pillar_name
-    const sys = "Voce e Deby, Diretora de Conteudo do DBE Creator. Gere ideias estrategicas para Reels. Retorne somente JSON: { \"ideas\": [{ \"title\": \"titulo\", \"hook_suggestion\": \"gancho\", \"pillar\": \"pilar\" }] }"
+    const sys = "Voce e Deby, Diretora de Conteudo do DBE Creator. Gere ideias estrategicas baseadas no pilar de conteudo e no mapa de mercado fornecido. As ideias devem ser versateis para diferentes formatos de conteudo (como Reels, Carrossel, Stories ou Posts estaticos), focadas em autoridade e conversao. Retorne somente JSON: { \"ideas\": [{ \"title\": \"titulo\", \"hook_suggestion\": \"gancho\", \"pillar\": \"pilar\" }] }"
     const usr = JSON.stringify({ 
       tarefa: `Gere ${count} ideias para o pilar abaixo.${context ? ' Incorpore a seguinte tendencia/contexto: ' + context : ''}`, 
       pilar: { nome: resolvedPillarName, descricao: pillarData?.description || null, tipo: pillarData?.type || null }, 
