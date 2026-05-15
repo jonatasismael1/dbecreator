@@ -9,7 +9,7 @@ export function AppLayout() {
 
   return (
     <WorkspaceProvider>
-      <div className="min-h-screen bg-dbe-dark transition-colors duration-300">
+      <div className="min-h-screen bg-background/80 transition-colors duration-300">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         <div className="lg:pl-72 pt-4">

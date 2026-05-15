@@ -171,23 +171,23 @@ export function ScriptsPage() {
   if (isError) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-dbe-muted">Erro ao carregar roteiros. Tente novamente.</p>
+        <p className="text-sm text-text-muted">Erro ao carregar roteiros. Tente novamente.</p>
       </div>
     )
   }
 
   return (
     <div>
-      <PageHeader title="Roteiros" description="Construa Reels com gancho, desenvolvimento, CTA e pilar estratégico.">
+      <PageHeader title="Roteiros">
         <Button onClick={openCreate} className="w-full sm:w-auto">
           <Plus className="h-4 w-4" />
           Novo roteiro
         </Button>
       </PageHeader>
 
-      <div className="mb-5 grid grid-cols-3 gap-2 sm:mb-6 sm:gap-3">
+      <div className="mb-5 grid gap-2 sm:mb-6 sm:grid-cols-3 sm:gap-3">
         <MetricCard label="Ativos" value={activeScripts.length} />
-        <MetricCard label="Pilares vinculados" value={new Set(activeScripts.map((s) => s.content_pillar_id).filter(Boolean)).size} icon={<Target className="h-4 w-4 text-dbe-green" />} />
+        <MetricCard label="Pilares vinculados" value={new Set(activeScripts.map((s) => s.content_pillar_id).filter(Boolean)).size} icon={<Target className="h-4 w-4 text-success" />} />
         <MetricCard label="Em aprovação" value={grouped.in_approval.length} />
       </div>
 
@@ -206,7 +206,7 @@ export function ScriptsPage() {
           <div className="col-span-2 flex items-center justify-end gap-2 sm:col-span-1">
             {selectionMode ? (
               <>
-                <span className="text-xs text-dbe-muted">{selectedScriptIds.size} selecionados</span>
+                <span className="text-xs text-text-muted">{selectedScriptIds.size} selecionados</span>
                 <Button size="sm" variant="secondary" onClick={() => { setSelectionMode(false); setSelectedScriptIds(new Set()) }}>
                   Cancelar
                 </Button>
@@ -224,10 +224,10 @@ export function ScriptsPage() {
       </div>
 
       {approvalLink && (
-        <div className="mb-6 rounded-lg border border-dbe-green/30 bg-dbe-green/10 p-4">
-          <h4 className="mb-2 text-sm font-semibold text-dbe-green">Link de aprovação gerado!</h4>
+        <div className="mb-6 rounded-lg border border-success/30 bg-success-soft p-4">
+          <h4 className="mb-2 text-sm font-semibold text-success">Link de aprovação gerado!</h4>
           <div className="flex gap-2">
-            <input type="text" readOnly value={approvalLink} className="flex-1 rounded border border-dbe-green/20 bg-black/20 px-3 py-1.5 text-xs text-dbe-green outline-none" />
+            <input type="text" readOnly value={approvalLink} className="flex-1 rounded border border-success/20 bg-black/20 px-3 py-1.5 text-xs text-success outline-none" />
             <Button size="sm" variant="secondary" onClick={() => { navigator.clipboard.writeText(approvalLink); alert('Copiado!') }}>
               Copiar
             </Button>
@@ -243,16 +243,16 @@ export function ScriptsPage() {
           action={tab === 'active' ? { label: 'Novo roteiro', onClick: openCreate } : undefined}
         />
       ) : (
-        <div className="-mx-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0 lg:overflow-visible">
-          <div className="flex snap-x snap-mandatory gap-3 xl:grid xl:grid-cols-6 xl:gap-4">
+        <div className="mt-2">
+          <div className="flex flex-col gap-8 lg:flex-row lg:gap-4 lg:overflow-x-auto lg:pb-3">
           {columns.map((column) => (
-            <section key={column.status} className="w-[min(82vw,22rem)] shrink-0 snap-start xl:w-auto xl:min-w-0">
+            <section key={column.status} className="w-full lg:w-[310px] lg:shrink-0">
               <div className="mb-3 flex items-center justify-between">
                 <div>
-                  <h2 className="text-sm font-semibold text-dbe-text">{column.title}</h2>
-                  <p className="text-xs text-dbe-muted">{column.description}</p>
+                  <h2 className="text-sm font-semibold text-text">{column.title}</h2>
+                  <p className="text-xs text-text-muted">{column.description}</p>
                 </div>
-                <Badge variant={column.status === 'recorded' || column.status === 'approved' ? 'success' : column.status === 'ready' || column.status === 'in_approval' ? 'blue' : 'default'}>
+                <Badge variant={column.status === 'recorded' || column.status === 'approved' ? 'success' : column.status === 'ready' || column.status === 'in_approval' ? 'primary' : 'default'}>
                   {grouped[column.status].length}
                 </Badge>
               </div>
@@ -265,8 +265,8 @@ export function ScriptsPage() {
                 onDragLeave={() => setDragOverStatus(null)}
                 onDrop={(event) => handleDrop(event, column.status)}
                 className={[
-                  'min-h-40 space-y-3 rounded-xl border bg-dbe-dark/40 p-2.5 transition-all sm:p-3',
-                  dragOverStatus === column.status ? 'border-dbe-blue bg-dbe-blue/5' : 'border-dbe-border',
+                  'min-h-[100px] space-y-3 rounded-xl border bg-surface-muted/40 p-2.5 transition-all sm:p-3 lg:min-h-[440px]',
+                  dragOverStatus === column.status ? 'border-primary bg-primary-soft' : 'border-border',
                 ].join(' ')}
               >
                 <AnimatePresence mode="popLayout">
@@ -289,9 +289,8 @@ export function ScriptsPage() {
                   ))}
                 </AnimatePresence>
                 {grouped[column.status].length === 0 && (
-                  <div className="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-dbe-border text-xs text-dbe-muted">
-                    <span className="sm:hidden">Sem roteiros</span>
-                    <span className="hidden sm:inline">Arraste um roteiro para cá</span>
+                  <div className="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-border text-xs text-text-muted">
+                    <span>Sem roteiros</span>
                   </div>
                 )}
               </div>
@@ -324,10 +323,10 @@ function MetricCard({ label, value, icon }: { label: string; value: number; icon
   return (
     <Card className="flex min-h-20 items-center justify-between gap-2 p-3 sm:p-4">
       <div>
-        <p className="text-[11px] leading-tight text-dbe-muted sm:text-xs">{label}</p>
-        <p className="mt-1 text-xl font-bold text-dbe-text sm:text-2xl">{value}</p>
+        <p className="text-[11px] leading-tight text-text-muted sm:text-xs">{label}</p>
+        <p className="mt-1 text-xl font-bold text-text sm:text-2xl">{value}</p>
       </div>
-      {icon ?? <FileText className="h-4 w-4 text-dbe-blue" />}
+      {icon ?? <FileText className="h-4 w-4 text-info" />}
     </Card>
   )
 }

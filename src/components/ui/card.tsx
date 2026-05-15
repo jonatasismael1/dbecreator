@@ -1,20 +1,36 @@
 import { type HTMLAttributes, forwardRef } from 'react'
 import { cn } from '@/lib/utils/cn'
 
-interface CardProps extends HTMLAttributes<HTMLDivElement> {
+type CardVariant = 'default' | 'elevated' | 'subtle' | 'interactive' | 'glass'
+
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  variant?: CardVariant
   hover?: boolean
   glass?: boolean
 }
 
+const variants: Record<CardVariant, string> = {
+  default: 'glass-panel',
+  elevated: 'bg-surface-elevated/90 border border-border-strong/70 shadow-2xl shadow-black/20',
+  subtle: 'bg-surface-muted/70 border border-border/80',
+  interactive: 'glass-panel transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-2xl hover:shadow-primary/10 cursor-pointer',
+  glass: 'glass-panel',
+}
+
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, hover = true, glass = false, children, ...props }, ref) => {
+  ({ className, variant, hover, glass, children, ...props }, ref) => {
+
+    // Map legacy props for compatibility
+    let activeVariant: CardVariant = variant || 'default'
+    if (glass) activeVariant = 'glass'
+    else if (hover) activeVariant = 'interactive'
+
     return (
       <div
         ref={ref}
         className={cn(
-          'rounded-xl border border-dbe-border bg-dbe-navy p-5',
-          hover && 'transition-all duration-300 hover:border-dbe-blue/30 hover:shadow-lg hover:shadow-dbe-blue/5',
-          glass && 'glass',
+          'rounded-xl p-5',
+          variants[activeVariant],
           className
         )}
         {...props}
@@ -37,8 +53,24 @@ export function CardHeader({ className, children, ...props }: HTMLAttributes<HTM
 
 export function CardTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('text-lg font-semibold text-dbe-text', className)} {...props}>
+    <h3 className={cn('text-lg font-semibold tracking-tight text-text', className)} {...props}>
       {children}
     </h3>
+  )
+}
+
+export function CardContent({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn('pt-0', className)} {...props}>
+      {children}
+    </div>
+  )
+}
+
+export function CardFooter({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn('flex items-center pt-4 mt-auto border-t border-border', className)} {...props}>
+      {children}
+    </div>
   )
 }
