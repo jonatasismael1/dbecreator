@@ -23,13 +23,23 @@
     --warning: #FF9F0A;
     --danger: #FF453A;
 
+    --primary-foreground: #6DDCFF;
+    --success-foreground: #2EDC75;
+    --warning-foreground: #FF9F0A;
+    --danger-foreground: #FF453A;
+    --ai-foreground: #2EDC75;
+
     --r-sm: 8px;
     --r-md: 12px;
     --r-lg: 16px;
     --r-xl: 20px;
 
     --border: rgba(255,255,255,0.07);
-    --border-hover: rgba(255,255,255,0.12);
+    --border-strong: rgba(255,255,255,0.12);
+
+    --border-rgb: 255 255 255;
+    --border-opacity: 0.07;
+    --border-strong-opacity: 0.12;
 
     --touch-target-min: 44px;
     --mobile-breakpoint: 768px;
@@ -51,6 +61,40 @@
     --danger-rgb: 255 69 58;
   }
 
+  .light {
+    --bg: #F4F8FB;
+    --bg2: #E5EBF0;
+    --surface: #FFFFFF;
+    --surface2: #F0F4F8;
+
+    --text: #02070A;
+    --text2: #647386;
+    --text3: #A7B4C2;
+
+    --border: rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.15);
+    
+    --border-rgb: 0 0 0;
+    --border-opacity: 0.08;
+    --border-strong-opacity: 0.15;
+
+    --bg-rgb: 244 248 251;
+    --bg2-rgb: 229 235 240;
+    --surface-rgb: 255 255 255;
+    --surface2-rgb: 240 244 248;
+    
+    --text-rgb: 2 7 10;
+    --text2-rgb: 100 115 134;
+    --text3-rgb: 167 180 194;
+    
+    /* Make soft foregrounds darker in light mode for readability */
+    --primary-foreground: #007EB7;
+    --success-foreground: #009D41;
+    --warning-foreground: #B36B00;
+    --danger-foreground: #CC372E;
+    --ai-foreground: #009D41;
+  }
+
   * {
     box-sizing: border-box;
     margin: 0;
@@ -65,7 +109,7 @@
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
     font-size: 15px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -93,6 +137,7 @@
   }
 
   h1 {
+    font-family: 'Lyon-Text', Georgia, YuMincho, "Yu Mincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Songti TC", "Songti SC", SimSun, "Nanum Myeongjo", NanumMyeongjo, Batang, serif;
     font-size: 32px;
     font-weight: 700;
     letter-spacing: -0.8px;
@@ -100,6 +145,7 @@
   }
 
   h2 {
+    font-family: 'Lyon-Text', Georgia, YuMincho, "Yu Mincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Songti TC", "Songti SC", SimSun, "Nanum Myeongjo", NanumMyeongjo, Batang, serif;
     font-size: 22px;
     font-weight: 700;
     letter-spacing: -0.4px;
@@ -107,6 +153,7 @@
   }
 
   h3 {
+    font-family: 'Lyon-Text', Georgia, YuMincho, "Yu Mincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Songti TC", "Songti SC", SimSun, "Nanum Myeongjo", NanumMyeongjo, Batang, serif;
     font-size: 17px;
     font-weight: 600;
     letter-spacing: -0.2px;

@@ -32,7 +32,7 @@ export function Topbar() {
       <div className="flex min-h-16 items-center justify-between gap-3 px-4 md:px-6">
       <div className="flex items-center gap-4">
           <div className="block md:hidden">
-            <img src={logoDbeSrc} alt="DBE Creator" className="h-8 w-auto object-contain" />
+            <img src={logoDbeSrc} alt="DBE Creator" className="h-12 w-auto object-contain" />
           </div>
         </div>
 

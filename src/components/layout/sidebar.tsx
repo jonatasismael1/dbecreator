@@ -14,11 +14,11 @@ function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="flex items-center justify-center border-b border-border px-6 py-4">
+      <div className="flex items-center justify-start border-b border-border px-5 py-5">
         <img
           src={logoDbeSrc}
           alt="DBE Creator"
-          className="h-10 w-auto object-contain"
+          className="h-16 w-auto object-contain"
           style={{ imageRendering: 'crisp-edges' }}
         />
       </div>

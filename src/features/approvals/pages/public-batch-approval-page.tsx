@@ -238,7 +238,7 @@ export function PublicBatchApprovalPage() {
               {pendingItems.length > 0 && selectedIds.length === 0 && (
                 <Button
                   size="sm"
-                  className="bg-green-500 text-black hover:bg-green-600"
+                  variant="success"
                   onClick={() => setConfirmApproveAll(true)}
                   loading={updateMutation.isPending}
                   disabled={nameRequired}
@@ -295,19 +295,19 @@ export function PublicBatchApprovalPage() {
                   <h2 className="text-lg font-bold">{item.script.title}</h2>
                   <div className="flex items-center gap-2 shrink-0">
                     {item.status === 'approved' && (
-                      <span className="flex items-center gap-1.5 rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1.5 text-sm font-medium text-green-500">
+                      <Badge variant="success">
                         <CheckCircle2 className="h-4 w-4" /> Aprovado
-                      </span>
+                      </Badge>
                     )}
                     {item.status === 'requested_changes' && (
-                      <span className="flex items-center gap-1.5 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-sm font-medium text-red-500">
+                      <Badge variant="danger">
                         <XCircle className="h-4 w-4" /> Ajustes solicitados
-                      </span>
+                      </Badge>
                     )}
                     {item.status === 'pending' && (
-                      <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-sm font-medium text-amber-500">
+                      <Badge variant="warning">
                         Pendente
-                      </span>
+                      </Badge>
                     )}
                   </div>
                 </div>
@@ -428,7 +428,7 @@ export function PublicBatchApprovalPage() {
                       <>
                         <Button
                           size="sm"
-                          className="bg-green-500 text-black hover:bg-green-600"
+                          variant="success"
                           onClick={() => updateMutation.mutate({ action: 'approve_item', item_id: item.id, author_name: authorName })}
                           loading={updateMutation.isPending}
                           disabled={nameRequired}
@@ -467,7 +467,7 @@ export function PublicBatchApprovalPage() {
                   Cancelar
                 </Button>
                 <Button
-                  className="bg-green-500 text-black hover:bg-green-600"
+                  variant="success"
                   loading={updateMutation.isPending}
                   onClick={confirmApproveSelected ? handleApproveSelected : handleApproveAll}
                 >
