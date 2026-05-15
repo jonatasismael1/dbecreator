@@ -12,7 +12,10 @@ import type { ContentPillar } from '@/features/pillars/types/pillar.types'
 import type { Campaign } from '@/features/campaigns/types/campaign.types'
 import { ScriptVersionHistory } from './script-version-history'
 import { RichTextEditor } from './rich-text-editor'
-import type { CreateScriptDTO, Script, ScriptStatus, ScriptVersion } from '../types/script.types'
+import { useTemplates } from '../hooks/use-templates'
+import { usePresence } from '../hooks/use-presence'
+import { useFieldLocking } from '../hooks/use-field-locking'
+import type { CreateScriptDTO, Script, ScriptStatus, ScriptVersion, ScriptTemplate } from '../types/script.types'
 import { stripHtml } from '../utils/script-content'
 
 const scriptSchema = z.object({
@@ -62,6 +65,14 @@ export function ScriptModal({
 }: ScriptModalProps) {
   const [saving, setSaving] = useState(false)
   const [showDebyPanel, setShowDebyPanel] = useState(false)
+
+  // P3.1 — Templates
+  const { templates, isLoading: templatesLoading } = useTemplates()
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
+
+  // P3.2 — Collaboration
+  const { onlineUsers } = usePresence(script?.id)
+  const { lockedFields, lockField, unlockField } = useFieldLocking(script?.id)
 
   // P2.2 — Inline Deby suggestions
   const [hookSuggestions, setHookSuggestions] = useState<string[]>([])
@@ -139,6 +150,21 @@ export function ScriptModal({
     setValue('cta', analysis.result.improved_cta || '', { shouldDirty: true, shouldValidate: true })
   }
 
+  const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const templateId = e.target.value
+    setSelectedTemplateId(templateId)
+    
+    if (!templateId) return
+    
+    const template = templates.find(t => t.id === templateId)
+    if (template) {
+      setValue('title', template.title, { shouldDirty: true })
+      setValue('hook', template.hook_template, { shouldDirty: true })
+      setValue('body', template.body_template, { shouldDirty: true })
+      setValue('cta', template.cta_template, { shouldDirty: true })
+    }
+  }
+
   const handleSuggestHook = async () => {
     const topic = stripHtml(watchedHook).trim() || stripHtml(watchedBody).trim()
     if (!topic) return
@@ -183,12 +209,42 @@ export function ScriptModal({
                   <h2 className="text-lg font-bold text-dbe-text">{script ? 'Editar roteiro' : 'Novo roteiro'}</h2>
                   <p className="mt-1 text-xs text-dbe-muted">Gancho, desenvolvimento, CTA e pilar estrategico.</p>
                 </div>
-                <button onClick={onClose} className="rounded-lg p-2 text-dbe-muted transition-colors hover:bg-white/5 hover:text-dbe-text" aria-label="Fechar modal">
-                  <X className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-4">
+                  {onlineUsers && onlineUsers.length > 0 && (
+                    <div className="flex items-center -space-x-2 mr-2">
+                      {onlineUsers.map(u => (
+                        <div key={u.id} className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-dbe-navy bg-dbe-blue text-[10px] font-bold text-white uppercase" title={u.email}>
+                          {u.email.substring(0, 2)}
+                        </div>
+                      ))}
+                      <span className="ml-3 text-[10px] text-dbe-muted">Online agora</span>
+                    </div>
+                  )}
+                  <button onClick={onClose} className="rounded-lg p-2 text-dbe-muted transition-colors hover:bg-white/5 hover:text-dbe-text" aria-label="Fechar modal">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 overflow-y-auto p-4 sm:space-y-5 sm:p-6">
+                {!script && templates && templates.length > 0 && (
+                  <div className="rounded-xl border border-dbe-blue/20 bg-dbe-blue/5 p-4 mb-2">
+                    <Field label="Usar um Template (Opcional)">
+                      <select 
+                        value={selectedTemplateId} 
+                        onChange={handleTemplateChange}
+                        disabled={templatesLoading}
+                        className={inputClass}
+                      >
+                        <option value="">Começar do zero</option>
+                        {templates.map(t => (
+                          <option key={t.id} value={t.id}>{t.title} ({t.category})</option>
+                        ))}
+                      </select>
+                    </Field>
+                  </div>
+                )}
+
                 <Field label="Titulo" error={errors.title?.message}>
                   <input {...register('title')} placeholder="Ex: 3 erros que travam seus Reels" className={inputClass} />
                 </Field>
@@ -224,13 +280,20 @@ export function ScriptModal({
                 </Field>
 
                 <Field label="Gancho" error={errors.hook?.message}>
-                  <Controller
-                    control={control}
-                    name="hook"
-                    render={({ field }) => (
-                      <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="A primeira frase que para o scroll..." minHeight={88} />
-                    )}
-                  />
+                  {lockedFields['hook'] && lockedFields['hook'].userEmail !== onlineUsers.find(u => u.email === lockedFields['hook'].userEmail)?.email ? (
+                    <div className="mb-2 text-[10px] text-dbe-blue bg-dbe-blue/10 border border-dbe-blue/20 rounded px-2 py-1 inline-block">
+                      {lockedFields['hook'].userEmail} está editando...
+                    </div>
+                  ) : null}
+                  <div onFocus={() => lockField('hook')} onBlur={() => unlockField('hook')}>
+                    <Controller
+                      control={control}
+                      name="hook"
+                      render={({ field }) => (
+                        <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="A primeira frase que para o scroll..." minHeight={88} disabled={!!lockedFields['hook']} />
+                      )}
+                    />
+                  </div>
                   <div className="mt-1.5 flex items-center justify-between">
                     <FieldHint text="Um bom gancho tem menos de 3 segundos e gera curiosidade imediata." value={watchedHook} />
                     <button
@@ -270,24 +333,38 @@ export function ScriptModal({
                 </Field>
 
                 <Field label="Desenvolvimento" error={errors.body?.message}>
-                  <Controller
-                    control={control}
-                    name="body"
-                    render={({ field }) => (
-                      <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="Contexto, promessa, prova e argumento central..." minHeight={180} />
-                    )}
-                  />
+                  {lockedFields['body'] ? (
+                    <div className="mb-2 text-[10px] text-dbe-blue bg-dbe-blue/10 border border-dbe-blue/20 rounded px-2 py-1 inline-block">
+                      {lockedFields['body'].userEmail} está editando...
+                    </div>
+                  ) : null}
+                  <div onFocus={() => lockField('body')} onBlur={() => unlockField('body')}>
+                    <Controller
+                      control={control}
+                      name="body"
+                      render={({ field }) => (
+                        <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="Contexto, promessa, prova e argumento central..." minHeight={180} disabled={!!lockedFields['body']} />
+                      )}
+                    />
+                  </div>
                   <FieldHint text="Apresente prova e contexto. Mantenha conciso para Reels." value={watchedBody} />
                 </Field>
 
                 <Field label="CTA" error={errors.cta?.message}>
-                  <Controller
-                    control={control}
-                    name="cta"
-                    render={({ field }) => (
-                      <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="Uma acao clara para o proximo passo..." minHeight={88} />
-                    )}
-                  />
+                  {lockedFields['cta'] ? (
+                    <div className="mb-2 text-[10px] text-dbe-blue bg-dbe-blue/10 border border-dbe-blue/20 rounded px-2 py-1 inline-block">
+                      {lockedFields['cta'].userEmail} está editando...
+                    </div>
+                  ) : null}
+                  <div onFocus={() => lockField('cta')} onBlur={() => unlockField('cta')}>
+                    <Controller
+                      control={control}
+                      name="cta"
+                      render={({ field }) => (
+                        <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="Uma acao clara para o proximo passo..." minHeight={88} disabled={!!lockedFields['cta']} />
+                      )}
+                    />
+                  </div>
                   <div className="mt-1.5 flex items-center justify-between">
                     <FieldHint text="Uma unica chamada para acao, clara e direta." value={watchedCta} />
                     <button

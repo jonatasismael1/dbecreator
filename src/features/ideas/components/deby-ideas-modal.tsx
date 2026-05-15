@@ -18,6 +18,7 @@ export function DebyIdeasModal({ open, onClose, onAddIdeas }: DebyIdeasModalProp
   
   const [selectedPillarId, setSelectedPillarId] = useState('')
   const [count, setCount] = useState(5)
+  const [context, setContext] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -36,7 +37,7 @@ export function DebyIdeasModal({ open, onClose, onAddIdeas }: DebyIdeasModalProp
     setIsLoading(true)
     setError(null)
     try {
-      const ideas = await debyService.generateIdeas(selectedPillar.id, selectedPillar.title, count)
+      const ideas = await debyService.generateIdeas(selectedPillar.id, selectedPillar.title, count, context)
       await onAddIdeas(ideas, selectedPillar.id)
       onClose()
     } catch (err) {
@@ -95,6 +96,18 @@ export function DebyIdeasModal({ open, onClose, onAddIdeas }: DebyIdeasModalProp
               <option value="5">5 ideias</option>
               <option value="10">10 ideias</option>
             </select>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-dbe-text">Contexto / Tendência (Opcional)</label>
+            <textarea
+              value={context}
+              onChange={(e) => setContext(e.target.value)}
+              disabled={isLoading}
+              placeholder="Ex: Focar no audio em alta sobre 'escola de negócios' ou assunto atual."
+              className="w-full rounded-lg border border-dbe-border bg-dbe-dark px-4 py-2.5 text-sm text-dbe-text transition-colors focus:border-dbe-purple focus:outline-none disabled:opacity-50"
+              rows={3}
+            />
           </div>
 
           {error && (

@@ -52,3 +52,13 @@ export type CreateScriptDTO = Pick<
 >
 
 export type UpdateScriptDTO = Partial<CreateScriptDTO>
+
+export interface ScriptTemplate {
+  id: string
+  title: string
+  category: string
+  hook_template: string
+  body_template: string
+  cta_template: string
+  created_at: string
+}

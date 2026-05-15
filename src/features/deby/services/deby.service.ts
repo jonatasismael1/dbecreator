@@ -59,11 +59,12 @@ export const debyService = {
     pillarId: string,
     pillarName: string,
     count = 5,
+    context = '',
   ): Promise<Array<{ title: string; hook_suggestion: string; pillar: string }>> {
     const authorization = await getAuthHeader()
     const { data, error } = await supabase.functions.invoke('deby-generate-ideas', {
       headers: { authorization },
-      body: { pillar_id: pillarId, pillar_name: pillarName, count },
+      body: { pillar_id: pillarId, pillar_name: pillarName, count, context },
     })
     if (error) throw error
     if (!Array.isArray(data?.ideas)) throw new Error('Resposta inesperada da Deby.')

@@ -7,6 +7,7 @@ interface RichTextEditorProps {
   onChange: (value: string) => void
   placeholder?: string
   minHeight?: number
+  disabled?: boolean
 }
 
 const toolbarOptions = [
@@ -15,7 +16,7 @@ const toolbarOptions = [
   ['link'],
 ]
 
-export function RichTextEditor({ value, onChange, placeholder, minHeight = 120 }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, placeholder, minHeight = 120, disabled = false }: RichTextEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const quillRef = useRef<Quill | null>(null)
   const onChangeRef = useRef(onChange)
@@ -23,6 +24,12 @@ export function RichTextEditor({ value, onChange, placeholder, minHeight = 120 }
   useEffect(() => {
     onChangeRef.current = onChange
   }, [onChange])
+
+  useEffect(() => {
+    if (quillRef.current) {
+      quillRef.current.enable(!disabled)
+    }
+  }, [disabled])
 
   useEffect(() => {
     if (!containerRef.current || quillRef.current) return

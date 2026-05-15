@@ -24,6 +24,7 @@ Deno.serve(async (req) => {
     const pillar_id = typeof body.pillar_id === "string" ? body.pillar_id.trim() : ""
     const pillar_name = typeof body.pillar_name === "string" ? body.pillar_name.trim() : ""
     const count = typeof body.count === "number" ? Math.min(Math.max(body.count, 1), 10) : 5
+    const context = typeof body.context === "string" ? body.context.trim() : ""
     if (!pillar_id && !pillar_name) return response({ error: "pillar_id ou pillar_name obrigatorio" }, 400)
     const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } })
     const { data: userData, error: userError } = await userClient.auth.getUser()
@@ -41,7 +42,12 @@ Deno.serve(async (req) => {
     }
     const resolvedPillarName = (pillarData?.title as string) || pillar_name
     const sys = "Voce e Deby, Diretora de Conteudo do DBE Creator. Gere ideias estrategicas para Reels. Retorne somente JSON: { \"ideas\": [{ \"title\": \"titulo\", \"hook_suggestion\": \"gancho\", \"pillar\": \"pilar\" }] }"
-    const usr = JSON.stringify({ tarefa: `Gere ${count} ideias para o pilar abaixo.`, pilar: { nome: resolvedPillarName, descricao: pillarData?.description || null, tipo: pillarData?.type || null }, mapa_de_mercado: marketMap })
+    const usr = JSON.stringify({ 
+      tarefa: `Gere ${count} ideias para o pilar abaixo.${context ? ' Incorpore a seguinte tendencia/contexto: ' + context : ''}`, 
+      pilar: { nome: resolvedPillarName, descricao: pillarData?.description || null, tipo: pillarData?.type || null }, 
+      mapa_de_mercado: marketMap,
+      contexto_adicional: context || undefined
+    })
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${openRouterKey}`, "Content-Type": "application/json", "HTTP-Referer": Deno.env.get("APP_URL") || "http://localhost:5173", "X-Title": "DBE Creator" },
