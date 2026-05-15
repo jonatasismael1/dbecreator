@@ -7,7 +7,7 @@ import { Menu } from 'lucide-react'
 export function BottomNav({ onMoreClick }: { onMoreClick: () => void }) {
   return (
     <nav
-      className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 gap-1 rounded-[var(--r-xl)] border border-border bg-surface p-1.5 shadow-2xl shadow-black/35 backdrop-blur-xl md:hidden"
+      className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 gap-1 rounded-[var(--r-xl)] border border-border bg-surface p-1.5 shadow-2xl shadow-black/35 backdrop-blur-xl md:hidden"
       aria-label="Navegação principal"
     >
       {BOTTOM_NAV_ITEMS.map((item) => {

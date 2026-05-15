@@ -72,4 +72,5 @@ export const BOTTOM_NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard },
   { label: 'Roteiros', path: '/scripts', icon: FileText },
   { label: 'Calendário', path: '/calendar', icon: CalendarDays },
+  { label: 'Deby AI', path: '/deby', icon: Sparkles, badge: 'AI' },
 ]
