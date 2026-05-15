@@ -6,6 +6,7 @@ import {
   MessageSquare, CheckCheck, Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { ScriptContentBlock } from '@/features/scripts/components/script-content-block'
 
 type ItemStatus = 'pending' | 'approved' | 'requested_changes'
