@@ -19,18 +19,18 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const badgeVariants: Record<BadgeVariant, string> = {
-  default: 'bg-surface-muted/70 text-text-muted border-border',
-  primary: 'bg-primary-soft/90 text-primary-soft-foreground border-primary/35 shadow-sm shadow-primary/10',
-  success: 'bg-success-soft/90 text-success-soft-foreground border-success/35',
-  warning: 'bg-warning-soft/90 text-warning-soft-foreground border-warning/25',
-  danger: 'bg-danger-soft/90 text-danger-soft-foreground border-danger/25',
-  info: 'bg-info-soft/90 text-info-soft-foreground border-info/35',
-  ai: 'bg-ai-soft/90 text-ai-soft-foreground border-ai/35 shadow-sm shadow-ai/10',
-  muted: 'bg-transparent border-border-strong text-text-muted',
+  default: 'bg-surface2 text-text-muted border-border',
+  primary: 'bg-primary/10 text-primary-soft-foreground border-primary/20 shadow-sm',
+  success: 'bg-success/10 text-success-soft-foreground border-success/20',
+  warning: 'bg-warning/10 text-warning-soft-foreground border-warning/20',
+  danger: 'bg-danger/10 text-danger-soft-foreground border-danger/20',
+  info: 'bg-info/10 text-info-soft-foreground border-info/20',
+  ai: 'bg-ai-soft text-ai-soft-foreground border-ai/20 shadow-sm',
+  muted: 'bg-transparent border-border text-text-muted',
   // legacy maps
-  error: 'bg-danger-soft text-danger-soft-foreground border-danger/20',
-  purple: 'bg-ai-soft text-ai-soft-foreground border-ai/35',
-  blue: 'bg-primary-soft text-primary-soft-foreground border-primary/35',
+  error: 'bg-danger/10 text-danger-soft-foreground border-danger/20',
+  purple: 'bg-ai-soft text-ai-soft-foreground border-ai/20',
+  blue: 'bg-primary/10 text-primary-soft-foreground border-primary/20',
 }
 
 export function Badge({ className, variant = 'default', children, ...props }: BadgeProps) {

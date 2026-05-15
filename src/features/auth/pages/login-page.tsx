@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useAuth } from '@/features/auth/context/auth-context'
 
 const loginSchema = z.object({
@@ -40,49 +41,49 @@ export function LoginPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-dbe-text mb-2">Bem-vindo de volta</h2>
-      <p className="text-sm text-dbe-muted mb-8">Entre na sua conta para continuar criando.</p>
+      <h2 className="text-2xl font-bold text-text mb-2">Bem-vindo de volta</h2>
+      <p className="text-sm text-text-muted mb-8">Entre na sua conta para continuar criando.</p>
 
       {serverError && (
-        <div className="mb-5 flex items-center gap-2 rounded-[var(--r-md)] border border-dbe-red/20 bg-dbe-red/10 px-4 py-3">
-          <AlertCircle className="h-4 w-4 text-dbe-red shrink-0" />
-          <p className="text-sm text-dbe-red">{serverError}</p>
+        <div className="mb-5 flex items-center gap-2 rounded-[var(--r-md)] border border-danger/20 bg-danger/10 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-danger shrink-0" />
+          <p className="text-sm text-danger">{serverError}</p>
         </div>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
-          <label htmlFor="login-email" className="block text-sm font-medium text-dbe-muted mb-2">
+          <label htmlFor="login-email" className="block text-sm font-medium text-text-muted mb-2">
             E-mail
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dbe-muted" />
-            <input
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted z-10" />
+            <Input
               id="login-email"
               type="email"
               placeholder="seu@email.com"
               {...register('email')}
-              className="h-11 w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-navy pl-10 pr-4 text-[16px] text-dbe-text outline-none transition-all placeholder:text-dbe-muted/50 focus:border-dbe-blue/50 focus:ring-1 focus:ring-dbe-blue/20"
+              className="pl-10 h-11"
             />
           </div>
-          {errors.email && <p className="mt-1.5 text-xs text-dbe-red">{errors.email.message}</p>}
+          {errors.email && <p className="mt-1.5 text-xs text-danger">{errors.email.message}</p>}
         </div>
 
         <div>
-          <label htmlFor="login-password" className="block text-sm font-medium text-dbe-muted mb-2">
+          <label htmlFor="login-password" className="block text-sm font-medium text-text-muted mb-2">
             Senha
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dbe-muted" />
-            <input
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted z-10" />
+            <Input
               id="login-password"
               type="password"
               placeholder="••••••••"
               {...register('password')}
-              className="h-11 w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-navy pl-10 pr-4 text-[16px] text-dbe-text outline-none transition-all placeholder:text-dbe-muted/50 focus:border-dbe-blue/50 focus:ring-1 focus:ring-dbe-blue/20"
+              className="pl-10 h-11"
             />
           </div>
-          {errors.password && <p className="mt-1.5 text-xs text-dbe-red">{errors.password.message}</p>}
+          {errors.password && <p className="mt-1.5 text-xs text-danger">{errors.password.message}</p>}
         </div>
 
         <Button type="submit" loading={isSubmitting} className="w-full">
@@ -91,9 +92,9 @@ export function LoginPage() {
         </Button>
       </form>
 
-      <p className="text-sm text-dbe-muted text-center mt-6">
+      <p className="text-sm text-text-muted text-center mt-6">
         Não tem conta?{' '}
-        <Link to="/register" className="text-dbe-blue hover:underline font-medium">
+        <Link to="/register" className="text-primary hover:underline font-medium">
           Criar conta grátis
         </Link>
       </p>

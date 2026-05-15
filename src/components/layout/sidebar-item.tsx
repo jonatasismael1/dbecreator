@@ -18,10 +18,10 @@ export function SidebarItem({ item, collapsed = false, onClick }: SidebarItemPro
       onClick={onClick}
       className={({ isActive }) =>
         cn(
-          'group flex items-center gap-3 rounded-xl border px-3 py-2 text-sm font-semibold transition-all duration-300',
+          'group flex items-center gap-3 rounded-lg border px-3 py-2 text-sm font-semibold transition-all duration-200',
           isActive
-            ? 'border-primary/45 bg-primary/12 text-text shadow-sm shadow-primary/10 [&>svg]:text-ai'
-            : 'border-transparent text-text-muted hover:border-border hover:bg-surface-muted/75 hover:text-text',
+            ? 'border-primary/20 bg-surface2 text-text shadow-sm [&>svg]:text-primary'
+            : 'border-transparent text-text-muted hover:bg-surface2 hover:text-text',
           collapsed && 'justify-center px-2'
         )
       }

@@ -24,27 +24,27 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    'bg-gradient-to-br from-primary to-success text-white shadow-[0_0_24px_rgba(0,191,85,0.22)] hover:brightness-110',
+    'bg-primary text-white shadow-sm hover:brightness-110',
   secondary:
-    'bg-surface-muted/75 text-text hover:bg-surface-elevated border border-border backdrop-blur-md',
+    'bg-surface2 text-text hover:bg-surface-elevated border border-border',
   outline:
-    'bg-transparent border border-border-strong text-text hover:bg-surface-muted/80',
+    'bg-transparent border border-border text-text hover:bg-surface2',
   ghost:
-    'bg-transparent text-text-muted hover:text-text hover:bg-surface-muted/80',
+    'bg-transparent text-text-muted hover:text-text hover:bg-surface2',
   soft:
-    'bg-primary-soft text-primary-soft-foreground hover:bg-primary/20 border border-primary/15',
+    'bg-primary/10 text-primary-soft-foreground hover:bg-primary/20 border border-primary/10',
   success:
-    'bg-success text-white hover:brightness-110 shadow-sm shadow-success/20',
+    'bg-success text-white hover:brightness-110 shadow-sm',
   warning:
     'bg-warning text-white hover:brightness-110 shadow-sm',
   danger:
     'bg-danger text-white hover:brightness-110 shadow-sm',
   ai:
-    'bg-gradient-to-br from-primary to-success text-white hover:brightness-110 shadow-[0_0_24px_rgba(0,191,85,0.22)]',
+    'bg-gradient-to-br from-primary to-success text-white hover:brightness-110 shadow-sm',
   deby:
-    'bg-gradient-to-br from-primary to-success text-white hover:brightness-110 shadow-[0_0_24px_rgba(0,191,85,0.22)]',
+    'bg-gradient-to-br from-primary to-success text-white hover:brightness-110 shadow-sm',
   icon:
-    'bg-transparent text-text-muted hover:text-text hover:bg-surface-muted',
+    'bg-transparent text-text-muted hover:text-text hover:bg-surface2',
 }
 
 const sizes: Record<ButtonSize, string> = {
