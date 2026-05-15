@@ -54,7 +54,7 @@ export function getSafeAppRedirectPath(path: string | null | undefined, fallback
 
 function getPublicAppUrl() {
   const fromNetlify = typeof Netlify !== 'undefined' ? Netlify.env.get('VITE_APP_URL') : undefined
-  return (fromNetlify || process.env.VITE_APP_URL || 'https://dbecreator.netlify.app').replace(/\/$/, '')
+  return (fromNetlify || process.env.VITE_APP_URL || 'https://creator.dbe.digital').replace(/\/$/, '')
 }
 
 declare const Netlify:

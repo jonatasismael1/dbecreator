@@ -80,7 +80,7 @@ CREATE INDEX IF NOT EXISTS idx_approvals_public_link_id ON approvals(public_link
 {
   success: true;
   approval_id: string;
-  public_url: string; // ex: "https://dbecreator.netlify.app/aprovacao/{public_link_id}"
+  public_url: string; // ex: "https://creator.dbe.digital/aprovacao/{public_link_id}"
   expires_at: string;
 }
 ```

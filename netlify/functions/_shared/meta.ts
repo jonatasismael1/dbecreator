@@ -13,7 +13,7 @@ export const INSTAGRAM_AUTHORIZE_ENDPOINT = 'https://www.instagram.com/oauth/aut
 export const INSTAGRAM_TOKEN_ENDPOINT = 'https://api.instagram.com/oauth/access_token'
 export const INSTAGRAM_LONG_LIVED_TOKEN_PATH = 'access_token'
 export const INSTAGRAM_REFRESH_TOKEN_PATH = 'refresh_access_token'
-export const INSTAGRAM_CALLBACK_REDIRECT_URI = 'https://dbecreator.netlify.app/auth/instagram/callback'
+export const INSTAGRAM_CALLBACK_REDIRECT_URI = 'https://creator.dbe.digital/auth/instagram/callback'
 
 export interface InstagramOAuthToken {
   accessToken: string
