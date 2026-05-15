@@ -21,9 +21,9 @@ import { stripHtml } from '../utils/script-content'
 
 const scriptSchema = z.object({
   title: z.string().min(2, 'Titulo obrigatorio'),
-  hook: z.string().min(5, 'Gancho obrigatorio'),
-  body: z.string().min(10, 'Desenvolvimento obrigatorio'),
-  cta: z.string().min(3, 'CTA obrigatorio'),
+  hook: z.string().optional().or(z.literal('')),
+  body: z.string().optional().or(z.literal('')),
+  cta: z.string().optional().or(z.literal('')),
   status: z.enum(['draft', 'ready', 'in_approval', 'approved', 'changes_requested', 'recorded']),
   content_pillar_id: z.string().optional().nullable(),
   campaign_id: z.string().optional().nullable(),
@@ -69,6 +69,7 @@ export function ScriptModal({
   onSave,
 }: ScriptModalProps) {
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [showDebyPanel, setShowDebyPanel] = useState(false)
 
   // P3.1 — Templates
@@ -150,12 +151,13 @@ export function ScriptModal({
 
   const onSubmit = async (values: ScriptFormValues) => {
     setSaving(true)
+    setSaveError(null)
     try {
       await onSave({
         title: values.title,
-        hook: values.hook,
-        body: values.body,
-        cta: values.cta,
+        hook: values.hook || '',
+        body: values.body || '',
+        cta: values.cta || '',
         status: values.status as ScriptStatus,
         content_pillar_id: values.content_pillar_id || null,
         campaign_id: values.campaign_id || null,
@@ -165,6 +167,8 @@ export function ScriptModal({
         posting_date: values.posting_date || null,
       })
       onClose()
+    } catch (err: any) {
+      setSaveError(err.message || 'Erro ao salvar o roteiro. Verifique os dados.')
     } finally {
       setSaving(false)
     }
@@ -407,9 +411,14 @@ export function ScriptModal({
                   </div>
                 )}
 
-                <Field label="Titulo" error={errors.title?.message}>
+                {/* Title */}
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-dbe-muted">
+                    Título <span className="text-dbe-red">*</span>
+                  </label>
                   <input {...register('title')} placeholder="Ex: 3 erros que travam seus Reels" className={inputClass} />
-                </Field>
+                  {errors.title?.message && <p className="text-xs text-dbe-red">{errors.title.message}</p>}
+                </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field label="Campanha">
@@ -512,7 +521,9 @@ export function ScriptModal({
                   )}
                 </Field>
 
-                <Field label="Desenvolvimento" error={errors.body?.message}>
+                {/* Body */}
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-dbe-muted">Desenvolvimento</label>
                   {lockedFields['body'] ? (
                     <div className="mb-2 text-[10px] text-dbe-blue bg-dbe-blue/10 border border-dbe-blue/20 rounded px-2 py-1 inline-block">
                       {lockedFields['body'].userEmail} está editando...
@@ -563,7 +574,7 @@ export function ScriptModal({
                       ))}
                     </div>
                   )}
-                </Field>
+                </div>
 
                 <Field label="CTA" error={errors.cta?.message}>
                   {lockedFields['cta'] ? (
@@ -670,9 +681,13 @@ export function ScriptModal({
                   <ScriptVersionHistory versions={versions} isLoading={versionsLoading} />
                 )}
 
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <Button type="button" variant="ghost" onClick={onClose} className="flex-1">Cancelar</Button>
-                  <Button type="submit" loading={saving} className="flex-1">
+                {/* Buttons */}
+                <div className="flex flex-col-reverse gap-3 border-t border-dbe-border pt-4 sm:flex-row sm:justify-end">
+                  {saveError && (
+                    <p className="mr-auto text-xs text-dbe-red flex items-center">{saveError}</p>
+                  )}
+                  <Button type="button" variant="ghost" onClick={onClose} disabled={saving}>Cancelar</Button>
+                  <Button type="submit" loading={saving}>
                     <FileText className="h-4 w-4" />
                     {script ? 'Salvar' : 'Criar roteiro'}
                   </Button>

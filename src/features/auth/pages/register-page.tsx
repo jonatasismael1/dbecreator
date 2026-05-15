@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Mail, Lock, User, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react'
+import { Mail, Lock, User, ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/features/auth/context/auth-context'
@@ -21,6 +21,7 @@ export function RegisterPage() {
   const navigate = useNavigate()
   const [serverError, setServerError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -108,11 +109,19 @@ export function RegisterPage() {
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted z-10" />
             <Input
               id="register-password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="Mínimo 8 caracteres"
               {...register('password')}
-              className="pl-10 h-11"
+              className="pl-10 pr-10 h-11"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text focus:outline-none"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
           {errors.password && <p className="mt-1.5 text-xs text-danger">{errors.password.message}</p>}
         </div>

@@ -114,18 +114,6 @@ export function DashboardPage() {
 
   return (
     <div>
-      {showOnboarding && (
-        <OnboardingWizard
-          workspaceId={workspaceId}
-          userId={user!.id}
-          onClose={() => queryClient.invalidateQueries({ queryKey: ['profile-onboarding', user!.id] })}
-          onComplete={() => {
-            queryClient.invalidateQueries({ queryKey: ['profile-onboarding', user!.id] })
-            queryClient.invalidateQueries({ queryKey: ['market-map', workspaceId] })
-          }}
-        />
-      )}
-
       {/* Personalized Greeting */}
       <div className="mb-6 rounded-[var(--r-xl)] border border-border bg-gradient-to-r from-primary/8 via-transparent to-success/6 px-5 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-text-muted mb-1">{getGreeting()}</p>
