@@ -1,8 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef } from 'react'
 import type { ReactNode } from 'react'
+import { useQuery, useMutation } from '@tanstack/react-query'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { BarChart3, Bookmark, Camera as Instagram, Clock3, Eye, Gauge, Heart, MapPin, MessageCircle, Plus, UserRound, Users } from 'lucide-react'
+import { BarChart3, Bookmark, Camera as Instagram, Clock3, Eye, Gauge, Heart, MapPin, MessageCircle, Plus, UserRound, Users, Download, Sparkles, Loader2 } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { Button } from '@/components/ui/button'
@@ -11,6 +14,7 @@ import { useWorkspaceContext } from '@/features/workspaces/context/workspace-con
 import { MetricModal } from '../components/metric-modal'
 import { useInstagramInsights } from '../hooks/use-instagram-insights'
 import { useReports } from '../hooks/use-reports'
+import { debyService } from '@/features/deby/services/deby.service'
 import type { InstagramInsightsResponse } from '@/features/integrations/types/integration.types'
 import type { CreateMetricDTO, PerformanceMetric } from '../types/report.types'
 
@@ -24,6 +28,19 @@ export function ReportsPage() {
   const [latestInsights, setLatestInsights] = useState<InstagramInsightsResponse | null>(null)
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
   const [isInsightModalOpen, setIsInsightModalOpen] = useState(false)
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
+  const reportRef = useRef<HTMLDivElement>(null)
+
+  const { data: aiInsights, isLoading: insightsLoading, refetch: refetchInsights } = useQuery({
+    queryKey: ['report-insights', workspaceId],
+    queryFn: () => debyService.getReportInsights(workspaceId),
+    enabled: !!workspaceId,
+  })
+
+  const generateNewInsights = useMutation({
+    mutationFn: () => debyService.generateReportInsights(workspaceId),
+    onSuccess: () => refetchInsights(),
+  })
 
   const handleOpenModal = (metric?: PerformanceMetric) => {
     setEditingMetric(metric || null)
@@ -82,21 +99,47 @@ export function ReportsPage() {
     setIsInsightModalOpen(true)
   }
 
+  const handleExportPdf = async () => {
+    if (!reportRef.current) return
+    setIsGeneratingPdf(true)
+    try {
+      const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, logging: false })
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+      pdf.save(`Relatorio_DBE_${format(new Date(), 'dd-MM-yyyy')}.pdf`)
+    } catch (err) {
+      console.error(err)
+      alert('Erro ao gerar PDF.')
+    } finally {
+      setIsGeneratingPdf(false)
+    }
+  }
+
   return (
     <div className="h-full">
       <PageHeader title="Relatórios de performance" description="Acompanhe dados reais dos conteúdos publicados.">
         <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-3">
+          <Button variant="secondary" onClick={handleExportPdf} loading={isGeneratingPdf} className="w-full sm:w-auto">
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Exportar PDF</span>
+            <span className="sm:hidden">PDF</span>
+          </Button>
           <Button variant="secondary" onClick={handleOpenSync} loading={instagramInsights.isPending} className="w-full sm:w-auto">
             <Instagram className="h-4 w-4" />
-            Atualizar insights
+            <span className="hidden sm:inline">Atualizar insights</span>
+            <span className="sm:hidden">Sincronizar</span>
           </Button>
-          <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto">
+          <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto col-span-2 sm:col-span-1">
             <Plus className="h-4 w-4" />
             Manual
           </Button>
         </div>
       </PageHeader>
 
+      <div ref={reportRef} className="space-y-6 bg-dbe-dark p-1 rounded-lg">
       {latestInsights && (
         <Card className="mb-6 border-dbe-border bg-dbe-navy/50 p-4">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -201,6 +244,43 @@ export function ReportsPage() {
             <SummaryCard icon={<Bookmark className="h-4 w-4 text-amber-400" />} label="Salvos" value={totals.saves} />
           </div>
 
+          {/* AI Insights Section */}
+          <Card className="border border-dbe-purple/30 bg-dbe-purple/5 overflow-hidden">
+            <div className="flex items-center justify-between border-b border-dbe-purple/20 bg-dbe-purple/10 px-5 py-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-dbe-purple" />
+                <h3 className="font-semibold text-dbe-purple">Insights Estratégicos Deby</h3>
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-8 border-dbe-purple/30 text-dbe-purple hover:bg-dbe-purple/20"
+                onClick={() => generateNewInsights.mutate()}
+                loading={generateNewInsights.isPending}
+              >
+                Analisar Performance
+              </Button>
+            </div>
+            <div className="p-5">
+              {insightsLoading ? (
+                <div className="flex items-center gap-2 text-sm text-dbe-muted">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Carregando insights...
+                </div>
+              ) : aiInsights && aiInsights.length > 0 ? (
+                <div className="space-y-4">
+                  {aiInsights.map(insight => (
+                    <div key={insight.id} className="rounded-lg border border-dbe-border/50 bg-black/20 p-4">
+                      <p className="text-sm font-medium text-dbe-text">{insight.insight_text}</p>
+                      <p className="mt-1 text-sm text-dbe-muted"><span className="font-semibold text-amber-400">Recomendação:</span> {insight.recommendation_text}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-dbe-muted">Nenhum insight gerado ainda. Clique em "Analisar Performance" para obter dicas da IA sobre seus resultados.</p>
+              )}
+            </div>
+          </Card>
+
           <Card className="overflow-hidden border border-dbe-border">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
@@ -256,6 +336,7 @@ export function ReportsPage() {
           </Card>
         </div>
       )}
+      </div>
 
       <MetricModal
         isOpen={isModalOpen}

@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
-import type { Approval, CreateApprovalDTO, ApprovalComment } from '../types/approval.types'
+import type { Approval, ApprovalComment, ApprovalCommentSection, CreateApprovalDTO } from '../types/approval.types'
 
 const TABLE = 'approvals'
 const COMMENTS_TABLE = 'approval_comments'
@@ -95,18 +95,32 @@ export const approvalsService = {
     return data || []
   },
 
-  async addComment(approvalId: string, authorName: string, content: string): Promise<ApprovalComment> {
+  async addComment(
+    approvalId: string,
+    authorName: string,
+    content: string,
+    section: ApprovalCommentSection = 'GERAL',
+  ): Promise<ApprovalComment> {
     const { data, error } = await supabase
       .from(COMMENTS_TABLE)
       .insert({
         approval_id: approvalId,
         author_name: authorName,
-        content
+        content,
+        section,
       })
       .select()
       .single()
 
     if (error) throw error
-    return data
-  }
+    return data as ApprovalComment
+  },
+
+  async resolveComment(commentId: string, resolved: boolean): Promise<void> {
+    const { error } = await supabase
+      .from(COMMENTS_TABLE)
+      .update({ resolved })
+      .eq('id', commentId)
+    if (error) throw error
+  },
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Lightbulb, LayoutGrid, List, Filter } from 'lucide-react'
+import { Plus, Lightbulb, LayoutGrid, List, Filter, Sparkles } from 'lucide-react'
 import { AnimatePresence } from 'framer-motion'
 import { PageHeader } from '@/components/shared/page-header'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,7 @@ import { useWorkspace } from '@/features/workspaces/hooks/use-workspace'
 import { useIdeas, useCreateIdea, useUpdateIdea, useDeleteIdea } from '../hooks/use-ideas'
 import { IdeaCard } from '../components/idea-card'
 import { IdeaModal } from '../components/idea-modal'
+import { DebyIdeasModal } from '../components/deby-ideas-modal'
 import type { Idea, IdeaStatus } from '../types/idea.types'
 
 type ViewMode = 'grid' | 'list'
@@ -35,6 +36,7 @@ export function IdeasPage() {
   const deleteIdea = useDeleteIdea(workspaceId)
 
   const [modalOpen, setModalOpen] = useState(false)
+  const [debyModalOpen, setDebyModalOpen] = useState(false)
   const [editingIdea, setEditingIdea] = useState<Idea | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all')
@@ -62,6 +64,20 @@ export function IdeasPage() {
     }
   }
 
+  const handleAddDebyIdeas = async (generatedIdeas: Array<{ title: string; hook_suggestion: string; pillar: string }>) => {
+    for (const idea of generatedIdeas) {
+      await createIdea.mutateAsync({
+        userId: user!.id,
+        dto: {
+          title: idea.title,
+          description: `Sugestão de gancho: ${idea.hook_suggestion}`,
+          status: 'backlog',
+          tags: [],
+        }
+      })
+    }
+  }
+
   const handleDelete = async (id: string) => {
     if (confirm('Tem certeza que quer excluir esta ideia?')) {
       await deleteIdea.mutateAsync(id)
@@ -86,10 +102,17 @@ export function IdeasPage() {
         title="Central de ideias"
         description="Capture e organize suas melhores ideias de conteúdo."
       >
-        <Button onClick={handleOpenCreate}>
-          <Plus className="h-4 w-4" />
-          Nova ideia
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" className="border-dbe-purple/50 bg-dbe-purple/10 text-dbe-purple hover:bg-dbe-purple/20 hover:text-dbe-purple" onClick={() => setDebyModalOpen(true)}>
+            <Sparkles className="h-4 w-4" />
+            <span className="hidden sm:inline">Gerar com Deby</span>
+            <span className="sm:hidden">Deby</span>
+          </Button>
+          <Button onClick={handleOpenCreate}>
+            <Plus className="h-4 w-4" />
+            Nova ideia
+          </Button>
+        </div>
       </PageHeader>
 
       {/* Filters & View Toggle */}
@@ -167,6 +190,12 @@ export function IdeasPage() {
         onClose={handleClose}
         onSave={handleSave}
         idea={editingIdea}
+      />
+
+      <DebyIdeasModal
+        open={debyModalOpen}
+        onClose={() => setDebyModalOpen(false)}
+        onAddIdeas={handleAddDebyIdeas}
       />
     </div>
   )

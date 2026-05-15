@@ -1,21 +1,55 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
+import type { ApprovalBatch } from '../types/approval.types'
 
 export function useBatchApprovals() {
   const { workspaceId } = useWorkspaceContext()
   const queryClient = useQueryClient()
+  const queryKey = ['approval-batches', workspaceId]
+
+  const batchesQuery = useQuery({
+    queryKey,
+    queryFn: async (): Promise<ApprovalBatch[]> => {
+      const { data, error } = await supabase
+        .from('approval_batches')
+        .select(`
+          *,
+          campaign:campaigns(id, title),
+          items:approval_batch_items(
+            id, batch_id, script_id, status, client_feedback, reviewed_at, created_at,
+            script:scripts(id, title, hook, body, cta, status)
+          )
+        `)
+        .eq('workspace_id', workspaceId)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return (data ?? []) as ApprovalBatch[]
+    },
+    enabled: !!workspaceId,
+  })
 
   const createBatch = useMutation({
-    mutationFn: async ({ campaignId, scriptIds }: { campaignId?: string; scriptIds: string[] }) => {
+    mutationFn: async ({
+      campaignId,
+      scriptIds,
+      clientName,
+      expiresAt,
+    }: {
+      campaignId?: string | null
+      scriptIds: string[]
+      clientName?: string | null
+      expiresAt?: string | null
+    }) => {
       const { data: user } = await supabase.auth.getUser()
 
-      // Create batch
       const { data: batch, error: batchError } = await supabase
         .from('approval_batches')
         .insert({
           workspace_id: workspaceId,
           campaign_id: campaignId || null,
+          client_name: clientName || null,
+          expires_at: expiresAt || null,
           created_by: user.user?.id,
           status: 'pending',
         })
@@ -24,7 +58,6 @@ export function useBatchApprovals() {
 
       if (batchError) throw batchError
 
-      // Create items
       const items = scriptIds.map((scriptId) => ({
         batch_id: batch.id,
         script_id: scriptId,
@@ -37,28 +70,47 @@ export function useBatchApprovals() {
 
       if (itemsError) throw itemsError
 
-      // Update scripts to 'in_approval'
       await supabase
         .from('scripts')
-        .update({ status: 'in_approval' })
+        .update({ status: 'in_approval', updated_at: new Date().toISOString() })
         .in('id', scriptIds)
 
-      // Update campaign to 'in_approval' if applicable
       if (campaignId) {
         await supabase
           .from('campaigns')
-          .update({ status: 'in_approval' })
+          .update({ status: 'in_approval', updated_at: new Date().toISOString() })
           .eq('id', campaignId)
       }
 
       return batch
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey })
       queryClient.invalidateQueries({ queryKey: ['scripts', workspaceId] })
       queryClient.invalidateQueries({ queryKey: ['campaigns', workspaceId] })
       queryClient.invalidateQueries({ queryKey: ['approvals', workspaceId] })
     },
   })
 
-  return { createBatch }
+  const deleteBatch = useMutation({
+    mutationFn: async (batchId: string) => {
+      const { error } = await supabase
+        .from('approval_batches')
+        .delete()
+        .eq('id', batchId)
+        .eq('workspace_id', workspaceId)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey })
+    },
+  })
+
+  return {
+    batches: batchesQuery.data ?? [],
+    isLoading: batchesQuery.isLoading,
+    createBatch,
+    deleteBatch,
+  }
 }
+
