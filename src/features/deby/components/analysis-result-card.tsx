@@ -20,8 +20,8 @@ export function AnalysisResultCard({ analysis, onApply, applying, applied }: Ana
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-dbe-purple" />
-            <p className="text-sm font-semibold text-dbe-text">{analysis.scripts?.title ?? 'Roteiro analisado'}</p>
+            <Sparkles className="h-4 w-4 text-dbe-green" />
+            <p className="min-w-0 break-words text-sm font-semibold text-dbe-text">{analysis.scripts?.title ?? 'Roteiro analisado'}</p>
           </div>
           <p className="mt-1 text-xs text-dbe-muted">
             {new Date(analysis.created_at).toLocaleString('pt-BR')} • {analysis.model}
@@ -37,7 +37,7 @@ export function AnalysisResultCard({ analysis, onApply, applying, applied }: Ana
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <InsightList title="Forcas" icon={<CheckCircle2 className="h-4 w-4 text-dbe-green" />} items={result.strengths} />
-        <InsightList title="Fraquezas" icon={<AlertTriangle className="h-4 w-4 text-dbe-amber" />} items={result.weaknesses} />
+        <InsightList title="Fraquezas" icon={<AlertTriangle className="h-4 w-4 text-warning" />} items={result.weaknesses} />
         <InsightList title="Ajustes" icon={<TrendingUp className="h-4 w-4 text-dbe-blue" />} items={result.suggestions} />
       </div>
 
@@ -58,7 +58,7 @@ export function AnalysisResultCard({ analysis, onApply, applying, applied }: Ana
       </div>
 
       {onApply && (
-        <div className="flex flex-col gap-3 rounded-xl border border-dbe-purple/20 bg-dbe-purple/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-[var(--r-lg)] border border-dbe-green/30 bg-dbe-green/10 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-dbe-text">Aplicar melhorias no roteiro</p>
             <p className="mt-1 text-xs text-dbe-muted">
@@ -79,7 +79,7 @@ function ScoreBadge({ result }: { result: DebyResult }) {
   const variant = result.score >= 7.5 ? 'success' : result.score >= 6 ? 'blue' : result.score >= 4 ? 'warning' : 'error'
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-dbe-border bg-dbe-dark px-4 py-3">
+    <div className="flex items-center gap-3 rounded-[var(--r-lg)] border border-dbe-border bg-dbe-dark px-4 py-3">
       <div>
         <p className="text-xs text-dbe-muted">Score Deby</p>
         <p className="text-2xl font-bold text-dbe-text">{formatScore(result.score)}</p>
@@ -95,7 +95,7 @@ function formatScore(score: number) {
 
 function InsightList({ title, icon, items }: { title: string; icon: ReactNode; items: string[] }) {
   return (
-    <div className="rounded-xl border border-dbe-border bg-dbe-dark/40 p-4">
+    <div className="rounded-[var(--r-lg)] border border-dbe-border bg-dbe-dark/40 p-4">
       <div className="mb-3 flex items-center gap-2">
         {icon}
         <p className="text-sm font-semibold text-dbe-text">{title}</p>
@@ -111,9 +111,9 @@ function InsightList({ title, icon, items }: { title: string; icon: ReactNode; i
 
 function SuggestionBlock({ title, value, large }: { title: string; value: string; large?: boolean }) {
   return (
-    <div className="rounded-xl border border-dbe-border bg-dbe-dark/40 p-4">
+    <div className="rounded-[var(--r-lg)] border border-dbe-border bg-dbe-dark/40 p-4">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-dbe-muted">{title}</p>
-      <p className={large ? 'whitespace-pre-wrap text-sm leading-relaxed text-dbe-text' : 'text-sm leading-relaxed text-dbe-text'}>
+      <p className={large ? 'whitespace-pre-wrap break-words text-sm leading-relaxed text-dbe-text' : 'break-words text-sm leading-relaxed text-dbe-text'}>
         {value || 'Não informado'}
       </p>
     </div>

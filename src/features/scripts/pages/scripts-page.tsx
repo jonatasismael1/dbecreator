@@ -1,13 +1,14 @@
 import { useMemo, useState, type DragEvent, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
-import { Archive, FileText, Plus, Target } from 'lucide-react'
+import { Archive, FileText, Filter, Plus, Target } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-state'
 import { LoadingState } from '@/components/shared/loading-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { cn } from '@/lib/utils/cn'
 import { usePillars } from '@/features/pillars/hooks/use-pillars'
 import { useCampaigns } from '@/features/campaigns/hooks/use-campaigns'
 import { useBatchApprovals } from '@/features/approvals/hooks/use-batch-approvals'
@@ -36,6 +37,18 @@ const columns: Array<{ status: ScriptStatus; title: string; description: string 
   { status: 'recorded', title: 'Gravado', description: 'Saiu do papel' },
 ]
 
+type FilterStatus = 'all' | ScriptStatus
+
+const FILTER_OPTIONS: { value: FilterStatus; label: string }[] = [
+  { value: 'all', label: 'Todos' },
+  { value: 'draft', label: 'Rascunho' },
+  { value: 'ready', label: 'Pronto' },
+  { value: 'in_approval', label: 'Em aprovação' },
+  { value: 'changes_requested', label: 'Ajuste solicitado' },
+  { value: 'approved', label: 'Aprovado' },
+  { value: 'recorded', label: 'Gravado' },
+]
+
 export function ScriptsPage() {
   const navigate = useNavigate()
   const { workspaceId } = useWorkspaceContext()
@@ -56,6 +69,7 @@ export function ScriptsPage() {
   const [draggingScript, setDraggingScript] = useState<Script | null>(null)
   const [dragOverStatus, setDragOverStatus] = useState<ScriptStatus | null>(null)
   const [tab, setTab] = useState<'active' | 'archived'>('active')
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>('all')
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedScriptIds, setSelectedScriptIds] = useState<Set<string>>(new Set())
   const [approvalLink, setApprovalLink] = useState<string | null>(null)
@@ -65,9 +79,15 @@ export function ScriptsPage() {
   const archivedScripts = useMemo(() => scripts.filter((script) => script.archived_at), [scripts])
   const visibleScripts = tab === 'active' ? activeScripts : archivedScripts
 
+  // Apply status filter
+  const filteredScripts = useMemo(() => {
+    if (filterStatus === 'all') return visibleScripts
+    return visibleScripts.filter((s) => s.status === filterStatus)
+  }, [visibleScripts, filterStatus])
+
   const grouped = useMemo(() => {
     return columns.reduce<Record<ScriptStatus, Script[]>>((acc, column) => {
-      acc[column.status] = visibleScripts.filter((script) => script.status === column.status)
+      acc[column.status] = filteredScripts.filter((script) => script.status === column.status)
       return acc
     }, {
       draft: [],
@@ -77,6 +97,20 @@ export function ScriptsPage() {
       changes_requested: [],
       recorded: [],
     } as Record<ScriptStatus, Script[]>)
+  }, [filteredScripts])
+
+  // Count per status for filter badges
+  const statusCounts = useMemo(() => {
+    const base = visibleScripts
+    return {
+      all: base.length,
+      draft: base.filter(s => s.status === 'draft').length,
+      ready: base.filter(s => s.status === 'ready').length,
+      in_approval: base.filter(s => s.status === 'in_approval').length,
+      changes_requested: base.filter(s => s.status === 'changes_requested').length,
+      approved: base.filter(s => s.status === 'approved').length,
+      recorded: base.filter(s => s.status === 'recorded').length,
+    }
   }, [visibleScripts])
 
   const openCreate = () => {
@@ -191,13 +225,14 @@ export function ScriptsPage() {
         <MetricCard label="Em aprovação" value={grouped.in_approval.length} />
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
+      {/* Tabs */}
+      <div className="mb-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
         <div className="flex gap-2">
-          <Button variant={tab === 'active' ? 'primary' : 'secondary'} size="sm" onClick={() => setTab('active')} className="w-full sm:w-auto">
+          <Button variant={tab === 'active' ? 'primary' : 'secondary'} size="sm" onClick={() => { setTab('active'); setFilterStatus('all') }} className="w-full sm:w-auto">
             <FileText className="h-4 w-4" />
             Ativos ({activeScripts.length})
           </Button>
-          <Button variant={tab === 'archived' ? 'primary' : 'secondary'} size="sm" onClick={() => setTab('archived')} className="w-full sm:w-auto">
+          <Button variant={tab === 'archived' ? 'primary' : 'secondary'} size="sm" onClick={() => { setTab('archived'); setFilterStatus('all') }} className="w-full sm:w-auto">
             <Archive className="h-4 w-4" />
             Arquivados ({archivedScripts.length})
           </Button>
@@ -223,6 +258,30 @@ export function ScriptsPage() {
         )}
       </div>
 
+      {/* Status Filter Pills */}
+      {tab === 'active' && (
+        <div className="mb-5 flex min-w-0 items-center gap-2 overflow-x-auto pb-1">
+          <Filter className="h-4 w-4 text-dbe-muted shrink-0" />
+          {FILTER_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setFilterStatus(opt.value)}
+              className={cn(
+                'flex min-h-[var(--touch-target-min)] items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-all',
+                filterStatus === opt.value
+                  ? 'bg-dbe-blue/10 text-dbe-blue border border-dbe-blue/20'
+                  : 'text-dbe-muted hover:text-dbe-text border border-transparent hover:bg-white/5'
+              )}
+            >
+              {opt.label}
+              <Badge variant={filterStatus === opt.value ? 'blue' : 'default'} className="text-[10px] px-1.5 py-0">
+                {statusCounts[opt.value]}
+              </Badge>
+            </button>
+          ))}
+        </div>
+      )}
+
       {approvalLink && (
         <div className="mb-6 rounded-lg border border-success/30 bg-success-soft p-4">
           <h4 className="mb-2 text-sm font-semibold text-success">Link de aprovação gerado!</h4>
@@ -241,6 +300,13 @@ export function ScriptsPage() {
           title={tab === 'archived' ? 'Nenhum roteiro arquivado' : 'Nenhum roteiro criado'}
           description={tab === 'archived' ? 'Roteiros arquivados continuam disponíveis para consulta e restauração.' : 'Crie o primeiro roteiro conectado aos seus pilares para transformar estratégia em conteúdo gravável.'}
           action={tab === 'active' ? { label: 'Novo roteiro', onClick: openCreate } : undefined}
+        />
+      ) : filteredScripts.length === 0 ? (
+        <EmptyState
+          icon={FileText}
+          title="Nenhum roteiro com esse status"
+          description="Remova o filtro ou selecione outro status para ver os roteiros."
+          action={{ label: 'Ver todos', onClick: () => setFilterStatus('all') }}
         />
       ) : (
         <div className="mt-2">

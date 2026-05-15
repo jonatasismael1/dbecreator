@@ -87,7 +87,6 @@ export function PublicBatchApprovalPage() {
   const [requestCommentText, setRequestCommentText] = useState('')
 
   // Per-section comments (P2.3): map of itemId → array of section comments
-  const [sectionComments, setSectionComments] = useState<Record<string, SectionComment[]>>({})
   const [activeCommentSection, setActiveCommentSection] = useState<{ itemId: string; section: SectionComment['section'] } | null>(null)
   const [commentText, setCommentText] = useState('')
   const [submittedComments, setSubmittedComments] = useState<Record<string, SectionComment[]>>({})

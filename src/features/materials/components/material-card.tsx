@@ -11,12 +11,12 @@ interface MaterialCardProps {
 }
 
 const TYPE_CONFIG: Record<MaterialType, { icon: LucideIcon; color: string; label: string }> = {
-  link: { icon: Link2, color: 'text-blue-500 bg-blue-500/10', label: 'Link' },
-  file: { icon: File, color: 'text-green-500 bg-green-500/10', label: 'Arquivo' },
-  audio: { icon: Music, color: 'text-purple-500 bg-purple-500/10', label: 'Áudio' },
+  link: { icon: Link2, color: 'text-dbe-blue bg-dbe-blue/10', label: 'Link' },
+  file: { icon: File, color: 'text-dbe-green bg-dbe-green/10', label: 'Arquivo' },
+  audio: { icon: Music, color: 'text-dbe-green bg-dbe-green/10', label: 'Áudio' },
   video: { icon: Video, color: 'text-red-500 bg-red-500/10', label: 'Vídeo' },
-  image: { icon: ImageIcon, color: 'text-amber-500 bg-amber-500/10', label: 'Imagem' },
-  note: { icon: FileText, color: 'text-slate-400 bg-slate-400/10', label: 'Nota' },
+  image: { icon: ImageIcon, color: 'text-dbe-blue bg-dbe-blue/10', label: 'Imagem' },
+  note: { icon: FileText, color: 'text-dbe-muted bg-white/5', label: 'Nota' },
 }
 
 export function MaterialCard({ material, onEdit, onDelete }: MaterialCardProps) {
@@ -26,26 +26,26 @@ export function MaterialCard({ material, onEdit, onDelete }: MaterialCardProps) 
   return (
     <Card className="p-4 flex flex-col group">
       <div className="flex items-start justify-between gap-4 mb-3">
-        <div className={`p-2 rounded-lg ${config.color}`}>
+        <div className={`rounded-[var(--r-md)] p-2 ${config.color}`}>
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onEdit(material)}
-            className="p-1.5 text-dbe-muted hover:text-dbe-text hover:bg-white/5 rounded-md transition-colors"
+            className="rounded-[var(--r-sm)] p-1.5 text-dbe-muted transition-colors hover:bg-white/5 hover:text-dbe-text"
           >
             <Edit className="h-4 w-4" />
           </button>
           <button
             onClick={() => onDelete(material.id)}
-            className="p-1.5 text-dbe-muted hover:text-dbe-red hover:bg-dbe-red/10 rounded-md transition-colors"
+            className="rounded-[var(--r-sm)] p-1.5 text-dbe-muted transition-colors hover:bg-dbe-red/10 hover:text-dbe-red"
           >
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
       </div>
 
-      <h3 className="font-medium text-dbe-text line-clamp-2 mb-1">{material.title}</h3>
+      <h3 className="mb-1 line-clamp-2 break-words font-medium text-dbe-text">{material.title}</h3>
       
       {material.url && (
         <a 

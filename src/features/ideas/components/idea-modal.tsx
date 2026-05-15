@@ -72,27 +72,28 @@ export function IdeaModal({ open, onClose, onSave, idea }: IdeaModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 16 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+            className="pointer-events-none fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4"
           >
-            <div className="pointer-events-auto w-full max-w-lg rounded-2xl bg-dbe-navy border border-dbe-border shadow-2xl">
+            <div className="modal-panel pointer-events-auto w-full max-w-lg overflow-hidden rounded-[var(--r-xl)] border border-dbe-border bg-dbe-navy shadow-2xl">
+              <div className="modal-drag-handle" />
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-dbe-border">
                 <h2 className="text-lg font-bold text-dbe-text">
                   {idea ? 'Editar ideia' : 'Nova ideia'}
                 </h2>
-                <button onClick={onClose} className="rounded-lg p-2 text-dbe-muted hover:text-dbe-text hover:bg-white/5 transition-colors">
+                <button onClick={onClose} className="touch-target rounded-[var(--r-md)] p-2 text-dbe-muted transition-colors hover:bg-white/5 hover:text-dbe-text">
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               {/* Body */}
-              <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
+              <form onSubmit={handleSubmit(onSubmit)} className="modal-scroll-body space-y-5 p-6">
                 <div>
                   <label className="block text-sm font-medium text-dbe-muted mb-2">Título *</label>
                   <input
                     {...register('title')}
                     placeholder="Ex: Reel sobre os erros comuns de..."
-                    className="w-full h-11 px-4 rounded-lg bg-dbe-dark border border-dbe-border text-dbe-text text-sm placeholder:text-dbe-muted/50 outline-none focus:border-dbe-blue/50 focus:ring-1 focus:ring-dbe-blue/20 transition-all"
+                    className="h-11 w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 text-[16px] text-dbe-text outline-none transition-all placeholder:text-dbe-muted/50 focus:border-dbe-blue/50 focus:ring-1 focus:ring-dbe-blue/20"
                   />
                   {errors.title && <p className="mt-1.5 text-xs text-dbe-red">{errors.title.message}</p>}
                 </div>
@@ -103,16 +104,16 @@ export function IdeaModal({ open, onClose, onSave, idea }: IdeaModalProps) {
                     {...register('description')}
                     rows={3}
                     placeholder="Contexto, referências, ângulo do conteúdo..."
-                    className="w-full px-4 py-3 rounded-lg bg-dbe-dark border border-dbe-border text-dbe-text text-sm placeholder:text-dbe-muted/50 outline-none focus:border-dbe-blue/50 focus:ring-1 focus:ring-dbe-blue/20 transition-all resize-none"
+                    className="w-full resize-none rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 py-3 text-[16px] text-dbe-text outline-none transition-all placeholder:text-dbe-muted/50 focus:border-dbe-blue/50 focus:ring-1 focus:ring-dbe-blue/20"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium text-dbe-muted mb-2">Status</label>
                     <select
                       {...register('status')}
-                      className="w-full h-11 px-4 rounded-lg bg-dbe-dark border border-dbe-border text-dbe-text text-sm outline-none focus:border-dbe-blue/50 transition-all"
+                      className="h-11 w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 text-[16px] text-dbe-text outline-none transition-all focus:border-dbe-blue/50"
                     >
                       <option value="backlog">Backlog</option>
                       <option value="doing">Em andamento</option>
@@ -125,12 +126,12 @@ export function IdeaModal({ open, onClose, onSave, idea }: IdeaModalProps) {
                     <input
                       {...register('tagsRaw')}
                       placeholder="venda, autoridade..."
-                      className="w-full h-11 px-4 rounded-lg bg-dbe-dark border border-dbe-border text-dbe-text text-sm placeholder:text-dbe-muted/50 outline-none focus:border-dbe-blue/50 transition-all"
+                      className="h-11 w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 text-[16px] text-dbe-text outline-none transition-all placeholder:text-dbe-muted/50 focus:border-dbe-blue/50"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 pt-2">
+                <div className="flex flex-col items-stretch gap-3 pt-2 sm:flex-row">
                   <Button type="button" variant="ghost" onClick={onClose} className="flex-1">
                     Cancelar
                   </Button>

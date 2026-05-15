@@ -1,5 +1,6 @@
-import { Trash2, Edit2, ArrowRight } from 'lucide-react'
+import { Trash2, Edit2, ArrowRight, Sparkles, FileText } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { Idea, IdeaStatus } from '../types/idea.types'
@@ -15,11 +16,25 @@ interface IdeaCardProps {
   onEdit: (idea: Idea) => void
   onDelete: (id: string) => void
   onStatusChange: (id: string, status: IdeaStatus) => void
+  onDebyDevelop?: (idea: Idea) => void
 }
 
-export function IdeaCard({ idea, onEdit, onDelete, onStatusChange }: IdeaCardProps) {
+export function IdeaCard({ idea, onEdit, onDelete, onStatusChange, onDebyDevelop }: IdeaCardProps) {
+  const navigate = useNavigate()
   const cfg = statusConfig[idea.status]
   const nextStatus: Record<IdeaStatus, IdeaStatus> = { backlog: 'doing', doing: 'done', done: 'backlog' }
+
+  const handleCreateScript = () => {
+    navigate('/scripts', {
+      state: {
+        fromIdea: {
+          id: idea.id,
+          title: idea.title,
+          description: idea.description,
+        },
+      },
+    })
+  }
 
   return (
     <motion.div
@@ -29,7 +44,7 @@ export function IdeaCard({ idea, onEdit, onDelete, onStatusChange }: IdeaCardPro
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="group relative">
+      <Card className="group relative flex flex-col">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <h3 className="font-semibold text-dbe-text text-sm leading-snug flex-1">{idea.title}</h3>
@@ -65,8 +80,28 @@ export function IdeaCard({ idea, onEdit, onDelete, onStatusChange }: IdeaCardPro
           </div>
         )}
 
+        {/* Action Buttons */}
+        <div className="flex gap-2 mb-3 mt-auto">
+          {onDebyDevelop && (
+            <button
+              onClick={() => onDebyDevelop(idea)}
+              className="tap-feedback flex flex-1 items-center justify-center gap-1.5 rounded-[var(--r-sm)] border border-dbe-green/30 bg-dbe-green/8 px-2.5 py-2 text-[11px] font-semibold text-dbe-green transition-all hover:border-dbe-green/50 hover:bg-dbe-green/15"
+            >
+              <Sparkles className="h-3 w-3 shrink-0" />
+              <span>Deby AI desenvolver</span>
+            </button>
+          )}
+          <button
+            onClick={handleCreateScript}
+            className="tap-feedback flex flex-1 items-center justify-center gap-1.5 rounded-[var(--r-sm)] border border-dbe-blue/30 bg-dbe-blue/8 px-2.5 py-2 text-[11px] font-semibold text-dbe-blue transition-all hover:border-dbe-blue/50 hover:bg-dbe-blue/15"
+          >
+            <FileText className="h-3 w-3 shrink-0" />
+            <span>Criar roteiro</span>
+          </button>
+        </div>
+
         {/* Footer */}
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-dbe-border/50">
+        <div className="flex items-center justify-between pt-3 border-t border-dbe-border/50">
           <Badge variant={cfg.variant}>{cfg.label}</Badge>
           <button
             onClick={() => onStatusChange(idea.id, nextStatus[idea.status])}

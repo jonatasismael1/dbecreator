@@ -13,7 +13,7 @@ interface OnboardingWizardProps {
   onComplete: () => void
 }
 
-const inputClass = 'w-full rounded-lg border border-dbe-border bg-dbe-dark px-4 py-2.5 text-sm text-dbe-text outline-none transition-all placeholder:text-dbe-muted/50 focus:border-dbe-blue/50'
+const inputClass = 'w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 py-2.5 text-[16px] text-dbe-text outline-none transition-all placeholder:text-dbe-muted/50 focus:border-dbe-blue/50'
 const textareaClass = `${inputClass} min-h-24 resize-y`
 
 export function OnboardingWizard({ workspaceId, userId, onClose, onComplete }: OnboardingWizardProps) {
@@ -71,19 +71,20 @@ export function OnboardingWizard({ workspaceId, userId, onClose, onComplete }: O
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <Card className="w-full max-w-2xl p-0">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+      <Card className="modal-panel w-full max-w-2xl overflow-hidden p-0">
+        <div className="modal-drag-handle" />
         <div className="flex items-start justify-between border-b border-dbe-border p-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-dbe-purple">Primeira configuracao</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-dbe-blue">Primeira configuracao</p>
             <h2 className="mt-1 text-xl font-bold text-dbe-text">Mapa de Mercado com Deby</h2>
           </div>
-          <button onClick={handleSkip} className="rounded-lg p-2 text-dbe-muted transition-colors hover:bg-white/5 hover:text-dbe-text" aria-label="Fechar onboarding">
+          <button onClick={handleSkip} className="touch-target rounded-[var(--r-md)] p-2 text-dbe-muted transition-colors hover:bg-white/5 hover:text-dbe-text" aria-label="Fechar onboarding">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="space-y-5 p-5">
+        <div className="modal-scroll-body space-y-5 p-5">
           {step === 1 ? (
             <div className="space-y-3">
               <label className="block text-sm font-medium text-dbe-text">Qual e o seu nicho?</label>

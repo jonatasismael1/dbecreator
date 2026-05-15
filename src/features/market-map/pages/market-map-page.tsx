@@ -245,7 +245,7 @@ export function MarketMapPage() {
         </div>
         <div className="h-1 rounded-full bg-dbe-border overflow-hidden">
           <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-dbe-blue to-dbe-purple"
+            className="h-full rounded-full bg-gradient-to-r from-dbe-blue to-dbe-green"
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.4 }}
           />

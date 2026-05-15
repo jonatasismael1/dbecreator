@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -30,6 +30,32 @@ import { useWorkspaceContext } from '@/features/workspaces/context/workspace-con
 import { OnboardingWizard } from '@/features/onboarding/components/onboarding-wizard'
 import type { ScriptStatus } from '@/features/scripts/types/script.types'
 
+const MOTIVATIONAL_QUOTES = [
+  { quote: 'Criatividade é a inteligência se divertindo.', author: 'Albert Einstein' },
+  { quote: 'A coragem não é a ausência do medo, mas o julgamento de que algo é mais importante que o medo.', author: 'Ambrose Redmoon' },
+  { quote: 'O único modo de fazer um excelente trabalho é amar o que você faz.', author: 'Steve Jobs' },
+  { quote: 'Não é o mais forte que sobrevive, nem o mais inteligente, mas o que melhor se adapta à mudança.', author: 'Charles Darwin' },
+  { quote: 'A imaginação é mais importante que o conhecimento.', author: 'Albert Einstein' },
+  { quote: 'Empreender é saltar de um penhasco e montar o avião na queda.', author: 'Reid Hoffman' },
+  { quote: 'O sucesso é a soma de pequenos esforços repetidos dia após dia.', author: 'Robert Collier' },
+  { quote: 'A persistência é o caminho do êxito.', author: 'Charles Chaplin' },
+  { quote: 'A vida não é o que acontece com você, mas como você reage ao que acontece.', author: 'Epicteto' },
+  { quote: 'Caia sete vezes, levante-se oito.', author: 'Provérbio japonês' },
+  { quote: 'Para ter um negócio de sucesso, alguém sempre teve que tomar uma decisão corajosa.', author: 'Peter Drucker' },
+  { quote: 'O único lugar onde o sucesso vem antes do trabalho é no dicionário.', author: 'Vidal Sassoon' },
+  { quote: 'Não espere. Nunca haverá um momento perfeito.', author: 'Napoleon Hill' },
+  { quote: 'Uma ideia sem execução é apenas uma ilusão.', author: 'Thomas Edison' },
+  { quote: 'Se você pode sonhar, você pode fazer.', author: 'Walt Disney' },
+  { quote: 'O futuro pertence àqueles que acreditam na beleza dos seus sonhos.', author: 'Eleanor Roosevelt' },
+]
+
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Bom dia'
+  if (hour < 18) return 'Boa tarde'
+  return 'Boa noite'
+}
+
 export function DashboardPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -57,6 +83,11 @@ export function DashboardPage() {
   const { data: marketMap, isLoading: marketMapLoading } = useMarketMap(workspaceId)
   const { data: pillars = [], isLoading: pillarsLoading } = usePillars(workspaceId)
 
+  const randomQuote = useMemo(() => {
+    const seed = new Date().getDate() + new Date().getMonth() * 31
+    return MOTIVATIONAL_QUOTES[seed % MOTIVATIONAL_QUOTES.length]
+  }, [])
+
   const isLoading = ideasLoading || scriptsLoading || campaignsLoading || approvalsLoading || analysesLoading || marketMapLoading || pillarsLoading
   const dismissedUntil = Number(localStorage.getItem('dbe_onboarding_dismissed_until') || 0)
   const showOnboarding = Boolean(
@@ -71,9 +102,13 @@ export function DashboardPage() {
     { label: 'Pilares de Conteúdo', done: pillars.length > 0 },
     { label: 'Primeiro roteiro', done: scripts.length > 0 },
     { label: 'Primeira campanha', done: campaigns.length > 0 },
-    { label: 'Análise Deby', done: analyses.length > 0 },
+    { label: 'Análise Deby AI', done: analyses.length > 0 },
   ]
   const progress = Math.round((setupSteps.filter((step) => step.done).length / setupSteps.length) * 100)
+
+  const displayName = user?.user_metadata?.full_name
+    ? (user.user_metadata.full_name as string).split(' ')[0]
+    : user?.email?.split('@')[0] ?? 'Criador'
 
   if (isLoading) return <LoadingState />
 
@@ -91,21 +126,36 @@ export function DashboardPage() {
         />
       )}
 
+      {/* Personalized Greeting */}
+      <div className="mb-6 rounded-[var(--r-xl)] border border-border bg-gradient-to-r from-primary/8 via-transparent to-success/6 px-5 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-text-muted mb-1">{getGreeting()}</p>
+        <h2 className="text-2xl font-bold text-text tracking-tight mb-3">
+          {displayName} <span className="text-text-muted font-normal">👋</span>
+        </h2>
+        <div className="flex items-start gap-2">
+          <span className="mt-0.5 text-lg leading-none text-success">"</span>
+          <div>
+            <p className="text-sm leading-relaxed text-text italic">{randomQuote.quote}</p>
+            <p className="mt-1 text-[11px] font-semibold text-text-muted">— {randomQuote.author}</p>
+          </div>
+        </div>
+      </div>
+
       <PageHeader title="Dashboard" description="Visão geral do seu workspace de conteúdo.">
         <Button variant="deby" size="sm" onClick={() => navigate('/deby')}>
           <Sparkles className="h-4 w-4" />
-          Analisar com Deby
+          Analisar com Deby AI
         </Button>
       </PageHeader>
 
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Ideias" value={ideas.length} icon={Lightbulb} accent="amber" />
+        <StatCard title="Ideias" value={ideas.length} icon={Lightbulb} accent="blue" />
         <StatCard title="Roteiros" value={scripts.length} icon={FileText} accent="blue" />
         <StatCard 
           title="Campanhas" 
           value={campaigns.length} 
           icon={Zap} 
-          accent="purple" 
+          accent="green" 
         />
         <StatCard
           title="Em Aprovação"
@@ -126,7 +176,7 @@ export function DashboardPage() {
               <EmptyState
                 icon={FileText}
                 title="Nenhum roteiro criado"
-                description="Crie seu primeiro roteiro para a Deby analisar e transformar em conteúdo de alta conversão."
+                description="Crie seu primeiro roteiro para a Deby AI analisar e transformar em conteúdo de alta conversão."
                 action={{ label: 'Criar roteiro', onClick: () => navigate('/scripts') }}
               />
             ) : (
@@ -135,14 +185,14 @@ export function DashboardPage() {
                   <button
                     key={script.id}
                     onClick={() => navigate(`/scripts/${script.id}`)}
-                    className="flex w-full items-center justify-between gap-4 rounded-xl border border-dbe-border bg-dbe-dark/50 p-4 text-left transition-all hover:border-dbe-blue/40"
+                    className="flex w-full min-w-0 items-center justify-between gap-4 rounded-[var(--r-lg)] border border-dbe-border bg-dbe-dark/50 p-4 text-left transition-all hover:border-dbe-blue/40 max-sm:flex-col max-sm:items-start"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-dbe-text">{script.title}</p>
                       <p className="mt-1 line-clamp-1 text-xs text-dbe-muted">{script.campaigns?.title || script.hook}</p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      {script.last_analysis_score !== null && <Badge variant="purple">{formatScore(script.last_analysis_score)}</Badge>}
+                    <div className="flex shrink-0 flex-wrap items-center gap-2 max-sm:w-full">
+                      {script.last_analysis_score !== null && <Badge variant="blue">{formatScore(script.last_analysis_score)}</Badge>}
                       <Badge variant={script.status === 'recorded' || script.status === 'approved' ? 'success' : script.status === 'ready' || script.status === 'in_approval' ? 'blue' : 'default'}>
                         {getScriptStatusLabel(script.status)}
                       </Badge>
@@ -171,7 +221,7 @@ export function DashboardPage() {
                   <button
                     key={idea.id}
                     onClick={() => navigate('/ideas')}
-                    className="rounded-xl border border-dbe-border bg-dbe-dark/50 p-4 text-left transition-all hover:border-dbe-amber/40"
+                    className="rounded-[var(--r-lg)] border border-dbe-border bg-dbe-dark/50 p-4 text-left transition-all hover:border-dbe-blue/40"
                   >
                     <p className="line-clamp-1 text-sm font-semibold text-dbe-text">{idea.title}</p>
                     <p className="mt-1 line-clamp-2 text-xs text-dbe-muted">{idea.description ?? 'Sem descrição'}</p>
@@ -187,18 +237,18 @@ export function DashboardPage() {
             <CardTitle className="mb-4">Ações rápidas</CardTitle>
             <div className="space-y-2">
               {[
-                { icon: Lightbulb, label: 'Nova ideia', color: 'text-dbe-amber', path: '/ideas' },
+                { icon: Lightbulb, label: 'Nova ideia', color: 'text-dbe-blue', path: '/ideas' },
                 { icon: FileText, label: 'Novo roteiro', color: 'text-dbe-blue', path: '/scripts' },
-                { icon: Sparkles, label: 'Análise Deby', color: 'text-dbe-purple', path: '/deby' },
+                { icon: Sparkles, label: 'Análise Deby AI', color: 'text-dbe-green', path: '/deby' },
                 { icon: CalendarDays, label: 'Calendário', color: 'text-dbe-green', path: '/calendar' },
               ].map((action) => (
                 <button
                   key={action.label}
                   onClick={() => navigate(action.path)}
-                  className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-dbe-muted transition-all hover:bg-white/5 hover:text-dbe-text"
+                  className="group flex w-full min-w-0 items-center gap-3 rounded-[var(--r-md)] px-3 py-2.5 text-sm text-dbe-muted transition-all hover:bg-white/5 hover:text-dbe-text"
                 >
                   <action.icon className={`h-4 w-4 ${action.color}`} />
-                  <span>{action.label}</span>
+                  <span className="truncate">{action.label}</span>
                   <ArrowRight className="ml-auto h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
                 </button>
               ))}
@@ -224,18 +274,18 @@ export function DashboardPage() {
                 <span>{progress}%</span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-dbe-border">
-                <div className="h-full rounded-full bg-gradient-to-r from-dbe-blue to-dbe-purple transition-all duration-1000" style={{ width: `${progress}%` }} />
+                <div className="h-full rounded-full bg-gradient-to-r from-dbe-blue to-dbe-green transition-all duration-1000" style={{ width: `${progress}%` }} />
               </div>
             </div>
           </Card>
 
-          <Card className="border-dbe-purple/20 bg-gradient-to-br from-dbe-purple/5 to-dbe-blue/5">
+          <Card className="border-dbe-green/25 bg-gradient-to-br from-dbe-green/8 to-dbe-blue/5">
             <div className="flex items-start gap-3">
-              <div className="shrink-0 rounded-xl border border-dbe-purple/20 bg-dbe-purple/10 p-2.5">
-                <Zap className="h-5 w-5 text-dbe-purple" />
+              <div className="shrink-0 rounded-[var(--r-lg)] border border-dbe-green/25 bg-dbe-green/10 p-2.5">
+                <Zap className="h-5 w-5 text-dbe-green" />
               </div>
               <div>
-                <p className="mb-1 text-sm font-semibold text-dbe-text">Dica da Deby</p>
+                <p className="mb-1 text-sm font-semibold text-dbe-text">Dica da Deby AI</p>
                 <p className="text-xs leading-relaxed text-dbe-muted">
                   {analyses.length === 0
                     ? 'Analise um roteiro pronto para descobrir onde ele perde conversão.'

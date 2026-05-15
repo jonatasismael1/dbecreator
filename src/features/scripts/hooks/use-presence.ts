@@ -28,7 +28,7 @@ export function usePresence(scriptId: string | undefined | null) {
         const state = channel.presenceState()
         const users: PresenceUser[] = []
         for (const key in state) {
-          const presenceArray = state[key] as any[]
+          const presenceArray = state[key] as unknown as Array<{ email: string; online_at: string }>
           if (presenceArray.length > 0) {
             users.push({
               id: key,

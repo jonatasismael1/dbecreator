@@ -140,7 +140,7 @@ export function ScriptPreviewPage() {
       <div className="grid grid-cols-1 gap-5">
         <ScriptSection title="Gancho" accent="green" value={script.hook} />
         <ScriptSection title="Desenvolvimento" accent="blue" value={script.body} />
-        <ScriptSection title="CTA" accent="purple" value={script.cta} />
+        <ScriptSection title="CTA" accent="green" value={script.cta} />
       </div>
     </div>
   )
@@ -150,7 +150,7 @@ function ScriptSection({ title, value, accent }: { title: string; value: string;
   const accentClass = {
     green: 'text-dbe-green',
     blue: 'text-dbe-blue',
-    purple: 'text-dbe-purple',
+    purple: 'text-dbe-green',
   }[accent]
 
   return (

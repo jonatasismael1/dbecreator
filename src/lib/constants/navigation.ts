@@ -47,7 +47,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Mapa de Mercado', path: '/market-map', icon: Map },
       { label: 'Pilares', path: '/pillars', icon: Columns3 },
-      { label: 'Deby IA', path: '/deby', icon: Sparkles, badge: 'IA' },
+      { label: 'Deby AI', path: '/deby', icon: Sparkles, badge: 'AI' },
     ],
   },
   {
@@ -66,4 +66,11 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Configurações', path: '/settings', icon: Settings },
     ],
   },
+]
+
+export const BOTTOM_NAV_ITEMS: NavItem[] = [
+  { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { label: 'Roteiros', path: '/scripts', icon: FileText },
+  { label: 'CalendÃ¡rio', path: '/calendar', icon: CalendarDays },
+  { label: 'Deby AI', path: '/deby', icon: Sparkles, badge: 'AI' },
 ]

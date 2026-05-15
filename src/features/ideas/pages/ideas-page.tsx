@@ -40,6 +40,8 @@ export function IdeasPage() {
   const [editingIdea, setEditingIdea] = useState<Idea | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all')
+  // Idea context for Deby develop
+  const [debyContextIdea, setDebyContextIdea] = useState<Idea | null>(null)
 
   const filteredIdeas = filterStatus === 'all'
     ? ideas
@@ -88,6 +90,17 @@ export function IdeasPage() {
     await updateIdea.mutateAsync({ id, dto: { status } })
   }
 
+  // Open Deby modal pre-filled with idea context
+  const handleDebyDevelop = (idea: Idea) => {
+    setDebyContextIdea(idea)
+    setDebyModalOpen(true)
+  }
+
+  const handleCloseDebyModal = () => {
+    setDebyModalOpen(false)
+    setDebyContextIdea(null)
+  }
+
   if (isLoading || wsLoading) return <LoadingState />
 
   if (isError) return (
@@ -102,11 +115,11 @@ export function IdeasPage() {
         title="Central de ideias"
         description="Capture e organize suas melhores ideias de conteúdo."
       >
-        <div className="flex gap-2">
-          <Button variant="secondary" className="border-dbe-purple/50 bg-dbe-purple/10 text-dbe-purple hover:bg-dbe-purple/20 hover:text-dbe-purple" onClick={() => setDebyModalOpen(true)}>
+        <div className="flex min-w-0 flex-wrap gap-2">
+          <Button variant="secondary" className="border-dbe-green/35 bg-dbe-green/10 text-dbe-green hover:bg-dbe-green/15 hover:text-dbe-green" onClick={() => setDebyModalOpen(true)}>
             <Sparkles className="h-4 w-4" />
-            <span className="hidden sm:inline">Gerar com Deby</span>
-            <span className="sm:hidden">Deby</span>
+            <span className="hidden sm:inline">Gerar com Deby AI</span>
+            <span className="sm:hidden">Deby AI</span>
           </Button>
           <Button onClick={handleOpenCreate}>
             <Plus className="h-4 w-4" />
@@ -118,14 +131,14 @@ export function IdeasPage() {
       {/* Filters & View Toggle */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         {/* Status Filters */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
           <Filter className="h-4 w-4 text-dbe-muted shrink-0" />
           {FILTER_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setFilterStatus(opt.value)}
               className={cn(
-                'flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium whitespace-nowrap transition-all',
+                'flex min-h-[var(--touch-target-min)] items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-all',
                 filterStatus === opt.value
                   ? 'bg-dbe-blue/10 text-dbe-blue border border-dbe-blue/20'
                   : 'text-dbe-muted hover:text-dbe-text border border-transparent hover:bg-white/5'
@@ -140,16 +153,16 @@ export function IdeasPage() {
         </div>
 
         {/* View Toggle */}
-        <div className="flex items-center gap-1 rounded-lg bg-dbe-navy border border-dbe-border p-1 self-end sm:self-auto">
+        <div className="flex items-center gap-1 self-end rounded-[var(--r-md)] border border-dbe-border bg-dbe-navy p-1 sm:self-auto">
           <button
             onClick={() => setViewMode('grid')}
-            className={cn('rounded-md p-2 transition-colors', viewMode === 'grid' ? 'bg-dbe-blue/10 text-dbe-blue' : 'text-dbe-muted hover:text-dbe-text')}
+            className={cn('touch-target rounded-[var(--r-sm)] p-2 transition-colors', viewMode === 'grid' ? 'bg-dbe-blue/10 text-dbe-blue' : 'text-dbe-muted hover:text-dbe-text')}
           >
             <LayoutGrid className="h-4 w-4" />
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={cn('rounded-md p-2 transition-colors', viewMode === 'list' ? 'bg-dbe-blue/10 text-dbe-blue' : 'text-dbe-muted hover:text-dbe-text')}
+            className={cn('touch-target rounded-[var(--r-sm)] p-2 transition-colors', viewMode === 'list' ? 'bg-dbe-blue/10 text-dbe-blue' : 'text-dbe-muted hover:text-dbe-text')}
           >
             <List className="h-4 w-4" />
           </button>
@@ -168,7 +181,7 @@ export function IdeasPage() {
         <AnimatePresence mode="popLayout">
           <div className={cn(
             viewMode === 'grid'
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
+              ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
               : 'flex flex-col gap-3'
           )}>
             {filteredIdeas.map((idea) => (
@@ -178,6 +191,7 @@ export function IdeasPage() {
                 onEdit={handleOpenEdit}
                 onDelete={handleDelete}
                 onStatusChange={handleStatusChange}
+                onDebyDevelop={handleDebyDevelop}
               />
             ))}
           </div>
@@ -194,8 +208,9 @@ export function IdeasPage() {
 
       <DebyIdeasModal
         open={debyModalOpen}
-        onClose={() => setDebyModalOpen(false)}
+        onClose={handleCloseDebyModal}
         onAddIdeas={handleAddDebyIdeas}
+        initialContext={debyContextIdea ? `Desenvolver a ideia: "${debyContextIdea.title}"${debyContextIdea.description ? `. Contexto: ${debyContextIdea.description}` : ''}` : undefined}
       />
     </div>
   )

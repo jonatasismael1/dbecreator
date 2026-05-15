@@ -26,8 +26,8 @@ export function DebyAnalysisResult({
   if (status === 'loading') {
     return (
       <Card className="flex min-h-[320px] flex-col items-center justify-center gap-4 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-dbe-purple/20 bg-dbe-purple/10">
-          <BrainCircuit className="h-6 w-6 animate-pulse text-dbe-purple" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-[var(--r-lg)] border border-dbe-green/30 bg-dbe-green/10">
+          <BrainCircuit className="h-6 w-6 animate-pulse text-dbe-green" />
         </div>
         <div>
           <p className="text-sm font-semibold text-dbe-text">Analisando com a Deby...</p>

@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase/client'
 import { useAuth } from '@/features/auth/context/auth-context'
 
@@ -11,7 +12,7 @@ export interface FieldLock {
 export function useFieldLocking(scriptId: string | undefined | null) {
   const { user } = useAuth()
   const [lockedFields, setLockedFields] = useState<Record<string, FieldLock>>({})
-  const [channel, setChannel] = useState<any>(null)
+  const channelRef = useRef<RealtimeChannel | null>(null)
 
   useEffect(() => {
     if (!scriptId || !user) return
@@ -40,30 +41,31 @@ export function useFieldLocking(scriptId: string | undefined | null) {
     })
 
     ch.subscribe()
-    setChannel(ch)
+    channelRef.current = ch
 
     return () => {
       ch.unsubscribe()
+      channelRef.current = null
     }
   }, [scriptId, user])
 
   const lockField = useCallback((field: string) => {
-    if (!channel || !user) return
-    channel.send({
+    if (!channelRef.current || !user) return
+    channelRef.current.send({
       type: 'broadcast',
       event: 'lock_field',
       payload: { field, userId: user.id, userEmail: user.email },
     })
-  }, [channel, user])
+  }, [user])
 
   const unlockField = useCallback((field: string) => {
-    if (!channel || !user) return
-    channel.send({
+    if (!channelRef.current || !user) return
+    channelRef.current.send({
       type: 'broadcast',
       event: 'unlock_field',
       payload: { field, userId: user.id },
     })
-  }, [channel, user])
+  }, [user])
 
   return { lockedFields, lockField, unlockField }
 }

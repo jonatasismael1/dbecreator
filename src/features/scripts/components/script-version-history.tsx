@@ -20,7 +20,7 @@ export function ScriptVersionHistory({ versions, isLoading }: ScriptVersionHisto
     <div className="rounded-xl border border-dbe-border bg-dbe-dark/50 p-4">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <History className="h-4 w-4 text-dbe-purple" />
+          <History className="h-4 w-4 text-dbe-blue" />
           <p className="text-sm font-semibold text-dbe-text">Versoes salvas</p>
         </div>
         <Badge variant="purple">{versions.length}</Badge>

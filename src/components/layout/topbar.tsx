@@ -1,13 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
-import { Menu, LogOut, User, Sun, Moon } from 'lucide-react'
+import { LogOut, User, Sun, Moon } from 'lucide-react'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { useTheme } from '@/hooks/use-theme'
+import logoDbeSrc from '@/assets/logo-pwa-512x512.png.png'
 
-interface TopbarProps {
-  onMenuClick: () => void
-}
-
-export function Topbar({ onMenuClick }: TopbarProps) {
+export function Topbar() {
   const { user, signOut } = useAuth()
   const { theme, setTheme } = useTheme()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -31,26 +28,18 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const displayName = user?.user_metadata?.full_name ?? user?.email ?? 'Usuário'
 
   return (
-    <header className="glass-panel sticky top-4 z-20 mx-4 rounded-2xl lg:mx-8">
-      <div className="flex items-center justify-between h-16 px-4 lg:px-6">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onMenuClick}
-            className="rounded-lg p-2 text-text-muted transition-colors hover:bg-surface-muted hover:text-text lg:hidden"
-            aria-label="Abrir menu"
-          >
-            <Menu className="h-5 w-5" strokeWidth={2.5} />
-          </button>
-          <div className="hidden sm:block">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">DBE Creator</p>
-            <p className="text-sm text-text-muted">Operação de conteúdo</p>
+    <header className="glass-panel sticky top-3 z-20 mx-4 rounded-[var(--r-xl)] md:top-4 md:mx-8">
+      <div className="flex min-h-16 items-center justify-between gap-3 px-4 md:px-6">
+      <div className="flex items-center gap-4">
+          <div className="block md:hidden">
+            <img src={logoDbeSrc} alt="DBE Creator" className="h-8 w-auto object-contain" />
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="relative rounded-lg p-2 text-text-muted transition-colors hover:bg-surface-muted hover:text-text"
+            className="touch-target relative rounded-[var(--r-md)] p-2 text-text-muted transition-colors hover:bg-surface-muted hover:text-text"
             aria-label="Alternar tema"
           >
             {theme === 'dark' ? <Sun className="h-5 w-5" strokeWidth={2.5} /> : <Moon className="h-5 w-5" strokeWidth={2.5} />}
@@ -59,13 +48,13 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center gap-3 border-l border-border pl-3 transition-opacity hover:opacity-90"
+              className="flex touch-target items-center gap-3 border-l border-border pl-3 transition-opacity hover:opacity-90"
             >
               <div className="hidden sm:block text-right">
                 <p className="text-sm font-medium text-text truncate max-w-[140px]">{displayName}</p>
                 <p className="text-[11px] text-text-muted">Plano Free</p>
               </div>
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-ai flex items-center justify-center text-sm font-bold text-white overflow-hidden border border-border/50">
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-border bg-gradient-to-br from-primary to-success text-sm font-bold text-white">
                 {user?.user_metadata?.avatar_url ? (
                   <img src={user.user_metadata.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
                 ) : (
@@ -75,7 +64,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             </button>
 
             {userMenuOpen && (
-              <div className="glass-panel absolute right-0 top-12 z-50 w-52 overflow-hidden rounded-xl">
+              <div className="glass-panel absolute right-0 top-12 z-50 w-52 overflow-hidden rounded-[var(--r-lg)]">
                 <div className="px-4 py-3 border-b border-border">
                   <p className="text-sm font-medium text-text truncate">{displayName}</p>
                   <p className="text-xs text-text-muted truncate">{user?.email}</p>

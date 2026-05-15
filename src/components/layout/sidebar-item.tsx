@@ -20,7 +20,7 @@ export function SidebarItem({ item, collapsed = false, onClick }: SidebarItemPro
         cn(
           'group flex items-center gap-3 rounded-xl border px-3 py-2 text-sm font-semibold transition-all duration-300',
           isActive
-            ? 'bg-gradient-to-r from-primary/18 to-info/10 text-primary border-primary/30 shadow-sm shadow-primary/10'
+            ? 'border-primary/45 bg-primary/12 text-text shadow-sm shadow-primary/10 [&>svg]:text-ai'
             : 'border-transparent text-text-muted hover:border-border hover:bg-surface-muted/75 hover:text-text',
           collapsed && 'justify-center px-2'
         )

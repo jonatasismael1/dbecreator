@@ -110,27 +110,28 @@ export function MetricModal({ isOpen, onClose, onSave, metric, isLoading }: Metr
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-dbe-navy border border-dbe-border rounded-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+      <div className="modal-panel flex w-full max-w-2xl flex-col overflow-hidden rounded-[var(--r-xl)] border border-dbe-border bg-dbe-navy">
+        <div className="modal-drag-handle" />
         <div className="flex items-center justify-between p-4 border-b border-dbe-border">
           <h2 className="text-lg font-semibold text-dbe-text">
             {metric ? 'Editar Métricas' : 'Registrar Métricas'}
           </h2>
-          <button onClick={onClose} className="text-dbe-muted hover:text-dbe-text transition-colors">
+          <button onClick={onClose} className="touch-target rounded-[var(--r-md)] text-dbe-muted transition-colors hover:bg-white/5 hover:text-dbe-text">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="p-4 overflow-y-auto flex-1">
+        <div className="modal-scroll-body flex-1 p-4">
           <form id="metric-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-dbe-text mb-1">Roteiro</label>
                 <select
                   {...register('script_id')}
                   disabled={!!metric}
-                  className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-4 py-2 text-dbe-text focus:outline-none focus:border-dbe-blue transition-colors appearance-none"
+                  className="w-full appearance-none rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 py-2 text-[16px] text-dbe-text transition-colors focus:border-dbe-blue focus:outline-none"
                 >
                   <option value="" disabled>Selecione o roteiro publicado...</option>
                   {(scripts as Script[]).map((s) => (
@@ -145,7 +146,7 @@ export function MetricModal({ isOpen, onClose, onSave, metric, isLoading }: Metr
                 <select
                   {...register('platform')}
                   disabled={!!metric}
-                  className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-4 py-2 text-dbe-text focus:outline-none focus:border-dbe-blue transition-colors appearance-none"
+                  className="w-full appearance-none rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 py-2 text-[16px] text-dbe-text transition-colors focus:border-dbe-blue focus:outline-none"
                 >
                   {PLATFORM_OPTIONS.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -158,7 +159,7 @@ export function MetricModal({ isOpen, onClose, onSave, metric, isLoading }: Metr
                 <input
                   type="date"
                   {...register('published_at')}
-                  className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-4 py-2 text-dbe-text focus:outline-none focus:border-dbe-blue transition-colors"
+                  className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 py-2 text-[16px] text-dbe-text transition-colors focus:border-dbe-blue focus:outline-none"
                   style={{ colorScheme: 'dark' }}
                 />
               </div>
@@ -166,44 +167,44 @@ export function MetricModal({ isOpen, onClose, onSave, metric, isLoading }: Metr
 
             <div className="border-t border-dbe-border pt-4">
               <h3 className="text-sm font-semibold text-dbe-text mb-3">Métricas de Engajamento</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
                 <div>
                   <label className="block text-xs text-dbe-muted mb-1">Visualizações</label>
-                  <input type="number" {...register('views', { valueAsNumber: true })} className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-3 py-1.5 text-dbe-text focus:outline-none focus:border-dbe-blue" />
+                  <input type="number" {...register('views', { valueAsNumber: true })} className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-3 py-1.5 text-[16px] text-dbe-text focus:border-dbe-blue focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs text-dbe-muted mb-1">Curtidas</label>
-                  <input type="number" {...register('likes', { valueAsNumber: true })} className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-3 py-1.5 text-dbe-text focus:outline-none focus:border-dbe-blue" />
+                  <input type="number" {...register('likes', { valueAsNumber: true })} className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-3 py-1.5 text-[16px] text-dbe-text focus:border-dbe-blue focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs text-dbe-muted mb-1">Comentários</label>
-                  <input type="number" {...register('comments', { valueAsNumber: true })} className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-3 py-1.5 text-dbe-text focus:outline-none focus:border-dbe-blue" />
+                  <input type="number" {...register('comments', { valueAsNumber: true })} className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-3 py-1.5 text-[16px] text-dbe-text focus:border-dbe-blue focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs text-dbe-muted mb-1">Compartilham.</label>
-                  <input type="number" {...register('shares', { valueAsNumber: true })} className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-3 py-1.5 text-dbe-text focus:outline-none focus:border-dbe-blue" />
+                  <input type="number" {...register('shares', { valueAsNumber: true })} className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-3 py-1.5 text-[16px] text-dbe-text focus:border-dbe-blue focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs text-dbe-muted mb-1">Salvamentos</label>
-                  <input type="number" {...register('saves', { valueAsNumber: true })} className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-3 py-1.5 text-dbe-text focus:outline-none focus:border-dbe-blue" />
+                  <input type="number" {...register('saves', { valueAsNumber: true })} className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-3 py-1.5 text-[16px] text-dbe-text focus:border-dbe-blue focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs text-dbe-muted mb-1">Cliques no Link</label>
-                  <input type="number" {...register('link_clicks', { valueAsNumber: true })} className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-3 py-1.5 text-dbe-text focus:outline-none focus:border-dbe-blue" />
+                  <input type="number" {...register('link_clicks', { valueAsNumber: true })} className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-3 py-1.5 text-[16px] text-dbe-text focus:border-dbe-blue focus:outline-none" />
                 </div>
               </div>
             </div>
 
             <div className="border-t border-dbe-border pt-4">
               <h3 className="text-sm font-semibold text-dbe-text mb-3">Métricas de Retenção</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs text-dbe-muted mb-1">Tempo Médio Visto (seg)</label>
-                  <input type="number" {...register('watch_time_seconds', { valueAsNumber: true })} className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-3 py-1.5 text-dbe-text focus:outline-none focus:border-dbe-blue" />
+                  <input type="number" {...register('watch_time_seconds', { valueAsNumber: true })} className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-3 py-1.5 text-[16px] text-dbe-text focus:border-dbe-blue focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs text-dbe-muted mb-1">Taxa de Retenção (%)</label>
-                  <input type="number" step="0.1" {...register('retention_rate', { valueAsNumber: true })} className="w-full bg-dbe-dark border border-dbe-border rounded-lg px-3 py-1.5 text-dbe-text focus:outline-none focus:border-dbe-blue" />
+                  <input type="number" step="0.1" {...register('retention_rate', { valueAsNumber: true })} className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-3 py-1.5 text-[16px] text-dbe-text focus:border-dbe-blue focus:outline-none" />
                 </div>
               </div>
             </div>
@@ -211,7 +212,7 @@ export function MetricModal({ isOpen, onClose, onSave, metric, isLoading }: Metr
           </form>
         </div>
 
-        <div className="p-4 border-t border-dbe-border flex justify-end gap-3 bg-dbe-navy">
+        <div className="flex flex-col justify-end gap-3 border-t border-dbe-border bg-dbe-navy p-4 sm:flex-row">
           <Button variant="ghost" onClick={onClose} disabled={isLoading}>
             Cancelar
           </Button>

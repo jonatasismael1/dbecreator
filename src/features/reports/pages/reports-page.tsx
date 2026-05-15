@@ -147,7 +147,7 @@ export function ReportsPage() {
         </div>
       </PageHeader>
 
-      <div ref={reportRef} className="space-y-6 rounded-lg bg-background/40 p-1">
+      <div ref={reportRef} className="space-y-6 rounded-[var(--r-md)] bg-background/40 p-1">
       {latestInsights && (
         <Card className="mb-6 overflow-hidden p-4">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -168,9 +168,9 @@ export function ReportsPage() {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             <SummaryCard icon={<Eye className="h-4 w-4" />} label="Impressões" value={latestInsights.metrics.impressions} />
-            <SummaryCard icon={<Eye className="h-4 w-4 text-purple-300" />} label="Views" value={latestInsights.metrics.media_views} />
+            <SummaryCard icon={<Eye className="h-4 w-4 text-primary" />} label="Views" value={latestInsights.metrics.media_views} />
             <SummaryCard icon={<Users className="h-4 w-4 text-blue-300" />} label="Alcance" value={latestInsights.metrics.media_viewers ?? latestInsights.metrics.reach ?? null} />
             <SummaryCard icon={<UserRound className="h-4 w-4 text-green-300" />} label="Seguidores" value={latestInsights.metrics.follower_count ?? latestInsights.account.followers_count ?? null} />
             <SummaryCard icon={<Instagram className="h-4 w-4 text-pink-400" />} label="Visitas" value={latestInsights.metrics.profile_views} />
@@ -191,7 +191,7 @@ export function ReportsPage() {
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') openInsightModal(post.id)
                     }}
-                    className="overflow-hidden rounded-lg border border-border bg-black/20 text-left transition-colors hover:border-primary/70"
+                    className="min-w-0 overflow-hidden rounded-[var(--r-md)] border border-border bg-black/20 text-left transition-colors hover:border-primary/70"
                   >
                     <PostThumbnail post={post} />
                     <div className="space-y-3 p-3">
@@ -236,22 +236,22 @@ export function ReportsPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
+          <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 md:grid-cols-5 md:gap-4">
             <SummaryCard icon={<Eye className="h-4 w-4" />} label="Views" value={totals.views} />
             <SummaryCard icon={<Heart className="h-4 w-4 text-red-400" />} label="Curtidas" value={totals.likes} />
             <SummaryCard icon={<MessageCircle className="h-4 w-4 text-blue-400" />} label="Comentarios" value={totals.comments} />
             <SummaryCard icon={<Instagram className="h-4 w-4 text-green-400" />} label="Compart." value={totals.shares} />
-            <SummaryCard icon={<Bookmark className="h-4 w-4 text-amber-400" />} label="Salvos" value={totals.saves} />
+            <SummaryCard icon={<Bookmark className="h-4 w-4 text-primary" />} label="Salvos" value={totals.saves} />
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[1.25fr_0.75fr]">
             <PerformanceSpotlight metric={bestMetric} />
-            <Card className="grid grid-cols-2 gap-3 p-4">
-              <div className="rounded-lg border border-border/70 bg-white/[0.03] p-3">
+            <Card className="grid grid-cols-1 gap-3 p-4 min-[480px]:grid-cols-2">
+              <div className="rounded-[var(--r-md)] border border-border/70 bg-white/[0.03] p-3">
                 <p className="text-xs text-text-muted">Média de views</p>
                 <p className="mt-1 text-2xl font-bold text-text">{averageViews.toLocaleString()}</p>
               </div>
-              <div className="rounded-lg border border-border/70 bg-white/[0.03] p-3">
+              <div className="rounded-[var(--r-md)] border border-border/70 bg-white/[0.03] p-3">
                 <p className="text-xs text-text-muted">Interações</p>
                 <p className="mt-1 text-2xl font-bold text-text">{(totals.likes + totals.comments + totals.shares + totals.saves).toLocaleString()}</p>
               </div>
@@ -282,9 +282,9 @@ export function ReportsPage() {
               ) : aiInsights && aiInsights.length > 0 ? (
                 <div className="space-y-4">
                   {aiInsights.map(insight => (
-                    <div key={insight.id} className="rounded-lg border border-border/50 bg-black/20 p-4">
+                    <div key={insight.id} className="rounded-[var(--r-md)] border border-border/50 bg-black/20 p-4">
                       <p className="text-sm font-medium text-text">{insight.insight_text}</p>
-                      <p className="mt-1 text-sm text-text-muted"><span className="font-semibold text-amber-400">Recomendação:</span> {insight.recommendation_text}</p>
+                      <p className="mt-1 text-sm text-text-muted"><span className="font-semibold text-primary">Recomendação:</span> {insight.recommendation_text}</p>
                     </div>
                   ))}
                 </div>
@@ -422,7 +422,7 @@ function MetricMobileCard({ metric, onEdit, onDelete }: { metric: PerformanceMet
   return (
     <Card className="p-3">
       <div className="flex gap-3">
-        {metric.thumbnail_url && <img src={metric.thumbnail_url} alt="" className="h-16 w-16 shrink-0 rounded-lg object-cover" />}
+        {metric.thumbnail_url && <img src={metric.thumbnail_url} alt="" className="h-16 w-16 shrink-0 rounded-[var(--r-md)] object-cover" />}
         <div className="min-w-0 flex-1">
           <p className="line-clamp-2 break-words text-sm font-semibold text-text">
             {metric.script?.title || metric.caption || 'Publicação Instagram'}
@@ -456,14 +456,14 @@ function SummaryCard({ icon, label, value, onClick }: { icon: ReactNode; label: 
 
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className="rounded-lg border border-border bg-white/[0.035] p-4 text-left transition-colors hover:border-primary/70">
+      <button type="button" onClick={onClick} className="rounded-[var(--r-md)] border border-border bg-white/[0.035] p-4 text-left transition-colors hover:border-primary/70">
         {content}
       </button>
     )
   }
 
   return (
-    <div className="rounded-lg border border-border bg-white/[0.035] p-4">
+    <div className="rounded-[var(--r-md)] border border-border bg-white/[0.035] p-4">
       {content}
     </div>
   )
@@ -501,7 +501,7 @@ function InsightDetailsModal({ isOpen, onClose, insights, post }: { isOpen: bool
       <div
         role="dialog"
         aria-modal="true"
-        className="max-h-[88vh] w-full overflow-y-auto rounded-t-xl border border-border bg-surface p-4 shadow-2xl sm:max-w-4xl sm:rounded-xl sm:p-5"
+        className="modal-panel modal-scroll-body w-full rounded-[var(--r-xl)] border border-border bg-surface p-4 shadow-2xl sm:max-w-4xl sm:p-5"
         onClick={(event) => event.stopPropagation()}
       >
         <InsightDetailContent insights={insights} post={post} onClose={onClose} />

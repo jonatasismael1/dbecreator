@@ -44,7 +44,7 @@ export function LoginPage() {
       <p className="text-sm text-dbe-muted mb-8">Entre na sua conta para continuar criando.</p>
 
       {serverError && (
-        <div className="flex items-center gap-2 rounded-lg bg-dbe-red/10 border border-dbe-red/20 px-4 py-3 mb-5">
+        <div className="mb-5 flex items-center gap-2 rounded-[var(--r-md)] border border-dbe-red/20 bg-dbe-red/10 px-4 py-3">
           <AlertCircle className="h-4 w-4 text-dbe-red shrink-0" />
           <p className="text-sm text-dbe-red">{serverError}</p>
         </div>
@@ -62,7 +62,7 @@ export function LoginPage() {
               type="email"
               placeholder="seu@email.com"
               {...register('email')}
-              className="w-full h-11 pl-10 pr-4 rounded-lg bg-dbe-navy border border-dbe-border text-dbe-text text-sm placeholder:text-dbe-muted/50 outline-none focus:border-dbe-blue/50 focus:ring-1 focus:ring-dbe-blue/20 transition-all"
+              className="h-11 w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-navy pl-10 pr-4 text-[16px] text-dbe-text outline-none transition-all placeholder:text-dbe-muted/50 focus:border-dbe-blue/50 focus:ring-1 focus:ring-dbe-blue/20"
             />
           </div>
           {errors.email && <p className="mt-1.5 text-xs text-dbe-red">{errors.email.message}</p>}
@@ -79,7 +79,7 @@ export function LoginPage() {
               type="password"
               placeholder="••••••••"
               {...register('password')}
-              className="w-full h-11 pl-10 pr-4 rounded-lg bg-dbe-navy border border-dbe-border text-dbe-text text-sm placeholder:text-dbe-muted/50 outline-none focus:border-dbe-blue/50 focus:ring-1 focus:ring-dbe-blue/20 transition-all"
+              className="h-11 w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-navy pl-10 pr-4 text-[16px] text-dbe-text outline-none transition-all placeholder:text-dbe-muted/50 focus:border-dbe-blue/50 focus:ring-1 focus:ring-dbe-blue/20"
             />
           </div>
           {errors.password && <p className="mt-1.5 text-xs text-dbe-red">{errors.password.message}</p>}

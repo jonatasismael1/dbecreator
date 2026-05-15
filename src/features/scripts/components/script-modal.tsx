@@ -15,7 +15,7 @@ import { RichTextEditor } from './rich-text-editor'
 import { useTemplates } from '../hooks/use-templates'
 import { usePresence } from '../hooks/use-presence'
 import { useFieldLocking } from '../hooks/use-field-locking'
-import type { CreateScriptDTO, Script, ScriptStatus, ScriptVersion, ScriptTemplate } from '../types/script.types'
+import type { CreateScriptDTO, Script, ScriptStatus, ScriptVersion } from '../types/script.types'
 import { stripHtml } from '../utils/script-content'
 
 const scriptSchema = z.object({
@@ -84,6 +84,11 @@ export function ScriptModal({
   const [ctaOptimizationLoading, setCtaOptimizationLoading] = useState(false)
   const [ctaOptimizationError, setCtaOptimizationError] = useState<string | null>(null)
   const [showCtaOptimization, setShowCtaOptimization] = useState(false)
+
+  const [bodySuggestions, setBodySuggestions] = useState<string[]>([])
+  const [bodySuggestionsLoading, setBodySuggestionsLoading] = useState(false)
+  const [bodySuggestionsError, setBodySuggestionsError] = useState<string | null>(null)
+  const [showBodySuggestions, setShowBodySuggestions] = useState(false)
 
   const { control, register, handleSubmit, reset, setValue, formState: { errors, isDirty } } = useForm<ScriptFormValues>({
     resolver: zodResolver(scriptSchema),
@@ -194,6 +199,22 @@ export function ScriptModal({
       setCtaOptimizationError('Não foi possível otimizar o CTA. Tente novamente.')
     } finally {
       setCtaOptimizationLoading(false)
+    }
+  }
+
+  const handleReviewBody = async () => {
+    const bodyText = stripHtml(watchedBody).trim()
+    if (!bodyText) return
+    setBodySuggestionsLoading(true)
+    setBodySuggestionsError(null)
+    setShowBodySuggestions(true)
+    try {
+      const suggestions = await debyService.suggestHook(bodyText.slice(0, 300), 'Revisar e sugerir melhorias no desenvolvimento do roteiro')
+      setBodySuggestions(suggestions)
+    } catch {
+      setBodySuggestionsError('Não foi possível revisar. Tente novamente.')
+    } finally {
+      setBodySuggestionsLoading(false)
     }
   }
 
@@ -348,6 +369,41 @@ export function ScriptModal({
                     />
                   </div>
                   <FieldHint text="Apresente prova e contexto. Mantenha conciso para Reels." value={watchedBody} />
+                  <div className="mt-1.5 flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={handleReviewBody}
+                      disabled={bodySuggestionsLoading || !stripHtml(watchedBody).trim()}
+                      className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-dbe-green transition-colors hover:bg-dbe-green/10 disabled:opacity-40"
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      {bodySuggestionsLoading ? 'Revisando...' : 'Deby AI revisar'}
+                    </button>
+                  </div>
+
+                  {/* Body review panel */}
+                  {showBodySuggestions && (
+                    <div className="mt-2 rounded-lg border border-dbe-green/20 bg-dbe-green/5 p-3">
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="text-xs font-semibold text-dbe-green">Deby AI: Sugestões para o Desenvolvimento</p>
+                        <button type="button" onClick={() => setShowBodySuggestions(false)} className="text-dbe-muted hover:text-dbe-text">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                      {bodySuggestionsLoading && <p className="text-xs text-dbe-muted">Revisando o desenvolvimento...</p>}
+                      {bodySuggestionsError && <p className="text-xs text-dbe-red">{bodySuggestionsError}</p>}
+                      {bodySuggestions.map((suggestion, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => { setValue('body', suggestion, { shouldDirty: true, shouldValidate: true }); setShowBodySuggestions(false) }}
+                          className="mb-1.5 block w-full rounded-md border border-dbe-border/50 bg-black/20 px-3 py-2 text-left text-xs text-dbe-text transition-colors hover:border-dbe-green/40 hover:bg-dbe-green/5"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </Field>
 
                 <Field label="CTA" error={errors.cta?.message}>
@@ -371,7 +427,7 @@ export function ScriptModal({
                       type="button"
                       onClick={handleOptimizeCta}
                       disabled={ctaOptimizationLoading || !stripHtml(watchedCta).trim()}
-                      className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-green-400 transition-colors hover:bg-green-400/10 disabled:opacity-40"
+                      className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-dbe-green transition-colors hover:bg-dbe-green/10 disabled:opacity-40"
                     >
                       <Wand2 className="h-3 w-3" />
                       {ctaOptimizationLoading ? 'Otimizando...' : 'Otimizar CTA'}
@@ -380,9 +436,9 @@ export function ScriptModal({
 
                   {/* CTA optimization panel */}
                   {showCtaOptimization && (
-                    <div className="mt-2 rounded-lg border border-green-400/20 bg-green-400/5 p-3">
+                    <div className="mt-2 rounded-lg border border-dbe-green/20 bg-dbe-green/5 p-3">
                       <div className="mb-2 flex items-center justify-between">
-                        <p className="text-xs font-semibold text-green-400">Sugestão de CTA da Deby</p>
+                        <p className="text-xs font-semibold text-dbe-green">Deby AI: Sugestão de CTA</p>
                         <button type="button" onClick={() => setShowCtaOptimization(false)} className="text-dbe-muted hover:text-dbe-text">
                           <X className="h-3.5 w-3.5" />
                         </button>
@@ -398,7 +454,7 @@ export function ScriptModal({
                           <Button
                             size="sm"
                             type="button"
-                            className="bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                            className="bg-dbe-green/15 text-dbe-green hover:bg-dbe-green/25"
                             onClick={() => { setValue('cta', ctaOptimization.optimized_cta, { shouldDirty: true, shouldValidate: true }); setShowCtaOptimization(false) }}
                           >
                             Aplicar sugestão

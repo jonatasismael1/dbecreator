@@ -102,21 +102,22 @@ export function MaterialModal({ isOpen, onClose, onSave, material, isLoading }: 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-dbe-navy border border-dbe-border rounded-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+      <div className="modal-panel flex w-full max-w-lg flex-col overflow-hidden rounded-[var(--r-xl)] border border-dbe-border bg-dbe-navy">
+        <div className="modal-drag-handle" />
         <div className="flex items-center justify-between p-4 border-b border-dbe-border">
           <h2 className="text-lg font-semibold text-dbe-text">
             {material ? 'Editar Material' : 'Novo Material'}
           </h2>
           <button
             onClick={onClose}
-            className="text-dbe-muted hover:text-dbe-text transition-colors"
+            className="touch-target rounded-[var(--r-md)] text-dbe-muted transition-colors hover:bg-white/5 hover:text-dbe-text"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="p-4 overflow-y-auto flex-1">
+        <div className="modal-scroll-body flex-1 p-4">
           <form id="material-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-dbe-text mb-1">
@@ -203,7 +204,7 @@ export function MaterialModal({ isOpen, onClose, onSave, material, isLoading }: 
           </form>
         </div>
 
-        <div className="p-4 border-t border-dbe-border flex justify-end gap-3 bg-dbe-navy">
+        <div className="flex flex-col justify-end gap-3 border-t border-dbe-border bg-dbe-navy p-4 sm:flex-row">
           <Button variant="ghost" onClick={onClose} disabled={isLoading}>
             Cancelar
           </Button>

@@ -4,21 +4,21 @@ import { Button } from '@/components/ui/button'
 import { usePillars } from '@/features/pillars/hooks/use-pillars'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
 import { debyService } from '@/features/deby/services/deby.service'
-import type { IdeaStatus } from '../types/idea.types'
 
 interface DebyIdeasModalProps {
   open: boolean
   onClose: () => void
   onAddIdeas: (ideas: Array<{ title: string; hook_suggestion: string; pillar: string }>, selectedPillarId: string) => Promise<void>
+  initialContext?: string
 }
 
-export function DebyIdeasModal({ open, onClose, onAddIdeas }: DebyIdeasModalProps) {
+export function DebyIdeasModal({ open, onClose, onAddIdeas, initialContext }: DebyIdeasModalProps) {
   const { workspaceId } = useWorkspaceContext()
   const { data: pillars = [] } = usePillars(workspaceId)
   
   const [selectedPillarId, setSelectedPillarId] = useState('')
   const [count, setCount] = useState(5)
-  const [context, setContext] = useState('')
+  const [context, setContext] = useState(initialContext ?? '')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -48,31 +48,32 @@ export function DebyIdeasModal({ open, onClose, onAddIdeas }: DebyIdeasModalProp
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md overflow-hidden rounded-xl border border-dbe-purple/20 bg-dbe-navy shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+      <div className="modal-panel w-full max-w-md overflow-hidden rounded-[var(--r-xl)] border border-dbe-green/30 bg-dbe-navy shadow-2xl">
+        <div className="modal-drag-handle" />
         <div className="flex items-center justify-between border-b border-dbe-border p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-dbe-purple/20 bg-dbe-purple/10">
-              <Sparkles className="h-5 w-5 text-dbe-purple" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--r-md)] border border-dbe-green/30 bg-dbe-green/10">
+              <Sparkles className="h-5 w-5 text-dbe-green" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-dbe-text">Gerar com Deby</h2>
-              <p className="mt-0.5 text-xs text-dbe-muted">IA Estratégica</p>
+              <h2 className="text-lg font-semibold text-dbe-text">{initialContext ? 'Deby AI: Desenvolver ideia' : 'Gerar com Deby AI'}</h2>
+              <p className="mt-0.5 text-xs text-dbe-muted">Estratégia de Conteúdo</p>
             </div>
           </div>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-dbe-muted hover:bg-white/5 hover:text-dbe-text">
+          <button onClick={onClose} className="touch-target rounded-[var(--r-md)] p-1.5 text-dbe-muted hover:bg-white/5 hover:text-dbe-text">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleGenerate} className="space-y-4 p-5">
+        <form onSubmit={handleGenerate} className="modal-scroll-body space-y-4 p-5">
           <div>
             <label className="mb-1 block text-sm font-medium text-dbe-text">Pilar Estratégico</label>
             <select
               value={selectedPillarId}
               onChange={(e) => setSelectedPillarId(e.target.value)}
               disabled={isLoading}
-              className="w-full rounded-lg border border-dbe-border bg-dbe-dark px-4 py-2.5 text-sm text-dbe-text transition-colors focus:border-dbe-purple focus:outline-none disabled:opacity-50"
+              className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 py-2.5 text-[16px] text-dbe-text transition-colors focus:border-dbe-blue focus:outline-none disabled:opacity-50"
             >
               <option value="" disabled>Selecione um pilar...</option>
               {pillars.map(p => (
@@ -80,7 +81,7 @@ export function DebyIdeasModal({ open, onClose, onAddIdeas }: DebyIdeasModalProp
               ))}
             </select>
             {pillars.length === 0 && (
-              <p className="mt-1 text-xs text-amber-400">Nenhum pilar cadastrado. Crie pilares primeiro.</p>
+              <p className="mt-1 text-xs text-warning">Nenhum pilar cadastrado. Crie pilares primeiro.</p>
             )}
           </div>
 
@@ -90,7 +91,7 @@ export function DebyIdeasModal({ open, onClose, onAddIdeas }: DebyIdeasModalProp
               value={count}
               onChange={(e) => setCount(Number(e.target.value))}
               disabled={isLoading}
-              className="w-full rounded-lg border border-dbe-border bg-dbe-dark px-4 py-2.5 text-sm text-dbe-text transition-colors focus:border-dbe-purple focus:outline-none disabled:opacity-50"
+              className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 py-2.5 text-[16px] text-dbe-text transition-colors focus:border-dbe-blue focus:outline-none disabled:opacity-50"
             >
               <option value="3">3 ideias</option>
               <option value="5">5 ideias</option>
@@ -105,25 +106,25 @@ export function DebyIdeasModal({ open, onClose, onAddIdeas }: DebyIdeasModalProp
               onChange={(e) => setContext(e.target.value)}
               disabled={isLoading}
               placeholder="Ex: Focar no audio em alta sobre 'escola de negócios' ou assunto atual."
-              className="w-full rounded-lg border border-dbe-border bg-dbe-dark px-4 py-2.5 text-sm text-dbe-text transition-colors focus:border-dbe-purple focus:outline-none disabled:opacity-50"
+              className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 py-2.5 text-[16px] text-dbe-text transition-colors focus:border-dbe-blue focus:outline-none disabled:opacity-50"
               rows={3}
             />
           </div>
 
           {error && (
-            <div className="rounded-lg border border-dbe-red/20 bg-dbe-red/10 px-3 py-2.5 text-sm text-dbe-red">
+            <div className="rounded-[var(--r-md)] border border-dbe-red/20 bg-dbe-red/10 px-3 py-2.5 text-sm text-dbe-red">
               {error}
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex flex-col justify-end gap-3 pt-2 sm:flex-row">
             <Button type="button" variant="ghost" onClick={onClose} disabled={isLoading}>
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isLoading || !selectedPillarId}
-              className="bg-dbe-purple text-white hover:bg-dbe-purple/80"
+              variant="deby"
             >
               {isLoading ? (
                 <>

@@ -29,7 +29,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'rounded-xl p-5',
+          'min-w-0 rounded-[var(--r-lg)] p-5',
           variants[activeVariant],
           className
         )}

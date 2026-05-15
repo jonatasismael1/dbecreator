@@ -81,14 +81,14 @@ export function DebyPage() {
 
   return (
     <div>
-      <PageHeader title="Deby IA" description="Análise técnica e estratégica dos seus roteiros de Reels." />
+      <PageHeader title="Deby AI" description="Análise técnica e estratégica dos seus roteiros de Reels." />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[380px_1fr]">
         <div className="space-y-4">
           <Card>
             <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-dbe-purple/20 bg-dbe-purple/10">
-                <BrainCircuit className="h-5 w-5 text-dbe-purple" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-[var(--r-lg)] border border-dbe-green/30 bg-dbe-green/10">
+                <BrainCircuit className="h-5 w-5 text-dbe-green" />
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-dbe-text">Nova análise</h2>
@@ -100,7 +100,7 @@ export function DebyPage() {
             <select
               value={selectedScriptId}
               onChange={(event) => setSelectedScriptId(event.target.value)}
-              className="w-full rounded-lg border border-dbe-border bg-dbe-dark px-4 py-2.5 text-sm text-dbe-text outline-none transition-all focus:border-dbe-purple/50"
+              className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 py-2.5 text-[16px] text-dbe-text outline-none transition-all focus:border-dbe-blue/50"
             >
               <option value="">Selecione um roteiro</option>
               {scripts.map((script) => (
@@ -143,7 +143,7 @@ export function DebyPage() {
                       setActiveAnalysis(analysis)
                       setAppliedAnalysisId(null)
                     }}
-                    className="w-full rounded-lg border border-dbe-border bg-dbe-dark/40 p-3 text-left transition-all hover:border-dbe-purple/40"
+                    className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark/40 p-3 text-left transition-all hover:border-dbe-blue/40"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <p className="line-clamp-1 text-xs font-semibold text-dbe-text">{analysis.scripts?.title ?? 'Roteiro'}</p>

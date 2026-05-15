@@ -81,25 +81,26 @@ export function ApprovalBatchModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-xl border border-dbe-border bg-dbe-navy shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+      <div className="modal-panel flex w-full max-w-lg flex-col overflow-hidden rounded-[var(--r-xl)] border border-dbe-border bg-dbe-navy shadow-2xl">
+        <div className="modal-drag-handle" />
         <div className="flex items-center justify-between border-b border-dbe-border p-5">
           <div>
             <h2 className="text-lg font-semibold text-dbe-text">Criar lote de aprovação</h2>
             <p className="mt-0.5 text-xs text-dbe-muted">Gere um link para o cliente aprovar vários roteiros de uma vez.</p>
           </div>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-dbe-muted hover:bg-white/5 hover:text-dbe-text">
+          <button onClick={onClose} className="touch-target rounded-[var(--r-md)] p-1.5 text-dbe-muted hover:bg-white/5 hover:text-dbe-text">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto p-5">
+        <form onSubmit={handleSubmit} className="modal-scroll-body space-y-4 p-5">
           {/* Mode toggle */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <button
               type="button"
               onClick={() => setMode('scripts')}
-              className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${mode === 'scripts' ? 'border-dbe-blue/40 bg-dbe-blue/10 text-dbe-blue' : 'border-dbe-border text-dbe-muted hover:text-dbe-text'}`}
+              className={`flex min-w-0 items-center justify-center gap-2 rounded-[var(--r-md)] border px-4 py-2.5 text-sm font-medium transition-colors ${mode === 'scripts' ? 'border-dbe-blue/40 bg-dbe-blue/10 text-dbe-blue' : 'border-dbe-border text-dbe-muted hover:text-dbe-text'}`}
             >
               <ListChecks className="h-4 w-4" />
               Roteiros avulsos
@@ -107,7 +108,7 @@ export function ApprovalBatchModal({
             <button
               type="button"
               onClick={() => setMode('campaign')}
-              className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${mode === 'campaign' ? 'border-dbe-blue/40 bg-dbe-blue/10 text-dbe-blue' : 'border-dbe-border text-dbe-muted hover:text-dbe-text'}`}
+              className={`flex min-w-0 items-center justify-center gap-2 rounded-[var(--r-md)] border px-4 py-2.5 text-sm font-medium transition-colors ${mode === 'campaign' ? 'border-dbe-blue/40 bg-dbe-blue/10 text-dbe-blue' : 'border-dbe-border text-dbe-muted hover:text-dbe-text'}`}
             >
               <Layers className="h-4 w-4" />
               Campanha inteira
@@ -122,7 +123,7 @@ export function ApprovalBatchModal({
                 value={selectedCampaign}
                 onChange={(e) => setSelectedCampaign(e.target.value)}
                 required
-                className="w-full appearance-none rounded-lg border border-dbe-border bg-dbe-dark px-4 py-2.5 text-sm text-dbe-text transition-colors focus:border-dbe-blue focus:outline-none"
+                className="w-full appearance-none rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 py-2.5 text-[16px] text-dbe-text transition-colors focus:border-dbe-blue focus:outline-none"
               >
                 <option value="">Selecione uma campanha...</option>
                 {campaigns.map((c) => (
@@ -144,7 +145,7 @@ export function ApprovalBatchModal({
               <label className="mb-1.5 block text-sm font-medium text-dbe-text">
                 Roteiros <span className="text-dbe-muted">({selectedScripts.length} selecionados)</span>
               </label>
-              <div className="max-h-48 space-y-1.5 overflow-y-auto rounded-lg border border-dbe-border bg-dbe-dark p-3">
+              <div className="max-h-48 space-y-1.5 overflow-y-auto rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark p-3">
                 {availableScripts.length === 0 && (
                   <p className="py-4 text-center text-sm text-dbe-muted">Nenhum roteiro disponível para aprovação.</p>
                 )}
@@ -179,7 +180,7 @@ export function ApprovalBatchModal({
               required
               minLength={2}
               placeholder="Ex: Maria Oliveira"
-              className="w-full rounded-lg border border-dbe-border bg-dbe-dark px-4 py-2.5 text-sm text-dbe-text transition-colors focus:border-dbe-blue focus:outline-none"
+              className="w-full rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark px-4 py-2.5 text-[16px] text-dbe-text transition-colors focus:border-dbe-blue focus:outline-none"
             />
           </div>
 
@@ -188,13 +189,13 @@ export function ApprovalBatchModal({
           </p>
 
           {error && (
-            <div className="rounded-lg border border-dbe-red/20 bg-dbe-red/10 px-3 py-2.5 text-sm text-dbe-red">
+            <div className="rounded-[var(--r-md)] border border-dbe-red/20 bg-dbe-red/10 px-3 py-2.5 text-sm text-dbe-red">
               {error}
             </div>
           )}
         </form>
 
-        <div className="flex justify-end gap-3 border-t border-dbe-border p-4">
+        <div className="flex flex-col justify-end gap-3 border-t border-dbe-border p-4 sm:flex-row">
           <Button variant="ghost" onClick={onClose}>Cancelar</Button>
           <Button
             type="button"
