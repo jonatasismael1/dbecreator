@@ -260,21 +260,24 @@ export function ScriptsPage() {
 
       {/* Status Filter Pills */}
       {tab === 'active' && (
-        <div className="mb-5 flex min-w-0 items-center gap-2 overflow-x-auto pb-1">
-          <Filter className="h-4 w-4 text-dbe-muted shrink-0" />
+        <div className="mb-6 flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 mr-2 text-text-subtle">
+            <Filter className="h-4 w-4" />
+            <span className="text-xs font-medium uppercase tracking-wider">Filtrar:</span>
+          </div>
           {FILTER_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setFilterStatus(opt.value)}
               className={cn(
-                'flex min-h-[var(--touch-target-min)] items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-all',
+                'inline-flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all border',
                 filterStatus === opt.value
-                  ? 'bg-dbe-blue/10 text-dbe-blue border border-dbe-blue/20'
-                  : 'text-dbe-muted hover:text-dbe-text border border-transparent hover:bg-white/5'
+                  ? 'bg-primary/10 text-primary border-primary/20 shadow-sm'
+                  : 'bg-surface text-text-muted border-border hover:border-border-strong hover:text-text'
               )}
             >
               {opt.label}
-              <Badge variant={filterStatus === opt.value ? 'blue' : 'default'} className="text-[10px] px-1.5 py-0">
+              <Badge variant={filterStatus === opt.value ? 'primary' : 'default'} className="text-[10px] px-1.5 py-0 min-w-[1.5rem] justify-center">
                 {statusCounts[opt.value]}
               </Badge>
             </button>
@@ -311,12 +314,19 @@ export function ScriptsPage() {
       ) : (
         <div className="mt-2">
           <div className="flex flex-col gap-8 lg:flex-row lg:gap-4 lg:overflow-x-auto lg:pb-3">
-          {columns.map((column) => (
+          {columns
+            .filter((column) => {
+              // If filtering by specific status, only show that column
+              if (filterStatus !== 'all') return column.status === filterStatus
+              // Otherwise show all
+              return true
+            })
+            .map((column) => (
             <section key={column.status} className="w-full lg:w-[310px] lg:shrink-0">
-              <div className="mb-3 flex items-center justify-between">
+              <div className="mb-3 flex items-center justify-between px-1">
                 <div>
-                  <h2 className="text-sm font-semibold text-text">{column.title}</h2>
-                  <p className="text-xs text-text-muted">{column.description}</p>
+                  <h2 className="text-sm font-semibold text-text uppercase tracking-wide">{column.title}</h2>
+                  <p className="text-[11px] text-text-muted">{column.description}</p>
                 </div>
                 <Badge variant={column.status === 'recorded' || column.status === 'approved' ? 'success' : column.status === 'ready' || column.status === 'in_approval' ? 'primary' : 'default'}>
                   {grouped[column.status].length}
@@ -330,10 +340,10 @@ export function ScriptsPage() {
                 }}
                 onDragLeave={() => setDragOverStatus(null)}
                 onDrop={(event) => handleDrop(event, column.status)}
-                className={[
-                  'min-h-[100px] space-y-3 rounded-xl border bg-surface-muted/40 p-2.5 transition-all sm:p-3 lg:min-h-[440px]',
-                  dragOverStatus === column.status ? 'border-primary bg-primary-soft' : 'border-border',
-                ].join(' ')}
+                className={cn(
+                  'min-h-[120px] space-y-3 rounded-2xl border bg-surface2/50 p-3 transition-all lg:min-h-[500px]',
+                  dragOverStatus === column.status ? 'border-primary ring-2 ring-primary/20 bg-primary/5' : 'border-border'
+                )}
               >
                 <AnimatePresence mode="popLayout">
                   {grouped[column.status].map((script) => (
@@ -355,7 +365,7 @@ export function ScriptsPage() {
                   ))}
                 </AnimatePresence>
                 {grouped[column.status].length === 0 && (
-                  <div className="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-border text-xs text-text-muted">
+                  <div className="flex h-32 items-center justify-center rounded-xl border border-dashed border-border text-xs text-text-muted bg-surface/30">
                     <span>Sem roteiros</span>
                   </div>
                 )}

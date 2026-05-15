@@ -36,6 +36,7 @@ export function CalendarPage() {
   const [platform, setPlatform] = useState<CalendarPlatform | 'all'>('all')
   const [dragOverDay, setDragOverDay] = useState<string | null>(null)
   const [mobileView, setMobileView] = useState<MobileViewType>('week')
+  const [selectedScriptId, setSelectedScriptId] = useState<string | null>(null)
 
   const filteredItems = platform === 'all' ? items : items.filter((item) => item.platform === platform)
   const scheduledScriptIds = new Set(items.map((item) => item.script_id).filter(Boolean))
@@ -59,6 +60,7 @@ export function CalendarPage() {
       publish_date: atNoon(date).toISOString(),
       platform: platform === 'all' ? 'reels' : platform,
     })
+    setSelectedScriptId(null)
   }
 
   const moveItem = async (itemId: string, date: Date) => {
@@ -77,6 +79,12 @@ export function CalendarPage() {
     const itemId = event.dataTransfer.getData('application/dbe-calendar-item')
     if (scriptId) await scheduleScript(scriptId, date)
     if (itemId) await moveItem(itemId, date)
+  }
+
+  const handleDayClick = async (date: Date) => {
+    if (selectedScriptId) {
+      await scheduleScript(selectedScriptId, date)
+    }
   }
 
   if (itemsLoading || scriptsLoading) return <LoadingState />
@@ -120,22 +128,22 @@ export function CalendarPage() {
       </PageHeader>
 
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-lg font-semibold capitalize text-dbe-text">
+        <h2 className="text-lg font-semibold capitalize text-text">
           {displayDate}
         </h2>
         <div className="flex flex-wrap items-center gap-2">
           {/* Mobile View Toggle */}
-          <div className="md:hidden flex items-center gap-1 rounded-[var(--r-md)] border border-dbe-border bg-dbe-navy p-1 mr-2">
+          <div className="md:hidden flex items-center gap-1 rounded-[var(--r-md)] border border-border bg-surface2 p-1 mr-2">
             <button
               onClick={() => setMobileView('week')}
-              className={cn('touch-target flex items-center gap-1.5 rounded-[var(--r-sm)] px-2.5 py-1 text-xs font-medium transition-colors', mobileView === 'week' ? 'bg-dbe-blue/10 text-dbe-blue' : 'text-dbe-muted hover:text-dbe-text')}
+              className={cn('touch-target flex items-center gap-1.5 rounded-[var(--r-sm)] px-2.5 py-1 text-xs font-medium transition-colors', mobileView === 'week' ? 'bg-primary/10 text-primary' : 'text-text-muted hover:text-text')}
             >
               <CalendarRange className="h-3.5 w-3.5" />
               Semana
             </button>
             <button
               onClick={() => setMobileView('month')}
-              className={cn('touch-target flex items-center gap-1.5 rounded-[var(--r-sm)] px-2.5 py-1 text-xs font-medium transition-colors', mobileView === 'month' ? 'bg-dbe-blue/10 text-dbe-blue' : 'text-dbe-muted hover:text-dbe-text')}
+              className={cn('touch-target flex items-center gap-1.5 rounded-[var(--r-sm)] px-2.5 py-1 text-xs font-medium transition-colors', mobileView === 'month' ? 'bg-primary/10 text-primary' : 'text-text-muted hover:text-text')}
             >
               <CalendarIcon className="h-3.5 w-3.5" />
               Mês
@@ -149,7 +157,7 @@ export function CalendarPage() {
                 onClick={() => setPlatform(option.value)}
                 className={cn(
                   'whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
-                  platform === option.value ? 'border-dbe-blue/30 bg-dbe-blue/10 text-dbe-blue' : 'border-dbe-border text-dbe-muted hover:text-dbe-text',
+                  platform === option.value ? 'border-primary/30 bg-primary/10 text-primary' : 'border-border text-text-muted hover:text-text',
                 )}
               >
                 {option.label}
@@ -159,7 +167,7 @@ export function CalendarPage() {
         </div>
       </div>
 
-      <div className="grid flex-1 grid-cols-1 gap-5 xl:grid-cols-[320px_1fr]">
+      <div className="grid flex-1 grid-cols-1 gap-5 lg:grid-cols-[280px_1fr]">
         <div className="space-y-4 md:hidden">
           {mobileView === 'week' ? (
             <div className="flex gap-3 overflow-x-auto pb-4 snap-x">
@@ -169,51 +177,52 @@ export function CalendarPage() {
                 return (
                   <div
                     key={key}
+                    onClick={() => handleDayClick(day)}
                     onDragOver={(event) => { event.preventDefault(); setDragOverDay(key) }}
                     onDragLeave={() => setDragOverDay(null)}
                     onDrop={(event) => handleDrop(event, day)}
                     className={cn(
-                      'min-w-[280px] snap-center rounded-[var(--r-lg)] border bg-dbe-surface p-3 transition-all',
-                      dragOverDay === key ? 'border-dbe-blue bg-dbe-blue/5' : 'border-dbe-border',
-                      isToday(day) && 'border-dbe-green/30 bg-dbe-green/5'
+                      'min-w-[280px] snap-center rounded-2xl border bg-surface p-4 transition-all shadow-sm',
+                      dragOverDay === key ? 'border-primary bg-primary/5' : 'border-border',
+                      selectedScriptId ? 'ring-1 ring-primary/20 bg-primary/5' : '',
+                      isToday(day) && 'border-success/30 bg-success/5'
                     )}
                   >
-                    <div className="mb-3 flex items-center justify-between border-b border-dbe-border pb-2">
+                    <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
                       <div className="flex items-baseline gap-2">
-                        <span className={cn("text-lg font-bold", isToday(day) ? "text-dbe-green" : "text-dbe-text")}>{day.getDate()}</span>
-                        <span className="text-xs font-medium uppercase text-dbe-muted">
+                        <span className={cn("text-xl font-bold", isToday(day) ? "text-success" : "text-text")}>{day.getDate()}</span>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
                           {day.toLocaleDateString('pt-BR', { weekday: 'short' })}
                         </span>
                       </div>
-                      {isToday(day) ? <Badge variant="success">Hoje</Badge> : <span className="text-xs text-dbe-muted">{dayItems.length || 'Livre'}</span>}
+                      {isToday(day) ? <Badge variant="success">Hoje</Badge> : <span className="text-[10px] font-bold text-text-muted uppercase">{dayItems.length || 'Livre'}</span>}
                     </div>
 
-                    <div className="space-y-2 min-h-[100px]">
+                    <div className="space-y-3 min-h-[120px]">
                       {dayItems.length > 0 ? dayItems.map((item) => (
                         <article
                           key={item.id}
-                          draggable
-                          onDragStart={(event) => {
-                            event.dataTransfer.effectAllowed = 'move'
-                            event.dataTransfer.setData('application/dbe-calendar-item', item.id)
-                          }}
-                          className="group rounded-[var(--r-md)] border border-dbe-border/70 bg-dbe-dark/70 p-3"
+                          className="group rounded-xl border border-border bg-surface2 p-3 shadow-sm"
                         >
                           <div className="flex items-start justify-between gap-3">
-                            <p className="min-w-0 break-words text-sm font-semibold leading-snug text-dbe-text">
+                            <p className="min-w-0 break-words text-sm font-semibold leading-tight text-text">
                               {item.scripts?.title ?? 'Roteiro sem título'}
                             </p>
-                            <button onClick={() => deleteItem.mutateAsync(item.id)} className="touch-target shrink-0 rounded-[var(--r-sm)] text-dbe-muted transition-colors hover:bg-dbe-red/10 hover:text-dbe-red">
+                            <button onClick={(e) => { e.stopPropagation(); deleteItem.mutateAsync(item.id) }} className="touch-target shrink-0 rounded-lg text-text-muted transition-colors hover:text-danger">
                               <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
-                          <Badge className="mt-2" variant={item.platform === 'reels' ? 'ai' : item.platform === 'tiktok' ? 'primary' : 'success'}>
-                            {item.platform}
-                          </Badge>
+                          <div className="mt-2 flex items-center justify-between">
+                            <Badge variant={item.platform === 'reels' ? 'ai' : item.platform === 'tiktok' ? 'primary' : 'success'}>
+                              {item.platform}
+                            </Badge>
+                          </div>
                         </article>
                       )) : (
-                        <div className="flex h-full min-h-[100px] items-center justify-center rounded-lg border border-dashed border-dbe-border/50 text-xs text-dbe-muted">
-                          Arraste roteiros aqui
+                        <div className="flex h-full min-h-[120px] flex-col items-center justify-center rounded-xl border border-dashed border-border/60 text-center">
+                          <p className="text-xs text-text-muted">
+                            {selectedScriptId ? 'Toque para agendar aqui' : 'Arraste roteiros aqui'}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -222,46 +231,50 @@ export function CalendarPage() {
               })}
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {mobileDays.map((day) => {
                 const key = toDateKey(day)
                 const dayItems = itemsByDate[key] ?? []
                 return (
                   <div
                     key={key}
+                    onClick={() => handleDayClick(day)}
                     onDragOver={(event) => { event.preventDefault(); setDragOverDay(key) }}
                     onDragLeave={() => setDragOverDay(null)}
                     onDrop={(event) => handleDrop(event, day)}
                     className={cn(
-                      'rounded-[var(--r-lg)] border bg-dbe-surface p-3 transition-all',
-                      dragOverDay === key ? 'border-dbe-blue bg-dbe-blue/5' : 'border-dbe-border',
+                      'rounded-2xl border bg-surface p-4 transition-all shadow-sm',
+                      dragOverDay === key ? 'border-primary bg-primary/5' : 'border-border',
+                      selectedScriptId ? 'ring-1 ring-primary/20 bg-primary/5' : '',
                     )}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-bold text-dbe-text">{day.getDate()}</span>
-                        <span className="text-xs font-medium uppercase text-dbe-muted">
+                        <span className="text-lg font-bold text-text">{day.getDate()}</span>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
                           {day.toLocaleDateString('pt-BR', { weekday: 'short' })}
                         </span>
                       </div>
-                      {isToday(day) ? <Badge variant="success">Hoje</Badge> : <span className="text-xs text-dbe-muted">{dayItems.length || 'Livre'}</span>}
+                      {isToday(day) ? <Badge variant="success">Hoje</Badge> : <span className="text-[10px] font-bold text-text-muted uppercase">{dayItems.length || 'Livre'}</span>}
                     </div>
 
                     {dayItems.length > 0 && (
-                      <div className="mt-3 space-y-2">
+                      <div className="mt-4 space-y-3">
                         {dayItems.map((item) => (
-                          <article key={item.id} className="rounded-[var(--r-md)] border border-dbe-border/70 bg-dbe-dark/70 p-3">
+                          <article key={item.id} className="rounded-xl border border-border bg-surface2 p-3 shadow-sm">
                             <div className="flex items-start justify-between gap-3">
-                              <p className="min-w-0 break-words text-sm font-semibold leading-snug text-dbe-text">
+                              <p className="min-w-0 break-words text-sm font-semibold leading-tight text-text">
                                 {item.scripts?.title ?? 'Roteiro sem título'}
                               </p>
-                              <button onClick={() => deleteItem.mutateAsync(item.id)} className="touch-target shrink-0 rounded-[var(--r-sm)] text-dbe-muted transition-colors hover:bg-dbe-red/10 hover:text-dbe-red">
+                              <button onClick={(e) => { e.stopPropagation(); deleteItem.mutateAsync(item.id) }} className="touch-target shrink-0 rounded-lg text-text-muted transition-colors hover:text-danger">
                                 <Trash2 className="h-4 w-4" />
                               </button>
                             </div>
-                            <Badge className="mt-2" variant={item.platform === 'reels' ? 'ai' : item.platform === 'tiktok' ? 'primary' : 'success'}>
-                              {item.platform}
-                            </Badge>
+                            <div className="mt-2">
+                              <Badge variant={item.platform === 'reels' ? 'ai' : item.platform === 'tiktok' ? 'primary' : 'success'}>
+                                {item.platform}
+                              </Badge>
+                            </div>
                           </article>
                         ))}
                       </div>
@@ -273,10 +286,10 @@ export function CalendarPage() {
           )}
         </div>
 
-        <div className="hidden overflow-hidden rounded-[var(--r-lg)] border border-dbe-border bg-dbe-surface md:block">
-          <div className="grid grid-cols-7 border-b border-dbe-border bg-dbe-dark/50">
+        <div className="hidden overflow-hidden rounded-[var(--r-lg)] border border-border bg-surface md:block">
+          <div className="grid grid-cols-7 border-b border-border bg-surface2/50">
             {weekDays.map((day) => (
-              <div key={day} className="px-2 py-3 text-center text-xs font-semibold text-dbe-muted">{day}</div>
+              <div key={day} className="px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-text-muted">{day}</div>
             ))}
           </div>
           <div className="grid grid-cols-7">
@@ -287,6 +300,7 @@ export function CalendarPage() {
               return (
                 <div
                   key={key}
+                  onClick={() => handleDayClick(day)}
                   onDragOver={(event) => {
                     event.preventDefault()
                     setDragOverDay(key)
@@ -294,16 +308,17 @@ export function CalendarPage() {
                   onDragLeave={() => setDragOverDay(null)}
                   onDrop={(event) => handleDrop(event, day)}
                   className={cn(
-                    'min-h-44 min-w-0 border-b border-r border-dbe-border p-2 transition-all',
-                    outside ? 'bg-dbe-dark/30 opacity-55' : 'bg-dbe-surface',
-                    dragOverDay === key ? 'bg-dbe-blue/5 ring-1 ring-inset ring-dbe-blue' : '',
+                    'min-h-[140px] min-w-0 border-b border-r border-border p-1.5 transition-all cursor-pointer hover:bg-surface2/30',
+                    outside ? 'bg-surface2/20 opacity-40' : 'bg-surface',
+                    dragOverDay === key ? 'bg-primary/5 ring-1 ring-inset ring-primary' : '',
+                    selectedScriptId && !outside ? 'ring-1 ring-inset ring-primary/30 bg-primary/5' : ''
                   )}
                 >
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-dbe-muted">{day.getDate()}</span>
-                    {isToday(day) && <Badge variant="success">Hoje</Badge>}
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className={cn("text-[10px] font-bold", isToday(day) ? "text-primary" : "text-text-subtle")}>{day.getDate()}</span>
+                    {isToday(day) && <Badge variant="success" className="px-1 py-0 text-[9px] h-4">Hoje</Badge>}
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {dayItems.map((item) => (
                       <article
                         key={item.id}
@@ -312,17 +327,17 @@ export function CalendarPage() {
                           event.dataTransfer.effectAllowed = 'move'
                           event.dataTransfer.setData('application/dbe-calendar-item', item.id)
                         }}
-                        className="group cursor-grab rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark/80 p-2 active:cursor-grabbing hover:border-dbe-blue/40"
+                        className="group cursor-grab rounded-md border border-border bg-surface2 p-1.5 active:cursor-grabbing hover:border-primary/40 shadow-sm"
                       >
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="line-clamp-2 text-xs font-semibold leading-snug text-dbe-text">{item.scripts?.title ?? 'Roteiro sem título'}</p>
-                          <button onClick={() => deleteItem.mutateAsync(item.id)} className="touch-target rounded-[var(--r-sm)] text-dbe-muted opacity-0 transition-all hover:text-dbe-red group-hover:opacity-100">
-                            <Trash2 className="h-3.5 w-3.5" />
+                        <div className="flex items-start justify-between gap-1">
+                          <p className="line-clamp-2 text-[10px] font-medium leading-tight text-text">{item.scripts?.title ?? 'Roteiro sem título'}</p>
+                          <button onClick={(e) => { e.stopPropagation(); deleteItem.mutateAsync(item.id) }} className="rounded-sm text-text-muted opacity-0 transition-all hover:text-danger group-hover:opacity-100">
+                            <Trash2 className="h-3 w-3" />
                           </button>
                         </div>
-                        <Badge className="mt-2" variant={item.platform === 'reels' ? 'ai' : item.platform === 'tiktok' ? 'primary' : 'success'}>
-                          {item.platform}
-                        </Badge>
+                        <div className="mt-1 flex items-center justify-between">
+                           <span className="text-[8px] font-bold uppercase text-primary/70">{item.platform}</span>
+                        </div>
                       </article>
                     ))}
                   </div>
@@ -332,36 +347,47 @@ export function CalendarPage() {
           </div>
         </div>
 
-        {/* Unscheduled scripts panel - on mobile, appears below the calendar */}
-        <Card className="h-fit">
-          <div className="mb-4 flex items-center justify-between">
+        {/* Unscheduled scripts panel */}
+        <Card className="h-full flex flex-col p-4 bg-surface2/30 border-border">
+          <div className="mb-4 flex items-center justify-between shrink-0">
             <div>
-              <h3 className="text-sm font-semibold text-dbe-text">Roteiros sem data</h3>
-              <p className="text-xs text-dbe-muted">Arraste para o calendário.</p>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-text">Sem data</h3>
+              <p className="text-[10px] text-text-muted">Selecione ou arraste.</p>
             </div>
-            <Badge variant="blue">{unscheduledScripts.length}</Badge>
+            <Badge variant="primary" className="h-5 px-1.5 text-[10px]">{unscheduledScripts.length}</Badge>
           </div>
 
-          {unscheduledScripts.length === 0 ? (
-            <EmptyState icon={Clock} title="Tudo agendado" description="Todos os roteiros já possuem uma data no calendário." />
-          ) : (
-            <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
-              {unscheduledScripts.map((script) => (
-                <div
-                  key={script.id}
-                  draggable
-                  onDragStart={(event) => {
-                    event.dataTransfer.effectAllowed = 'move'
-                    event.dataTransfer.setData('application/dbe-script', script.id)
-                  }}
-                  className="cursor-grab rounded-[var(--r-md)] border border-dbe-border bg-dbe-dark/60 p-3 active:cursor-grabbing hover:border-dbe-blue/40 transition-colors"
-                >
-                  <p className="line-clamp-2 text-sm font-semibold text-dbe-text">{script.title}</p>
-                  <p className="mt-1 text-xs text-dbe-muted">{script.status === 'ready' ? 'Pronto' : script.status === 'approved' ? 'Aprovado' : 'Rascunho'}</p>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="flex-1 overflow-hidden">
+            {unscheduledScripts.length === 0 ? (
+              <EmptyState icon={Clock} title="Tudo agendado" description="Parabéns! Sua estratégia está no ar." />
+            ) : (
+              <div className="flex h-full flex-col gap-2 overflow-y-auto pr-1 custom-scrollbar">
+                {unscheduledScripts.map((script) => (
+                  <div
+                    key={script.id}
+                    draggable
+                    onClick={() => setSelectedScriptId(selectedScriptId === script.id ? null : script.id)}
+                    onDragStart={(event) => {
+                      event.dataTransfer.effectAllowed = 'move'
+                      event.dataTransfer.setData('application/dbe-script', script.id)
+                    }}
+                    className={cn(
+                      "cursor-grab rounded-xl border p-3 transition-all active:cursor-grabbing shadow-sm",
+                      selectedScriptId === script.id 
+                        ? "border-primary bg-primary/10 ring-2 ring-primary/20" 
+                        : "border-border bg-surface hover:border-primary/40"
+                    )}
+                  >
+                    <p className="line-clamp-2 text-xs font-semibold text-text">{script.title}</p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-[10px] text-text-muted">{script.status === 'ready' ? 'Pronto' : script.status === 'approved' ? 'Aprovado' : 'Rascunho'}</span>
+                      {selectedScriptId === script.id && <span className="text-[9px] font-bold text-primary animate-pulse uppercase">Selecionado</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </Card>
       </div>
     </div>
