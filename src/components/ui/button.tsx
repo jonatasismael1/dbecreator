@@ -24,27 +24,27 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary text-white shadow-sm hover:brightness-110',
+    'bg-gradient-to-br from-primary to-primary-hover text-white shadow-md shadow-primary/25 hover:brightness-110 active:scale-[0.98]',
   secondary:
-    'bg-surface2 text-text hover:bg-surface-elevated border border-border',
+    'bg-surface2 text-text hover:bg-surface-elevated border border-border active:scale-[0.98]',
   outline:
-    'bg-transparent border border-border text-text hover:bg-surface2',
+    'bg-transparent border border-border text-text hover:bg-surface2 active:scale-[0.98]',
   ghost:
-    'bg-transparent text-text-muted hover:text-text hover:bg-surface2',
+    'bg-transparent text-text-muted hover:text-text hover:bg-surface2 active:scale-[0.98]',
   soft:
-    'bg-primary/10 text-primary-soft-foreground hover:bg-primary/20 border border-primary/10',
+    'bg-primary/10 text-primary-soft-foreground hover:bg-primary/20 border border-primary/10 active:scale-[0.98]',
   success:
-    'bg-success text-white hover:brightness-110 shadow-sm',
+    'bg-gradient-to-br from-success to-success-dark text-white hover:brightness-110 shadow-md shadow-success/25 active:scale-[0.98]',
   warning:
-    'bg-warning text-white hover:brightness-110 shadow-sm',
+    'bg-gradient-to-br from-warning to-warning/90 text-white hover:brightness-110 shadow-md shadow-warning/25 active:scale-[0.98]',
   danger:
-    'bg-danger text-white hover:brightness-110 shadow-sm',
+    'bg-gradient-to-br from-danger to-danger/90 text-white hover:brightness-110 shadow-md shadow-danger/25 active:scale-[0.98]',
   ai:
-    'bg-gradient-to-br from-primary to-success text-white hover:brightness-110 shadow-sm',
+    'bg-gradient-to-br from-primary to-success text-white hover:brightness-110 shadow-md shadow-primary/25 active:scale-[0.98]',
   deby:
-    'bg-gradient-to-br from-primary to-success text-white hover:brightness-110 shadow-sm',
+    'bg-gradient-to-br from-primary to-success text-white hover:brightness-110 shadow-md shadow-primary/25 active:scale-[0.98]',
   icon:
-    'bg-transparent text-text-muted hover:text-text hover:bg-surface2',
+    'bg-transparent text-text-muted hover:text-text hover:bg-surface2 active:scale-[0.98]',
 }
 
 const sizes: Record<ButtonSize, string> = {

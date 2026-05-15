@@ -10,7 +10,7 @@ export function Sidebar() {
   )
 }
 
-function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
+export function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}

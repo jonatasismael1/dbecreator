@@ -71,6 +71,6 @@ export const NAV_SECTIONS: NavSection[] = [
 export const BOTTOM_NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard },
   { label: 'Roteiros', path: '/scripts', icon: FileText },
-  { label: 'CalendÃ¡rio', path: '/calendar', icon: CalendarDays },
+  { label: 'Calendário', path: '/calendar', icon: CalendarDays },
   { label: 'Deby AI', path: '/deby', icon: Sparkles, badge: 'AI' },
 ]
