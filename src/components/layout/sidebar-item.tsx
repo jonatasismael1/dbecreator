@@ -18,22 +18,32 @@ export function SidebarItem({ item, collapsed = false, onClick }: SidebarItemPro
       onClick={onClick}
       className={({ isActive }) =>
         cn(
-          'group flex items-center gap-3 rounded-lg border px-3 py-2 text-sm font-semibold transition-all duration-200',
+          'group flex items-center gap-2.5 rounded-[var(--r-md)] px-2.5 py-2 text-sm font-medium transition-all duration-150',
           isActive
-            ? 'border-primary/20 bg-surface2 text-text shadow-sm [&>svg]:text-primary'
-            : 'border-transparent text-text-muted hover:bg-surface2 hover:text-text',
+            ? 'bg-primary/12 text-text [&>svg]:text-primary'
+            : 'text-text-muted hover:bg-surface2 hover:text-text',
           collapsed && 'justify-center px-2'
         )
       }
     >
-      <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={2.5} />
-      {!collapsed && (
+      {({ isActive }) => (
         <>
-          <span className="truncate">{item.label}</span>
-          {item.badge && (
-            <Badge variant="ai" className="ml-auto text-[9px] font-bold px-1 py-0 uppercase tracking-tighter">
-              {item.badge}
-            </Badge>
+          <Icon
+            className={cn(
+              'h-[17px] w-[17px] shrink-0 transition-colors duration-150',
+              isActive ? 'text-primary' : 'text-text-muted group-hover:text-text'
+            )}
+            strokeWidth={isActive ? 2.5 : 2}
+          />
+          {!collapsed && (
+            <>
+              <span className="truncate">{item.label}</span>
+              {item.badge && (
+                <Badge variant="ai" className="ml-auto text-[9px] font-bold px-1.5 py-0 uppercase tracking-tight">
+                  {item.badge}
+                </Badge>
+              )}
+            </>
           )}
         </>
       )}

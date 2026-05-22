@@ -63,9 +63,9 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', '"Apple Color Emoji"', 'Arial', 'sans-serif', '"Segoe UI Emoji"', '"Segoe UI Symbol"'],
-        serif: ['Lyon-Text', 'Georgia', 'YuMincho', '"Yu Mincho"', '"Hiragino Mincho ProN"', '"Hiragino Mincho Pro"', '"Songti TC"', '"Songti SC"', 'SimSun', '"Nanum Myeongjo"', 'NanumMyeongjo', 'Batang', 'serif'],
-        display: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', '"Apple Color Emoji"', 'Arial', 'sans-serif', '"Segoe UI Emoji"', '"Segoe UI Symbol"'],
+        sans: ['"DM Sans"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif'],
+        serif: ['"Fraunces"', 'Georgia', 'serif'],
+        display: ['"Fraunces"', 'Georgia', 'serif'],
       },
     },
   },

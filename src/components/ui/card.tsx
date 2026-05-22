@@ -11,16 +11,15 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 const variants: Record<CardVariant, string> = {
   default: 'glass-panel',
-  elevated: 'bg-surface-elevated/90 border border-border-strong/70 shadow-2xl shadow-black/20',
-  subtle: 'bg-surface-muted/70 border border-border/80',
-  interactive: 'glass-panel transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-2xl hover:shadow-primary/10 cursor-pointer',
+  elevated: 'bg-surface border border-border-strong shadow-[var(--shadow-md)]',
+  subtle: 'bg-surface2/60 border border-border/60',
+  interactive:
+    'glass-panel transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)] hover:shadow-primary/8 cursor-pointer',
   glass: 'glass-panel',
 }
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant, hover, glass, children, ...props }, ref) => {
-
-    // Map legacy props for compatibility
     let activeVariant: CardVariant = variant || 'default'
     if (glass) activeVariant = 'glass'
     else if (hover) activeVariant = 'interactive'
@@ -53,7 +52,7 @@ export function CardHeader({ className, children, ...props }: HTMLAttributes<HTM
 
 export function CardTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('text-lg font-semibold tracking-tight text-text', className)} {...props}>
+    <h3 className={cn('text-[15px] font-semibold tracking-tight text-text', className)} {...props}>
       {children}
     </h3>
   )

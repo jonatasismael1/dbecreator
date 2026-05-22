@@ -4,28 +4,28 @@
 
 @layer base {
   :root {
-    /* Dark Mode (Default) - Solid & Premium */
-    --bg: #0B0D10;
-    --bg2: #14171C;
-    --surface: #1D2127;
-    --surface2: #242931;
+    /* Dark Mode (Default) */
+    --bg: #0A0C0F;
+    --bg2: #12151A;
+    --surface: #191D24;
+    --surface2: #20252E;
 
-    --blue: #007EB7;
-    --blue-dark: #006191;
-    --green: #00BF55;
-    --green-dark: #009D41;
-    --green-light: #2EDC75;
+    --blue: #0E8FCC;
+    --blue-dark: #0771A5;
+    --green: #00C85A;
+    --green-dark: #00A349;
+    --green-light: #34E880;
 
-    --text: #F5F7FA;
-    --text2: #9CA3AF;
-    --text3: #6B7280;
+    --text: #F0F4F8;
+    --text2: #8A94A6;
+    --text3: #5C6680;
 
-    --success: #00BF55;
-    --success-dark: #009D41;
-    --warning: #F59E0B;
-    --warning-dark: #D97706;
-    --danger: #EF4444;
-    --danger-dark: #DC2626;
+    --success: #00C85A;
+    --success-dark: #00A349;
+    --warning: #F5A623;
+    --warning-dark: #D4891C;
+    --danger: #F04040;
+    --danger-dark: #CC2A2A;
 
     --primary-foreground: #FFFFFF;
     --success-foreground: #FFFFFF;
@@ -33,7 +33,7 @@
     --danger-foreground: #FFFFFF;
     --ai-foreground: #FFFFFF;
 
-    --primary-soft-foreground: #60A5FA;
+    --primary-soft-foreground: #5BB8EA;
     --success-soft-foreground: #34D399;
     --warning-soft-foreground: #FBBF24;
     --danger-soft-foreground: #F87171;
@@ -41,80 +41,93 @@
 
     --r-sm: 6px;
     --r-md: 10px;
-    --r-lg: 12px;
-    --r-xl: 16px;
+    --r-lg: 14px;
+    --r-xl: 18px;
 
-    --border: rgba(255, 255, 255, 0.1);
-    --border-strong: rgba(255, 255, 255, 0.2);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
 
     --border-rgb: 255 255 255;
-    --border-opacity: 0.1;
-    --border-strong-opacity: 0.2;
+    --border-opacity: 0.08;
+    --border-strong-opacity: 0.16;
 
     --touch-target-min: 44px;
     --mobile-breakpoint: 768px;
     --input-font-ios: 16px;
 
-    --bg-rgb: 11 13 16;
-    --bg2-rgb: 20 23 28;
-    --surface-rgb: 29 33 39;
-    --surface2-rgb: 36 41 49;
-    --blue-rgb: 0 126 183;
-    --blue-dark-rgb: 0 97 145;
-    --green-rgb: 0 191 85;
-    --green-dark-rgb: 0 157 65;
-    --green-light-rgb: 46 220 117;
-    --text-rgb: 245 247 250;
-    --text2-rgb: 156 163 175;
-    --text3-rgb: 107 114 128;
-    --warning-rgb: 245 158 11;
-    --danger-rgb: 239 68 68;
+    --bg-rgb: 10 12 15;
+    --bg2-rgb: 18 21 26;
+    --surface-rgb: 25 29 36;
+    --surface2-rgb: 32 37 46;
+    --blue-rgb: 14 143 204;
+    --blue-dark-rgb: 7 113 165;
+    --green-rgb: 0 200 90;
+    --green-dark-rgb: 0 163 73;
+    --green-light-rgb: 52 232 128;
+    --text-rgb: 240 244 248;
+    --text2-rgb: 138 148 166;
+    --text3-rgb: 92 102 128;
+    --warning-rgb: 245 166 35;
+    --danger-rgb: 240 64 64;
 
-    --input: #14171C;
-    --input-focus: #007EB7;
+    --input: #12151A;
+    --input-focus: #0E8FCC;
+
+    /* Shadow system */
+    --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.25), 0 1px 2px rgb(0 0 0 / 0.2);
+    --shadow-md: 0 4px 16px rgb(0 0 0 / 0.3), 0 2px 6px rgb(0 0 0 / 0.2);
+    --shadow-lg: 0 12px 40px rgb(0 0 0 / 0.4), 0 4px 12px rgb(0 0 0 / 0.25);
+    --shadow-glow-blue: 0 0 24px rgb(var(--blue-rgb) / 0.2);
+    --shadow-glow-green: 0 0 24px rgb(var(--green-rgb) / 0.18);
   }
 
   .light {
-    /* Light Mode - Solid Notion Style */
-    --bg: #FFFFFF;
-    --bg2: #F7F7F7;
+    /* Light Mode - Clean & Airy */
+    --bg: #F8F9FB;
+    --bg2: #F0F2F5;
     --surface: #FFFFFF;
-    --surface2: #F1F1F1;
+    --surface2: #F3F5F8;
 
-    --text: #1A1A1A;
-    --text2: #5F5E5B;
-    --text3: #91918E;
+    --text: #111827;
+    --text2: #4B5563;
+    --text3: #9CA3AF;
 
-    --border: #E9E9E8;
-    --border-strong: #DFDFDE;
-    
-    --border-rgb: 233 233 232;
-    --border-opacity: 1;
-    --border-strong-opacity: 1;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.14);
 
-    --bg-rgb: 255 255 255;
-    --bg2-rgb: 247 247 247;
+    --border-rgb: 0 0 0;
+    --border-opacity: 0.08;
+    --border-strong-opacity: 0.14;
+
+    --bg-rgb: 248 249 251;
+    --bg2-rgb: 240 242 245;
     --surface-rgb: 255 255 255;
-    --surface2-rgb: 241 241 241;
-    
-    --text-rgb: 26 26 26;
-    --text2-rgb: 95 94 91;
-    --text3-rgb: 145 145 142;
-    
+    --surface2-rgb: 243 245 248;
+
+    --text-rgb: 17 24 39;
+    --text2-rgb: 75 85 99;
+    --text3-rgb: 156 163 175;
+
     --primary-foreground: #FFFFFF;
     --success-foreground: #FFFFFF;
     --warning-foreground: #FFFFFF;
     --danger-foreground: #FFFFFF;
     --ai-foreground: #FFFFFF;
 
-    --primary-soft-foreground: #007EB7;
-    --success-soft-foreground: #009D41;
+    --primary-soft-foreground: #0E8FCC;
+    --success-soft-foreground: #00A349;
     --warning-soft-foreground: #B36B00;
-    --danger-soft-foreground: #CC372E;
-    --ai-soft-foreground: #009D41;
+    --danger-soft-foreground: #CC2A2A;
+    --ai-soft-foreground: #00A349;
 
-    --input: #F9F9F9;
-    --input-focus: #007EB7;
+    --input: #FFFFFF;
+    --input-focus: #0E8FCC;
+
+    --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
+    --shadow-md: 0 4px 16px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.05);
+    --shadow-lg: 0 12px 40px rgb(0 0 0 / 0.1), 0 4px 12px rgb(0 0 0 / 0.06);
+    --shadow-glow-blue: 0 0 24px rgb(var(--blue-rgb) / 0.15);
+    --shadow-glow-green: 0 0 24px rgb(var(--green-rgb) / 0.12);
   }
 
   * {
@@ -131,25 +144,27 @@
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     font-size: 15px;
-    line-height: 1.5;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background: var(--bg);
     color: var(--text);
     transition: background-color 0.2s ease, color 0.2s ease;
     min-width: 320px;
+    font-feature-settings: "ss01", "ss02", "cv01";
   }
 
-  /* Soft background ambient glows for dark mode only */
+  /* Dark mode ambient background */
   :root:not(.light) body {
     background:
-      radial-gradient(circle at 12% 8%, rgb(var(--blue-rgb) / 0.12), transparent 28rem),
-      radial-gradient(circle at 82% 0%, rgb(var(--green-rgb) / 0.08), transparent 24rem),
-      linear-gradient(135deg, var(--bg) 0%, var(--bg2) 46%, var(--bg) 100%);
+      radial-gradient(ellipse at 15% 0%, rgb(var(--blue-rgb) / 0.14), transparent 36rem),
+      radial-gradient(ellipse at 85% 0%, rgb(var(--green-rgb) / 0.09), transparent 28rem),
+      var(--bg);
   }
 
+  /* Subtle grid overlay */
   body::before {
     content: '';
     position: fixed;
@@ -157,34 +172,35 @@
     pointer-events: none;
     z-index: -1;
     background:
-      linear-gradient(115deg, rgb(var(--blue-rgb) / 0.1), transparent 28%, rgb(var(--green-rgb) / 0.08) 64%, transparent),
-      repeating-linear-gradient(90deg, rgb(var(--text-rgb) / 0.035) 0 1px, transparent 1px 88px),
-      repeating-linear-gradient(0deg, rgb(var(--text-rgb) / 0.025) 0 1px, transparent 1px 88px);
-    mask-image: linear-gradient(to bottom, black 0%, transparent 82%);
+      repeating-linear-gradient(90deg, rgb(var(--text-rgb) / 0.028) 0 1px, transparent 1px 72px),
+      repeating-linear-gradient(0deg, rgb(var(--text-rgb) / 0.020) 0 1px, transparent 1px 72px);
+    mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
   }
 
   h1 {
-    font-family: 'Lyon-Text', Georgia, YuMincho, "Yu Mincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Songti TC", "Songti SC", SimSun, "Nanum Myeongjo", NanumMyeongjo, Batang, serif;
+    font-family: 'Fraunces', Georgia, serif;
     font-size: 32px;
-    font-weight: 700;
-    letter-spacing: -0.8px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
     line-height: 1.1;
+    font-variation-settings: "SOFT" 50, "WONK" 0;
   }
 
   h2 {
-    font-family: 'Lyon-Text', Georgia, YuMincho, "Yu Mincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Songti TC", "Songti SC", SimSun, "Nanum Myeongjo", NanumMyeongjo, Batang, serif;
+    font-family: 'Fraunces', Georgia, serif;
     font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -0.4px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
     line-height: 1.2;
+    font-variation-settings: "SOFT" 50, "WONK" 0;
   }
 
   h3 {
-    font-family: 'Lyon-Text', Georgia, YuMincho, "Yu Mincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Songti TC", "Songti SC", SimSun, "Nanum Myeongjo", NanumMyeongjo, Batang, serif;
-    font-size: 17px;
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    font-size: 16px;
     font-weight: 600;
-    letter-spacing: -0.2px;
-    line-height: 1.3;
+    letter-spacing: -0.1px;
+    line-height: 1.35;
   }
 
   small {
@@ -208,28 +224,21 @@
     touch-action: manipulation;
   }
 
-  button:active,
-  a:active,
-  [role='button']:active {
-    transform: scale(0.97);
-  }
-
   input,
   textarea,
   select {
-    min-height: var(--touch-target-min);
     font-size: 16px;
   }
 
   ::selection {
-    background: rgb(var(--blue-rgb) / 0.28);
+    background: rgb(var(--blue-rgb) / 0.25);
     color: var(--text);
   }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
 
   ::-webkit-scrollbar-track {
@@ -237,12 +246,12 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgb(var(--text3-rgb) / 0.5);
-    border-radius: 3px;
+    background: rgb(var(--text3-rgb) / 0.4);
+    border-radius: 99px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgb(var(--text2-rgb) / 0.7);
+    background: rgb(var(--text2-rgb) / 0.6);
   }
 
   @keyframes shimmer {
@@ -250,9 +259,37 @@
       transform: translateX(100%);
     }
   }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 }
 
 @layer utilities {
+  /* Glass system */
   .glass {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -261,17 +298,27 @@
   .glass-panel {
     background: var(--surface);
     border: 1px solid var(--border);
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.05);
+    box-shadow: var(--shadow-sm);
   }
 
   .light .glass-panel {
-    box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
   }
 
+  /* Glow effects */
   .glow-ambient-blue {
     background: linear-gradient(135deg, rgb(var(--blue-rgb) / 0.12), transparent 52%, rgb(var(--green-light-rgb) / 0.08));
   }
 
+  .glow-blue {
+    box-shadow: var(--shadow-glow-blue);
+  }
+
+  .glow-green {
+    box-shadow: var(--shadow-glow-green);
+  }
+
+  /* Interaction */
   .tap-feedback {
     transition: transform 160ms ease, opacity 160ms ease, border-color 160ms ease, background-color 160ms ease;
   }
@@ -285,6 +332,20 @@
     min-width: var(--touch-target-min);
   }
 
+  /* Animations */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.4s ease both;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease both;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.25s ease both;
+  }
+
+  /* Modal */
   .modal-panel {
     max-height: calc(100dvh - 32px);
     overflow: hidden;
@@ -305,6 +366,7 @@
     margin: 10px auto 0;
   }
 
+  /* Typography */
   .text-balance {
     text-wrap: balance;
   }
@@ -313,6 +375,15 @@
     overflow-wrap: anywhere;
   }
 
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, var(--blue), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Rich text editor */
   .rich-text-editor .ql-toolbar {
     border: 0;
     border-bottom: 1px solid var(--border);
@@ -322,7 +393,7 @@
   .rich-text-editor .ql-container {
     border: 0;
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
     font-size: 16px;
   }
 
@@ -352,6 +423,7 @@
     stroke: var(--blue);
   }
 
+  /* Script content */
   .script-content p,
   .script-content ul,
   .script-content ol {
@@ -398,5 +470,4 @@
       max-height: calc(100dvh - 160px);
     }
   }
-
 }

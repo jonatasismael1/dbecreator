@@ -136,16 +136,24 @@ export function DashboardPage() {
   return (
     <div>
       {/* Personalized Greeting */}
-      <div className="mb-6 rounded-[var(--r-xl)] border border-border bg-gradient-to-r from-primary/8 via-transparent to-success/6 px-5 py-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-text-muted mb-1">{getGreeting()}</p>
-        <h2 className="text-2xl font-bold text-text tracking-tight mb-3">
-          {displayName} <span className="text-text-muted font-normal">👋</span>
-        </h2>
-        <div className="flex items-start gap-2">
-          <span className="mt-0.5 text-lg leading-none text-success">"</span>
-          <div>
-            <p className="text-sm leading-relaxed text-text italic">{randomQuote.quote}</p>
-            <p className="mt-1 text-[11px] font-semibold text-text-muted">— {randomQuote.author}</p>
+      <div className="relative mb-6 overflow-hidden rounded-[var(--r-xl)] border border-border bg-gradient-to-br from-primary/10 via-surface to-success/8 px-6 py-5">
+        {/* Decorative glows */}
+        <div className="pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-primary/15 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-4 right-16 h-16 w-16 rounded-full bg-success/12 blur-xl" />
+
+        <div className="relative">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted mb-1">
+            {getGreeting()}
+          </p>
+          <h2 className="text-2xl font-bold text-text tracking-tight mb-3">
+            {displayName} 👋
+          </h2>
+          <div className="flex items-start gap-2.5 max-w-xl">
+            <span className="mt-0.5 text-xl leading-none text-primary/60 font-serif select-none">"</span>
+            <div>
+              <p className="text-[13px] leading-relaxed text-text-muted italic">{randomQuote.quote}</p>
+              <p className="mt-1.5 text-[11px] font-semibold text-text-subtle">— {randomQuote.author}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -160,11 +168,11 @@ export function DashboardPage() {
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Ideias" value={ideas.length} icon={Lightbulb} accent="primary" onClick={() => navigate('/ideas')} />
         <StatCard title="Roteiros" value={scripts.length} icon={FileText} accent="primary" onClick={() => navigate('/scripts')} />
-        <StatCard 
-          title="Campanhas" 
-          value={campaigns.length} 
-          icon={Zap} 
-          accent="success" 
+        <StatCard
+          title="Campanhas"
+          value={campaigns.length}
+          icon={Zap}
+          accent="success"
           onClick={() => navigate('/campaigns')}
         />
         <StatCard
@@ -191,16 +199,16 @@ export function DashboardPage() {
                 action={{ label: 'Criar roteiro', onClick: () => navigate('/scripts') }}
               />
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {recentScripts.map((script) => (
                   <button
                     key={script.id}
                     onClick={() => navigate(`/scripts/${script.id}`)}
-                    className="flex w-full min-w-0 items-center justify-between gap-4 rounded-[var(--r-lg)] border border-dbe-border bg-dbe-dark/50 p-4 text-left transition-all hover:border-dbe-blue/40 max-sm:flex-col max-sm:items-start"
+                    className="flex w-full min-w-0 items-center justify-between gap-4 rounded-[var(--r-md)] border border-border bg-surface2/40 px-4 py-3.5 text-left transition-all hover:border-primary/25 hover:bg-surface2 max-sm:flex-col max-sm:items-start"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-dbe-text">{script.title}</p>
-                      <p className="mt-1 line-clamp-1 text-xs text-dbe-muted">{script.campaigns?.title || script.hook}</p>
+                      <p className="truncate text-sm font-semibold text-text">{script.title}</p>
+                      <p className="mt-0.5 line-clamp-1 text-xs text-text-muted">{script.campaigns?.title || script.hook}</p>
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center gap-2 max-sm:w-full">
                       {script.last_analysis_score !== null && <Badge variant="blue">{formatScore(script.last_analysis_score)}</Badge>}
@@ -227,15 +235,15 @@ export function DashboardPage() {
                 action={{ label: 'Adicionar ideia', onClick: () => navigate('/ideas') }}
               />
             ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {ideas.slice(0, 4).map((idea) => (
                   <button
                     key={idea.id}
                     onClick={() => navigate('/ideas')}
-                    className="rounded-[var(--r-lg)] border border-dbe-border bg-dbe-dark/50 p-4 text-left transition-all hover:border-dbe-blue/40"
+                    className="rounded-[var(--r-md)] border border-border bg-surface2/40 px-4 py-3.5 text-left transition-all hover:border-primary/25 hover:bg-surface2"
                   >
-                    <p className="line-clamp-1 text-sm font-semibold text-dbe-text">{idea.title}</p>
-                    <p className="mt-1 line-clamp-2 text-xs text-dbe-muted">{idea.description ?? 'Sem descrição'}</p>
+                    <p className="line-clamp-1 text-sm font-semibold text-text">{idea.title}</p>
+                    <p className="mt-0.5 line-clamp-2 text-xs text-text-muted">{idea.description ?? 'Sem descrição'}</p>
                   </button>
                 ))}
               </div>
@@ -250,21 +258,21 @@ export function DashboardPage() {
 
           <Card>
             <CardTitle className="mb-4">Ações rápidas</CardTitle>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {[
-                { icon: Lightbulb, label: 'Nova ideia', color: 'text-dbe-blue', path: '/ideas' },
-                { icon: FileText, label: 'Novo roteiro', color: 'text-dbe-blue', path: '/scripts' },
-                { icon: Sparkles, label: 'Análise Deby AI', color: 'text-dbe-green', path: '/deby' },
-                { icon: CalendarDays, label: 'Calendário', color: 'text-dbe-green', path: '/calendar' },
+                { icon: Lightbulb, label: 'Nova ideia', iconClass: 'text-primary', path: '/ideas' },
+                { icon: FileText, label: 'Novo roteiro', iconClass: 'text-primary', path: '/scripts' },
+                { icon: Sparkles, label: 'Análise Deby AI', iconClass: 'text-success', path: '/deby' },
+                { icon: CalendarDays, label: 'Calendário', iconClass: 'text-success', path: '/calendar' },
               ].map((action) => (
                 <button
                   key={action.label}
                   onClick={() => navigate(action.path)}
-                  className="group flex w-full min-w-0 items-center gap-3 rounded-[var(--r-md)] px-3 py-2.5 text-sm text-dbe-muted transition-all hover:bg-white/5 hover:text-dbe-text"
+                  className="group flex w-full min-w-0 items-center gap-3 rounded-[var(--r-md)] px-3 py-2.5 text-sm text-text-muted transition-all hover:bg-surface2 hover:text-text"
                 >
-                  <action.icon className={`h-4 w-4 ${action.color}`} />
+                  <action.icon className={`h-4 w-4 shrink-0 ${action.iconClass}`} strokeWidth={2} />
                   <span className="truncate">{action.label}</span>
-                  <ArrowRight className="ml-auto h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <ArrowRight className="ml-auto h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-60" />
                 </button>
               ))}
             </div>
@@ -272,43 +280,50 @@ export function DashboardPage() {
 
           <Card>
             <CardTitle className="mb-4">Status do workspace</CardTitle>
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {setupSteps.map((step) => (
                 <div key={step.label} className="flex items-center gap-3">
-                  <div className={`flex h-5 w-5 items-center justify-center rounded-full ${step.done ? 'bg-dbe-green/15' : 'bg-dbe-border'}`}>
-                    {step.done && <CheckCircle2 className="h-3.5 w-3.5 text-dbe-green" />}
+                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${step.done ? 'bg-success/15' : 'bg-surface2'}`}>
+                    {step.done
+                      ? <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                      : <div className="h-1.5 w-1.5 rounded-full bg-text-subtle" />
+                    }
                   </div>
-                  <span className={`text-sm ${step.done ? 'text-dbe-text' : 'text-dbe-muted'}`}>{step.label}</span>
-                  {step.done && <Badge variant="success" className="ml-auto">Feito</Badge>}
+                  <span className={`text-sm ${step.done ? 'text-text' : 'text-text-muted'}`}>{step.label}</span>
+                  {step.done && <Badge variant="success" className="ml-auto text-[10px]">Feito</Badge>}
                 </div>
               ))}
             </div>
-            <div className="mt-4 border-t border-dbe-border pt-4">
-              <div className="mb-2 flex items-center justify-between text-xs text-dbe-muted">
+            <div className="mt-5 border-t border-border pt-4">
+              <div className="mb-2 flex items-center justify-between text-xs text-text-muted">
                 <span>Progresso</span>
-                <span>{progress}%</span>
+                <span className="font-semibold text-text">{progress}%</span>
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-dbe-border">
-                <div className="h-full rounded-full bg-gradient-to-r from-dbe-blue to-dbe-green transition-all duration-1000" style={{ width: `${progress}%` }} />
+              <div className="h-1.5 overflow-hidden rounded-full bg-surface2">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-success transition-all duration-700"
+                  style={{ width: `${progress}%` }}
+                />
               </div>
             </div>
           </Card>
 
-          <Card className="border-dbe-green/25 bg-gradient-to-br from-dbe-green/8 to-dbe-blue/5">
-            <div className="flex items-start gap-3">
-              <div className="shrink-0 rounded-[var(--r-lg)] border border-dbe-green/25 bg-dbe-green/10 p-2.5">
-                <Zap className="h-5 w-5 text-dbe-green" />
+          <div className="relative overflow-hidden rounded-[var(--r-lg)] border border-success/20 bg-gradient-to-br from-success/10 via-surface to-primary/6 p-4">
+            <div className="pointer-events-none absolute -top-4 -right-4 h-16 w-16 rounded-full bg-success/15 blur-xl" />
+            <div className="relative flex items-start gap-3">
+              <div className="shrink-0 rounded-[var(--r-md)] border border-success/20 bg-success/10 p-2.5">
+                <Zap className="h-4 w-4 text-success" />
               </div>
               <div>
-                <p className="mb-1 text-sm font-semibold text-dbe-text">Dica da Deby AI</p>
-                <p className="text-xs leading-relaxed text-dbe-muted">
+                <p className="mb-1 text-sm font-semibold text-text">Dica da Deby AI</p>
+                <p className="text-xs leading-relaxed text-text-muted">
                   {analyses.length === 0
                     ? 'Analise um roteiro pronto para descobrir onde ele perde conversão.'
                     : `Você tem ${approvals.filter((approval) => approval.status === 'pending').length} roteiro(s) aguardando aprovação.`}
                 </p>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </div>

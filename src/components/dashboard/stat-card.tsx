@@ -1,5 +1,4 @@
 import { type LucideIcon } from 'lucide-react'
-import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils/cn'
 
 interface StatCardProps {
@@ -14,59 +13,63 @@ interface StatCardProps {
   onClick?: () => void
 }
 
-const accentColors = {
+const accentMap = {
   primary: {
-    bg: 'bg-primary/10',
-    text: 'text-primary',
-    border: 'border-primary/20',
+    iconBg: 'bg-primary/12',
+    iconColor: 'text-primary',
+    accentLine: 'from-primary/0 via-primary/50 to-primary/0',
+    cardHover: 'hover:border-primary/30 hover:shadow-[0_4px_24px_rgb(var(--blue-rgb)/0.12)]',
   },
   success: {
-    bg: 'bg-success/10',
-    text: 'text-success',
-    border: 'border-success/20',
+    iconBg: 'bg-success/12',
+    iconColor: 'text-success',
+    accentLine: 'from-success/0 via-success/50 to-success/0',
+    cardHover: 'hover:border-success/30 hover:shadow-[0_4px_24px_rgb(var(--green-rgb)/0.12)]',
   },
   blue: {
-    bg: 'bg-primary/10',
-    text: 'text-primary',
-    border: 'border-primary/20',
+    iconBg: 'bg-primary/12',
+    iconColor: 'text-primary',
+    accentLine: 'from-primary/0 via-primary/50 to-primary/0',
+    cardHover: 'hover:border-primary/30 hover:shadow-[0_4px_24px_rgb(var(--blue-rgb)/0.12)]',
   },
   green: {
-    bg: 'bg-success/10',
-    text: 'text-success',
-    border: 'border-success/20',
+    iconBg: 'bg-success/12',
+    iconColor: 'text-success',
+    accentLine: 'from-success/0 via-success/50 to-success/0',
+    cardHover: 'hover:border-success/30 hover:shadow-[0_4px_24px_rgb(var(--green-rgb)/0.12)]',
   },
 }
 
 export function StatCard({ title, value, icon: Icon, trend, accent = 'primary', onClick }: StatCardProps) {
-  const colors = accentColors[accent as keyof typeof accentColors] || accentColors.primary
-
-  const Component = onClick ? 'button' : 'div'
+  const colors = accentMap[accent] ?? accentMap.primary
+  const Wrapper = onClick ? 'button' : 'div'
 
   return (
-    <Card 
+    <Wrapper
       className={cn(
-        'relative overflow-hidden transition-all border-border',
-        onClick && 'cursor-pointer hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 active:scale-[0.98]'
+        'relative w-full text-left overflow-hidden rounded-[var(--r-lg)] glass-panel p-5 transition-all duration-200',
+        onClick && cn('cursor-pointer active:scale-[0.98]', colors.cardHover)
       )}
-      onClick={onClick}
+      onClick={onClick as React.MouseEventHandler | undefined}
     >
-      <Component className="w-full text-left p-4 sm:p-5">
-        <div className="flex min-w-0 items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-sm text-text-muted mb-1 font-medium">{title}</p>
-            <p className="truncate text-3xl font-bold text-text tracking-tight">{value}</p>
-            {trend && (
-              <p className={cn('text-xs mt-2 font-medium', trend.positive ? 'text-success' : 'text-danger')}>
-                {trend.positive ? '↑' : '↓'} {trend.value}
-              </p>
-            )}
-          </div>
-          <div className={cn('shrink-0 rounded-2xl p-3 border shadow-sm', colors.bg, colors.border)}>
-            <Icon className={cn('h-5 w-5', colors.text)} />
-          </div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[13px] font-medium text-text-muted mb-1.5 tracking-wide">{title}</p>
+          <p className="text-3xl font-bold text-text tracking-tight tabular-nums">{value}</p>
+          {trend && (
+            <p className={cn('text-xs mt-2 font-semibold flex items-center gap-0.5', trend.positive ? 'text-success' : 'text-danger')}>
+              <span>{trend.positive ? '↑' : '↓'}</span>
+              <span>{trend.value}</span>
+            </p>
+          )}
         </div>
-        <div className={cn('absolute bottom-0 left-0 right-0 h-0.5 opacity-40', `bg-gradient-to-r from-transparent via-current to-transparent`, colors.text)} />
-      </Component>
-    </Card>
+        <div className={cn('shrink-0 rounded-xl p-2.5', colors.iconBg)}>
+          <Icon className={cn('h-5 w-5', colors.iconColor)} strokeWidth={2} />
+        </div>
+      </div>
+
+      {/* Bottom accent line */}
+      <div className={cn('absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r opacity-60', colors.accentLine)} />
+    </Wrapper>
   )
 }
