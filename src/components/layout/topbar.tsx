@@ -30,15 +30,13 @@ export function Topbar() {
   const displayName = user?.user_metadata?.full_name ?? user?.email ?? 'Usuário'
 
   return (
-    <header className="glass-panel sticky top-3 z-20 mx-4 rounded-[var(--r-xl)] md:top-4 md:mx-8">
-      <div className="flex min-h-16 items-center justify-between gap-3 px-4 md:px-6">
-      <div className="flex items-center gap-4">
-          <div className="block md:hidden">
-            <img src={logoDbeSrc} alt="DBE Creator" className="h-12 w-auto object-contain" />
-          </div>
+    <header className="relative z-20 mx-4 md:mx-8">
+      <div className="flex min-h-12 items-center justify-between gap-3">
+        <div className="flex items-center gap-4 md:hidden">
+          <img src={logoDbeSrc} alt="DBE Creator" className="h-10 w-auto object-contain" />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="glass-panel ml-auto flex items-center gap-2 rounded-[var(--r-xl)] px-2 py-1.5">
           <button 
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="touch-target relative rounded-[var(--r-md)] p-2 text-text-muted transition-colors hover:bg-surface-muted hover:text-text"
@@ -50,7 +48,7 @@ export function Topbar() {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex touch-target items-center gap-3 border-l border-border pl-3 transition-opacity hover:opacity-90"
+              className="flex touch-target items-center gap-3 border-l border-border pl-2 transition-opacity hover:opacity-90 sm:pl-3"
             >
               <div className="hidden sm:block text-right">
                 <p className="text-sm font-medium text-text truncate max-w-[140px]">{displayName}</p>
