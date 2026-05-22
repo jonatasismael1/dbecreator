@@ -10,6 +10,17 @@ import { Badge } from '@/components/ui/badge'
 import { ScriptContentBlock } from '@/features/scripts/components/script-content-block'
 
 type ItemStatus = 'pending' | 'approved' | 'requested_changes'
+type SectionCommentKey = 'GANCHO' | 'DESENVOLVIMENTO' | 'CTA'
+
+interface PublicBatchComment {
+  id: string
+  approval_id: string
+  author_name: string
+  content: string
+  section: SectionCommentKey | 'GERAL'
+  resolved: boolean
+  created_at: string
+}
 
 interface PublicBatchScript {
   id: string
@@ -24,6 +35,7 @@ interface PublicBatchItem {
   id: string
   status: ItemStatus
   client_feedback: string | null
+  comments?: PublicBatchComment[]
   script: PublicBatchScript
 }
 
@@ -41,8 +53,7 @@ type UpdateBatchPayload =
   | { action: 'approve_selected'; item_ids: string[]; author_name: string }
   | { action: 'approve_item'; item_id: string; author_name: string }
   | { action: 'request_changes_item'; item_id: string; author_name: string; comment: string }
-
-interface SectionComment { section: 'GANCHO' | 'DESENVOLVIMENTO' | 'CTA'; text: string }
+  | { action: 'add_section_comment'; item_id: string; author_name: string; section: SectionCommentKey; comment: string }
 
 async function fetchBatch(token: string): Promise<PublicBatch> {
   const res = await fetch(`/api/public-batch-approval?token=${token}`)
@@ -87,10 +98,9 @@ export function PublicBatchApprovalPage() {
   const [requestingItemId, setRequestingItemId] = useState<string | null>(null)
   const [requestCommentText, setRequestCommentText] = useState('')
 
-  // Per-section comments (P2.3): map of itemId → array of section comments
-  const [activeCommentSection, setActiveCommentSection] = useState<{ itemId: string; section: SectionComment['section'] } | null>(null)
+  // Per-section comments (P2.3)
+  const [activeCommentSection, setActiveCommentSection] = useState<{ itemId: string; section: SectionCommentKey } | null>(null)
   const [commentText, setCommentText] = useState('')
-  const [submittedComments, setSubmittedComments] = useState<Record<string, SectionComment[]>>({})
 
   const { data: batch, isLoading, isError } = useQuery({
     queryKey: ['public-batch-approval', token],
@@ -101,8 +111,9 @@ export function PublicBatchApprovalPage() {
 
   const updateMutation = useMutation({
     mutationFn: (payload: UpdateBatchPayload) => postBatch(token || '', payload),
-    onSuccess: (updated) => {
+    onSuccess: (updated, payload) => {
       queryClient.setQueryData(['public-batch-approval', token], updated)
+      if (payload.action === 'add_section_comment') return
       setSelectedIds([])
       setConfirmApproveSelected(false)
       setConfirmApproveAll(false)
@@ -145,19 +156,11 @@ export function PublicBatchApprovalPage() {
 
   const handleApproveSelected = () => {
     if (selectedIds.length === 0) return
-    const ids = selectedIds
-    // Approve each one sequentially using approve_item action (existing API)
-    const pending = [...ids]
-    const approveNext = (remaining: string[]) => {
-      if (remaining.length === 0) return
-      const [first, ...rest] = remaining
-      updateMutation.mutate(
-        { action: 'approve_item', item_id: first, author_name: authorName },
-        { onSuccess: () => approveNext(rest) },
-      )
-    }
-    approveNext(pending)
-    setConfirmApproveSelected(false)
+    updateMutation.mutate({
+      action: 'approve_selected',
+      item_ids: Array.from(selectedIds),
+      author_name: authorName,
+    })
   }
 
   const handleApproveAll = () => {
@@ -174,16 +177,23 @@ export function PublicBatchApprovalPage() {
     })
   }
 
-  // Section comment submission (client-side only — stored locally + future API)
-  const handleAddSectionComment = (itemId: string, section: SectionComment['section']) => {
+  const handleAddSectionComment = (itemId: string, section: SectionCommentKey) => {
     if (!commentText.trim() || !authorName.trim()) return
-    const newComment: SectionComment = { section, text: commentText.trim() }
-    setSubmittedComments((prev) => ({
-      ...prev,
-      [itemId]: [...(prev[itemId] ?? []), newComment],
-    }))
-    setCommentText('')
-    setActiveCommentSection(null)
+    updateMutation.mutate(
+      {
+        action: 'add_section_comment',
+        item_id: itemId,
+        author_name: authorName,
+        section,
+        comment: commentText,
+      },
+      {
+        onSuccess: () => {
+          setCommentText('')
+          setActiveCommentSection(null)
+        },
+      },
+    )
   }
 
   const getRequiresName = () => {
@@ -272,7 +282,7 @@ export function PublicBatchApprovalPage() {
         <div className="space-y-6">
           {batch.items.map((item) => {
             const isSelected = selectedIds.includes(item.id)
-            const itemSectionComments = submittedComments[item.id] ?? []
+            const itemSectionComments = item.comments ?? []
             const isRequestingThis = requestingItemId === item.id
 
             return (
@@ -350,9 +360,9 @@ export function PublicBatchApprovalPage() {
                         {sectionCommentList.length > 0 && (
                           <div className="mt-2 space-y-1.5 rounded-lg border border-dbe-border/40 bg-black/10 p-3">
                             {sectionCommentList.map((c, idx) => (
-                              <div key={idx} className="text-xs">
-                                <span className="font-medium text-dbe-text">{authorName || 'Você'}: </span>
-                                <span className="text-dbe-muted">{c.text}</span>
+                              <div key={c.id || idx} className="text-xs">
+                                <span className="font-medium text-dbe-text">{c.author_name}: </span>
+                                <span className="text-dbe-muted">{c.content}</span>
                               </div>
                             ))}
                           </div>
@@ -373,7 +383,8 @@ export function PublicBatchApprovalPage() {
                               <Button
                                 size="sm"
                                 onClick={() => handleAddSectionComment(item.id, key)}
-                                disabled={!commentText.trim() || nameRequired}
+                                disabled={!commentText.trim() || nameRequired || updateMutation.isPending}
+                                loading={updateMutation.isPending}
                               >
                                 Adicionar comentário
                               </Button>

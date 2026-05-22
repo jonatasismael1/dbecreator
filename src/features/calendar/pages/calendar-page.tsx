@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils/cn'
 import { useScripts } from '@/features/scripts/hooks/use-scripts'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
 import { useCalendarItems, useCreateCalendarItem, useDeleteCalendarItem, useUpdateCalendarItem } from '../hooks/use-calendar-items'
-import type { CalendarItem, CalendarPlatform } from '../types/calendar.types'
+import type { CalendarItem } from '../types/calendar.types'
 
 type CalendarStageFilter = 'all' | 'recording' | 'editing' | 'posting'
 

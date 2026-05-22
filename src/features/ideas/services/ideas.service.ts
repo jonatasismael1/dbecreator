@@ -30,11 +30,12 @@ export const ideasService = {
     return data
   },
 
-  async update(id: string, dto: UpdateIdeaDTO): Promise<Idea> {
+  async update(workspaceId: string, id: string, dto: UpdateIdeaDTO): Promise<Idea> {
     const { data, error } = await supabase
       .from(TABLE)
       .update({ ...dto, updated_at: new Date().toISOString() })
       .eq('id', id)
+      .eq('workspace_id', workspaceId)
       .select()
       .single()
 
@@ -42,11 +43,12 @@ export const ideasService = {
     return data
   },
 
-  async delete(id: string): Promise<void> {
+  async delete(workspaceId: string, id: string): Promise<void> {
     const { error } = await supabase
       .from(TABLE)
       .delete()
       .eq('id', id)
+      .eq('workspace_id', workspaceId)
 
     if (error) throw error
   },

@@ -35,11 +35,12 @@ export const reportsService = {
     return data
   },
 
-  async update(id: string, dto: UpdateMetricDTO): Promise<PerformanceMetric> {
+  async update(workspaceId: string, id: string, dto: UpdateMetricDTO): Promise<PerformanceMetric> {
     const { data, error } = await supabase
       .from(TABLE)
       .update({ ...dto, updated_at: new Date().toISOString() })
       .eq('id', id)
+      .eq('workspace_id', workspaceId)
       .select()
       .single()
 
@@ -47,8 +48,8 @@ export const reportsService = {
     return data
   },
 
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase.from(TABLE).delete().eq('id', id)
+  async delete(workspaceId: string, id: string): Promise<void> {
+    const { error } = await supabase.from(TABLE).delete().eq('id', id).eq('workspace_id', workspaceId)
     if (error) throw error
   },
 }

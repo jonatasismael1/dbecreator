@@ -37,6 +37,10 @@ export default async function handler(request: Request): Promise<Response> {
     }
 
     const approval = await getPublicApproval(admin, token)
+    if (approval.status !== 'pending') {
+      throw new ApiError(409, 'approval_already_reviewed', 'Esta aprovacao ja foi revisada.')
+    }
+
     const approvalStatus = action === 'approve' ? 'approved' : 'requested_changes'
     const scriptStatus = action === 'approve' ? 'approved' : 'changes_requested'
 
@@ -44,6 +48,7 @@ export default async function handler(request: Request): Promise<Response> {
       .from('approvals')
       .update({ status: approvalStatus, updated_at: new Date().toISOString() })
       .eq('id', approval.id)
+      .eq('status', 'pending')
 
     if (approvalError) {
       throw new ApiError(500, 'approval_update_failed', 'Não foi possível atualizar a aprovação.')
@@ -53,6 +58,7 @@ export default async function handler(request: Request): Promise<Response> {
       .from('scripts')
       .update({ status: scriptStatus, updated_at: new Date().toISOString() })
       .eq('id', approval.script_id)
+      .eq('workspace_id', approval.workspace_id)
 
     if (scriptError) {
       throw new ApiError(500, 'script_update_failed', 'Não foi possível atualizar o status do roteiro.')

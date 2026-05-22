@@ -23,14 +23,14 @@ export function useMaterials() {
 
   const updateMaterial = useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateMaterialDTO }) =>
-      materialsService.update(id, dto),
+      materialsService.update(workspaceId, id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey })
     },
   })
 
   const deleteMaterial = useMutation({
-    mutationFn: materialsService.delete,
+    mutationFn: (id: string) => materialsService.delete(workspaceId, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey })
     },

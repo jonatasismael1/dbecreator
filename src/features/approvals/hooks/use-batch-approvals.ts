@@ -41,7 +41,31 @@ export function useBatchApprovals() {
       clientName?: string | null
       expiresAt?: string | null
     }) => {
+      if (scriptIds.length === 0) throw new Error('Selecione ao menos um roteiro.')
       const { data: user } = await supabase.auth.getUser()
+
+      const { data: validScripts, error: scriptsLookupError } = await supabase
+        .from('scripts')
+        .select('id')
+        .eq('workspace_id', workspaceId)
+        .in('id', scriptIds)
+
+      if (scriptsLookupError) throw scriptsLookupError
+      if ((validScripts ?? []).length !== scriptIds.length) {
+        throw new Error('Um ou mais roteiros nao pertencem ao workspace atual.')
+      }
+
+      if (campaignId) {
+        const { data: campaign, error: campaignLookupError } = await supabase
+          .from('campaigns')
+          .select('id')
+          .eq('workspace_id', workspaceId)
+          .eq('id', campaignId)
+          .maybeSingle()
+
+        if (campaignLookupError) throw campaignLookupError
+        if (!campaign) throw new Error('Campanha nao encontrada no workspace atual.')
+      }
 
       const { data: batch, error: batchError } = await supabase
         .from('approval_batches')
@@ -68,18 +92,31 @@ export function useBatchApprovals() {
         .from('approval_batch_items')
         .insert(items)
 
-      if (itemsError) throw itemsError
+      if (itemsError) {
+        await supabase
+          .from('approval_batches')
+          .delete()
+          .eq('id', batch.id)
+          .eq('workspace_id', workspaceId)
+        throw itemsError
+      }
 
-      await supabase
+      const { error: updateScriptsError } = await supabase
         .from('scripts')
         .update({ status: 'in_approval', updated_at: new Date().toISOString() })
+        .eq('workspace_id', workspaceId)
         .in('id', scriptIds)
 
+      if (updateScriptsError) throw updateScriptsError
+
       if (campaignId) {
-        await supabase
+        const { error: updateCampaignError } = await supabase
           .from('campaigns')
           .update({ status: 'in_approval', updated_at: new Date().toISOString() })
+          .eq('workspace_id', workspaceId)
           .eq('id', campaignId)
+
+        if (updateCampaignError) throw updateCampaignError
       }
 
       return batch
@@ -113,4 +150,3 @@ export function useBatchApprovals() {
     deleteBatch,
   }
 }
-

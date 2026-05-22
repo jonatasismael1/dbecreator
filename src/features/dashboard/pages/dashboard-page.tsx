@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import {
   ArrowRight,
   CalendarDays,
@@ -27,7 +27,7 @@ import { useScripts } from '@/features/scripts/hooks/use-scripts'
 import { useCampaigns } from '@/features/campaigns/hooks/use-campaigns'
 import { useApprovals } from '@/features/approvals/hooks/use-approvals'
 import { useWorkspaceContext } from '@/features/workspaces/context/workspace-context'
-import { OnboardingWizard } from '@/features/onboarding/components/onboarding-wizard'
+import { PlatformGuide } from '@/features/onboarding/components/platform-guide'
 import type { ScriptStatus } from '@/features/scripts/types/script.types'
 
 const MOTIVATIONAL_QUOTES = [
@@ -58,8 +58,6 @@ function getGreeting() {
 
 export function DashboardPage() {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const [mountedAt] = useState(() => Date.now())
   const { user } = useAuth()
   const { workspaceId } = useWorkspaceContext()
   const { data: ideas = [], isLoading: ideasLoading } = useIdeas(workspaceId)
@@ -89,20 +87,43 @@ export function DashboardPage() {
   }, [])
 
   const isLoading = ideasLoading || scriptsLoading || campaignsLoading || approvalsLoading || analysesLoading || marketMapLoading || pillarsLoading
-  const dismissedUntil = Number(localStorage.getItem('dbe_onboarding_dismissed_until') || 0)
-  const showOnboarding = Boolean(
-    user?.id &&
-    profileQuery.data &&
-    profileQuery.data.onboarding_completed === false &&
-    mountedAt > dismissedUntil,
-  )
   const recentScripts = scripts.slice(0, 4)
   const setupSteps = [
-    { label: 'Mapa de Mercado', done: !!marketMap?.is_complete },
-    { label: 'Pilares de Conteúdo', done: pillars.length > 0 },
-    { label: 'Primeiro roteiro', done: scripts.length > 0 },
-    { label: 'Primeira campanha', done: campaigns.length > 0 },
-    { label: 'Análise Deby AI', done: analyses.length > 0 },
+    {
+      label: 'Mapa de Mercado',
+      description: 'Defina nicho, publico, dor, concorrentes, diferenciais e tom de voz.',
+      path: '/market-map',
+      cta: 'Montar mapa',
+      done: !!marketMap?.is_complete,
+    },
+    {
+      label: 'Pilares de Conteudo',
+      description: 'Transforme o posicionamento em categorias editoriais com funcao comercial.',
+      path: '/pillars',
+      cta: 'Criar pilares',
+      done: pillars.length > 0,
+    },
+    {
+      label: 'Primeiro roteiro',
+      description: 'Crie um roteiro com gancho, desenvolvimento, CTA e pilar vinculado.',
+      path: '/scripts',
+      cta: 'Criar roteiro',
+      done: scripts.length > 0,
+    },
+    {
+      label: 'Analise Deby AI',
+      description: 'Use a Deby para criticar conversao, clareza da dor e proximo passo.',
+      path: '/deby',
+      cta: 'Analisar roteiro',
+      done: analyses.length > 0,
+    },
+    {
+      label: 'Calendario e aprovacao',
+      description: 'Agende a publicacao e gere links para revisao externa quando precisar.',
+      path: '/calendar',
+      cta: 'Organizar calendario',
+      done: campaigns.length > 0 || approvals.length > 0,
+    },
   ]
   const progress = Math.round((setupSteps.filter((step) => step.done).length / setupSteps.length) * 100)
 
@@ -223,6 +244,10 @@ export function DashboardPage() {
         </div>
 
         <div className="space-y-6">
+          {profileQuery.data?.onboarding_completed === false && (
+            <PlatformGuide steps={setupSteps} progress={progress} onNavigate={navigate} />
+          )}
+
           <Card>
             <CardTitle className="mb-4">Ações rápidas</CardTitle>
             <div className="space-y-2">

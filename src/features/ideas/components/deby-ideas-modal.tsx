@@ -62,7 +62,7 @@ export function DebyIdeasModal({ open, onClose, onAddIdeas, initialContext }: De
       await onAddIdeas(generatedIdeas, selectedPillarId)
       handleClose()
     } catch (err) {
-      setError('Erro ao salvar algumas ideias.')
+      setError(err instanceof Error ? err.message : 'Erro ao salvar algumas ideias.')
     } finally {
       setIsLoading(false)
     }

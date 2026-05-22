@@ -24,7 +24,7 @@ export function useUpdatePillar(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdatePillarDTO }) =>
-      pillarsService.update(id, dto),
+      pillarsService.update(workspaceId, id, dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY(workspaceId) }),
   })
 }
@@ -32,7 +32,7 @@ export function useUpdatePillar(workspaceId: string) {
 export function useDeletePillar(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => pillarsService.delete(id),
+    mutationFn: (id: string) => pillarsService.delete(workspaceId, id),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY(workspaceId) }),
   })
 }

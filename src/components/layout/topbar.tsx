@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { LogOut, User, Sun, Moon } from 'lucide-react'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { useTheme } from '@/hooks/use-theme'
 import logoDbeSrc from '@/assets/logo-pwa-512x512.png.png'
 
 export function Topbar() {
+  const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const { theme, setTheme } = useTheme()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -70,7 +72,10 @@ export function Topbar() {
                   <p className="text-xs text-text-muted truncate">{user?.email}</p>
                 </div>
                 <div className="p-1">
-                  <button className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-text-muted hover:text-text hover:bg-surface-muted transition-colors">
+                  <button
+                    onClick={() => { setUserMenuOpen(false); navigate('/settings') }}
+                    className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
+                  >
                     <User className="h-4 w-4" />
                     Perfil
                   </button>

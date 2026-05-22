@@ -25,7 +25,7 @@ export function useUpdateIdea(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateIdeaDTO }) =>
-      ideasService.update(id, dto),
+      ideasService.update(workspaceId, id, dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY, workspaceId] }),
   })
 }
@@ -33,7 +33,7 @@ export function useUpdateIdea(workspaceId: string) {
 export function useDeleteIdea(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => ideasService.delete(id),
+    mutationFn: (id: string) => ideasService.delete(workspaceId, id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY, workspaceId] }),
   })
 }

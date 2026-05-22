@@ -167,8 +167,8 @@ export function ScriptModal({
         posting_date: values.posting_date || null,
       })
       onClose()
-    } catch (err: any) {
-      setSaveError(err.message || 'Erro ao salvar o roteiro. Verifique os dados.')
+    } catch (err: unknown) {
+      setSaveError(err instanceof Error ? err.message : 'Erro ao salvar o roteiro. Verifique os dados.')
     } finally {
       setSaving(false)
     }

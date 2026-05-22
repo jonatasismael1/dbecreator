@@ -53,6 +53,7 @@ export function MarketMapPage() {
   const [generatedInsights, setGeneratedInsights] = useState<MarketMapInsights | null>(null)
   const [generatedInsightsAt, setGeneratedInsightsAt] = useState<string | null>(null)
   const [wizardError, setWizardError] = useState('')
+  const [saveError, setSaveError] = useState('')
 
   // Accumulated form state
   const [formData, setFormData] = useState({
@@ -147,6 +148,14 @@ export function MarketMapPage() {
 
   const handleBack = () => setStep(s => Math.max(s - 1, 0))
 
+  const handleStepClick = async (nextStep: number) => {
+    if (nextStep === step) return
+    const latestData = await collectStepData()
+    if (!latestData) return
+    setFormData(latestData)
+    setStep(nextStep)
+  }
+
   const handleFillWithDeby = async () => {
     if (!(await form1.trigger())) return
     setWizardError('')
@@ -178,6 +187,7 @@ export function MarketMapPage() {
     if (!latestData) return
 
     setSaving(true)
+    setSaveError('')
     try {
       const savedMap = await upsert.mutateAsync({ ...latestData, is_complete: complete || latestData.is_complete })
       setFormData({
@@ -195,6 +205,8 @@ export function MarketMapPage() {
         setGeneratedInsights(insights)
         setGeneratedInsightsAt(new Date().toISOString())
       }
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Nao foi possivel salvar o mapa de mercado.')
     } finally {
       setSaving(false)
     }
@@ -221,7 +233,7 @@ export function MarketMapPage() {
             return (
               <button
                 key={s.label}
-                onClick={() => setStep(i)}
+                onClick={() => void handleStepClick(i)}
                 className={cn(
                   'flex flex-col items-center gap-1 group',
                   i <= step ? 'opacity-100' : 'opacity-40'
@@ -414,6 +426,11 @@ export function MarketMapPage() {
 
             {/* Actions */}
             <div className="mt-8 grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3">
+              {saveError && (
+                <p className="col-span-2 w-full rounded-lg border border-dbe-red/20 bg-dbe-red/10 px-3 py-2 text-xs text-dbe-red">
+                  {saveError}
+                </p>
+              )}
               {step > 0 && (
                 <Button variant="ghost" onClick={handleBack} className="w-full gap-1.5 sm:w-auto">
                   <ChevronLeft className="h-4 w-4" /> Voltar

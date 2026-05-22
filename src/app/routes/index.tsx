@@ -1,26 +1,34 @@
+import { Suspense, type ReactNode } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/app-layout'
 import { AuthLayout } from '@/app/layout/auth-layout'
+import { LoadingState } from '@/components/shared/loading-state'
 import { ProtectedRoute, PublicOnlyRoute } from '@/features/auth/components/route-guards'
-import { LoginPage } from '@/features/auth/pages/login-page'
-import { RegisterPage } from '@/features/auth/pages/register-page'
-import { EmailConfirmationPage } from '@/features/auth/pages/email-confirmation-page'
-import { DashboardPage } from '@/features/dashboard/pages/dashboard-page'
-import { IdeasPage } from '@/features/ideas/pages/ideas-page'
-import { MarketMapPage } from '@/features/market-map/pages/market-map-page'
-import { PillarsPage } from '@/features/pillars/pages/pillars-page'
-import { ScriptsPage } from '@/features/scripts/pages/scripts-page'
-import { ScriptPreviewPage } from '@/features/scripts/pages/script-preview-page'
-import { TeleprompterPage } from '@/features/teleprompter/pages/teleprompter-page'
-import { DebyPage } from '@/features/deby/pages/deby-page'
-import { CalendarPage } from '@/features/calendar/pages/calendar-page'
-import { MaterialsPage } from '@/features/materials/pages/materials-page'
-import { SettingsPage } from '@/features/settings/pages/settings-page'
-import { CampaignsPage } from '@/features/campaigns/pages/campaigns-page'
-import { ApprovalsPage } from '@/features/approvals/pages/approvals-page'
-import { PublicApprovalPage } from '@/features/approvals/pages/public-approval-page'
-import { PublicBatchApprovalPage } from '@/features/approvals/pages/public-batch-approval-page'
-import { ReportsPage } from '@/features/reports/pages/reports-page'
+import {
+  ApprovalsPage,
+  CalendarPage,
+  CampaignsPage,
+  DashboardPage,
+  DebyPage,
+  EmailConfirmationPage,
+  IdeasPage,
+  LoginPage,
+  MarketMapPage,
+  MaterialsPage,
+  PillarsPage,
+  PublicApprovalPage,
+  PublicBatchApprovalPage,
+  RegisterPage,
+  ReportsPage,
+  ScriptPreviewPage,
+  ScriptsPage,
+  SettingsPage,
+  TeleprompterPage,
+} from './lazy-pages'
+
+function routePage(element: ReactNode) {
+  return <Suspense fallback={<LoadingState />}>{element}</Suspense>
+}
 
 export const router = createBrowserRouter([
   {
@@ -29,38 +37,38 @@ export const router = createBrowserRouter([
       {
         element: <AuthLayout />,
         children: [
-          { path: '/login', element: <LoginPage /> },
-          { path: '/register', element: <RegisterPage /> },
+          { path: '/login', element: routePage(<LoginPage />) },
+          { path: '/register', element: routePage(<RegisterPage />) },
         ],
       },
     ],
   },
-  { path: '/auth/callback', element: <EmailConfirmationPage /> },
-  { path: '/confirmacao-email', element: <EmailConfirmationPage /> },
-  { path: '/approval/:token', element: <PublicApprovalPage /> },
-  { path: '/aprovacao/:token', element: <PublicApprovalPage /> },
-  { path: '/aprovacao/lote/:token', element: <PublicBatchApprovalPage /> },
+  { path: '/auth/callback', element: routePage(<EmailConfirmationPage />) },
+  { path: '/confirmacao-email', element: routePage(<EmailConfirmationPage />) },
+  { path: '/approval/:token', element: routePage(<PublicApprovalPage />) },
+  { path: '/aprovacao/:token', element: routePage(<PublicApprovalPage />) },
+  { path: '/aprovacao/lote/:token', element: routePage(<PublicBatchApprovalPage />) },
   {
     element: <ProtectedRoute />,
     children: [
       {
         element: <AppLayout />,
         children: [
-          { path: '/', element: <DashboardPage /> },
-          { path: '/ideas', element: <IdeasPage /> },
-          { path: '/market-map', element: <MarketMapPage /> },
-          { path: '/pillars', element: <PillarsPage /> },
-          { path: '/scripts', element: <ScriptsPage /> },
-          { path: '/scripts/:scriptId', element: <ScriptPreviewPage /> },
-          { path: '/materials', element: <MaterialsPage /> },
-          { path: '/deby', element: <DebyPage /> },
-          { path: '/calendar', element: <CalendarPage /> },
-          { path: '/campaigns', element: <CampaignsPage /> },
-          { path: '/teleprompter', element: <TeleprompterPage /> },
-          { path: '/teleprompter/:scriptId', element: <TeleprompterPage /> },
-          { path: '/approvals', element: <ApprovalsPage /> },
-          { path: '/reports', element: <ReportsPage /> },
-          { path: '/settings', element: <SettingsPage /> },
+          { path: '/', element: routePage(<DashboardPage />) },
+          { path: '/ideas', element: routePage(<IdeasPage />) },
+          { path: '/market-map', element: routePage(<MarketMapPage />) },
+          { path: '/pillars', element: routePage(<PillarsPage />) },
+          { path: '/scripts', element: routePage(<ScriptsPage />) },
+          { path: '/scripts/:scriptId', element: routePage(<ScriptPreviewPage />) },
+          { path: '/materials', element: routePage(<MaterialsPage />) },
+          { path: '/deby', element: routePage(<DebyPage />) },
+          { path: '/calendar', element: routePage(<CalendarPage />) },
+          { path: '/campaigns', element: routePage(<CampaignsPage />) },
+          { path: '/teleprompter', element: routePage(<TeleprompterPage />) },
+          { path: '/teleprompter/:scriptId', element: routePage(<TeleprompterPage />) },
+          { path: '/approvals', element: routePage(<ApprovalsPage />) },
+          { path: '/reports', element: routePage(<ReportsPage />) },
+          { path: '/settings', element: routePage(<SettingsPage />) },
         ],
       },
     ],

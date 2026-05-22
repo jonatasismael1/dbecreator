@@ -23,14 +23,14 @@ export function useReports() {
 
   const updateMetric = useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateMetricDTO }) =>
-      reportsService.update(id, dto),
+      reportsService.update(workspaceId, id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey })
     },
   })
 
   const deleteMetric = useMutation({
-    mutationFn: reportsService.delete,
+    mutationFn: (id: string) => reportsService.delete(workspaceId, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey })
     },

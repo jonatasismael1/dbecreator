@@ -76,19 +76,6 @@ export function ScriptsPage() {
   const [approvalLink, setApprovalLink] = useState<string | null>(null)
   const { data: versions = [], isLoading: versionsLoading } = useScriptVersions(workspaceId, editingScript?.id)
 
-  // Open edit modal from navigation state (e.g. from ScriptPreviewPage)
-  useEffect(() => {
-    const openEditId = location.state?.openEditId as string | undefined
-    if (!openEditId || scripts.length === 0) return
-    const target = scripts.find((s) => s.id === openEditId)
-    if (target) {
-      openEdit(target)
-      // Clear state to avoid re-opening on back navigation
-      window.history.replaceState({}, '')
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.state?.openEditId, scripts])
-
   const activeScripts = useMemo(() => scripts.filter((script) => !script.archived_at), [scripts])
   const archivedScripts = useMemo(() => scripts.filter((script) => script.archived_at), [scripts])
   const visibleScripts = tab === 'active' ? activeScripts : archivedScripts
@@ -140,6 +127,21 @@ export function ScriptsPage() {
     analyzeScript.reset()
     setModalOpen(true)
   }
+
+  // Open edit modal from navigation state (e.g. from ScriptPreviewPage)
+  useEffect(() => {
+    const openEditId = location.state?.openEditId as string | undefined
+    if (!openEditId || scripts.length === 0) return
+    const target = scripts.find((s) => s.id === openEditId)
+    if (target) {
+      const timer = window.setTimeout(() => {
+        openEdit(target)
+        window.history.replaceState({}, '')
+      }, 0)
+      return () => window.clearTimeout(timer)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state?.openEditId, scripts])
 
   const closeModal = () => {
     setModalOpen(false)
