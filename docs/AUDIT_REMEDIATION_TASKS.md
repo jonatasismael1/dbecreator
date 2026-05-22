@@ -11,6 +11,8 @@ Data: 2026-05-22
 - [x] Impedir reprocessamento de aprovacoes publicas ja revisadas.
 - [x] Proteger updates/deletes de ideias, materiais, pilares e metricas por `workspace_id`.
 - [x] Validar workspace antes de criar lote de aprovacao.
+- [x] Aplicar migrations no Supabase remoto.
+- [x] Revogar privilegios perigosos de roles de browser em tabelas publicas.
 - [x] Corrigir perda silenciosa de dados ao navegar entre passos do Mapa de Mercado.
 - [x] Exibir erro de salvamento no Mapa de Mercado.
 - [x] Corrigir erros de lint existentes.
